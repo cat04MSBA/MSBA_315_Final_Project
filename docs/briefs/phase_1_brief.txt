@@ -1,0 +1,273 @@
+# Phase 1 Brief — Data Feasibility Verification
+
+> **Read first:** `docs/PROJECT_CONTEXT.md` (project framing, decisions,
+> mandatory checkpoints) and `docs/CLAUDE_CODE_GUIDELINES.md` (engineering
+> standards, escalation rules, summary format).
+>
+> This is the first execution brief. It is intentionally exploratory rather
+> than production-quality. Phase 2 will rebuild the data pipeline cleanly;
+> Phase 1 just answers the question: do we have enough usable data to
+> proceed at the planned scale?
+
+
+---
+
+## 1. Goal of This Phase
+
+Answer one question: **how many films will we end up with that have all
+four required data points (screenplay, IMDb rating, budget, revenue)?**
+
+The answer determines whether the project proceeds with MovieSum-only
+(target ≥1,500 films), MovieSum + IMSDb supplementary (target ~1,500
+after dedup), or scope reduction (<1,000 films).
+
+Decision criteria are documented in `PROJECT_CONTEXT.md` Section 5.
+
+---
+
+## 2. Inputs You Will Receive
+
+The user has already downloaded both raw datasets and will drop them into
+`data/raw/` after you create the folder structure (Task 1).
+
+Expected files:
+
+- **TMDB 5000 movies CSV** — from
+  `https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata`. The relevant
+  file is `tmdb_5000_movies.csv`. Contains budget, revenue, runtime, genre,
+  release date, and a TMDB-internal `id` column. **Does NOT include
+  `imdb_id`** natively — this is a known issue from prior exploration and
+  has to be resolved during Phase 1.
+- **MovieSum** — from `https://huggingface.co/datasets/rohitsaxena/MovieSum`.
+  2,200 movie screenplays in structured XML format, each tagged with an
+  IMDb ID. Format details documented in `PROJECT_CONTEXT.md` Section 4.
+
+**Workflow:** After completing Task 1 (folder setup), pause and ask the
+user to confirm the data files are in place at `data/raw/`. Once
+confirmed, continue with the remaining tasks. Do not begin Task 2 before
+the user confirms the files are uploaded.
+
+If a programmatic download via `datasets.load_dataset("rohitsaxena/MovieSum")`
+turns out to be cleaner than reading the manually-downloaded files, you may
+switch to that — but only if it works without authentication friction. The
+manual path is fine.
+
+---
+
+## 3. What Has Already Been Done (Sanity Check)
+
+Prior exploration on `tmdb_5000_movies.csv` found:
+
+- 4,803 total films
+- 3,766 films with `budget > 0`
+- 3,376 films with `revenue > 0`
+- 3,229 films with both
+- Year distribution dense 1997–2016, long thin tail back to 1916
+
+Reproduce these numbers as your first sanity check. If they don't match
+within a small margin, something is wrong with the data file and you
+should flag it before continuing.
+
+A previous attempt to fetch IMDb IDs from the TMDB API returned 0/3,229
+matches. Most likely cause: invalid or unauthenticated API key. You do
+not need to use the TMDB API at all in Phase 1 — MovieSum has IMDb IDs
+natively, so the join can go MovieSum → TMDB instead of TMDB → MovieSum.
+
+---
+
+## 4. Tasks
+
+This phase is exploratory. Focus on understanding the data and answering
+the corpus-size question. Production-quality code lives in Phase 2; here
+the goal is to see clearly.
+
+### Task 1: Set up project structure
+
+Create the folder structure documented in `PROJECT_CONTEXT.md` Section 7,
+to the extent needed for Phase 1:
+
+- `src/data/` — for any data-loading scripts
+- `src/utils/` — for logging and paths utilities
+- `data/raw/` — where the user's downloaded files will live
+- `data/interim/` — for any intermediate Parquet files saved this phase
+- `reports/figures/` — for diagnostic plots
+- `docs/summaries/` — for the phase summary you'll write at the end
+
+Add a `.gitignore` that excludes `data/raw/`, `data/interim/`,
+`data/processed/`, and standard Python artifacts.
+
+Set up a minimal `src/utils/paths.py` that resolves the project root
+(walk up from the file location until you find a marker, e.g.,
+`docs/PROJECT_CONTEXT.md`) and exposes paths to the data directories.
+Set up `src/utils/logging.py` to configure a project logger at INFO level.
+
+**At the end of Task 1, pause and tell the user:**
+
+> "Folder structure is ready. Please drop `tmdb_5000_movies.csv` and the
+> MovieSum files into `data/raw/`, then confirm so I can proceed."
+
+Do not begin Task 2 until the user confirms.
+
+### Task 2: Load TMDB 5000 and reproduce known statistics
+
+Write `src/data/load_tmdb.py` with a function that loads
+`tmdb_5000_movies.csv` and returns a clean DataFrame.
+
+In the loader or in a separate exploration script:
+- Reproduce the prior numbers (4,803 / 3,766 / 3,376 / 3,229)
+- Print and save the year distribution of films-with-both
+- Print and save the genre distribution of films-with-both
+- Compute and save a few sanity statistics (budget median/mean/std,
+  revenue median/mean/std, ratio distribution)
+
+### Task 3: Load MovieSum and explore its structure
+
+Write `src/data/load_moviesum.py` with a function that loads MovieSum.
+
+Inspect the structure:
+- Total number of screenplays
+- IMDb ID coverage (how many entries have a valid `tt`-prefixed IMDb ID)
+- Year distribution if year information is available
+- A sample screenplay's XML structure: parse one to confirm the format
+  matches what's documented in `PROJECT_CONTEXT.md` Section 4
+- Length distribution (token counts or character counts per screenplay)
+
+Spot-check 5 random screenplays by hand — confirm they look like real
+screenplays with scenes, characters, dialogue, and stage directions. If
+the structure differs from what's documented, flag it.
+
+### Task 4: Join MovieSum and TMDB on IMDb ID
+
+This is the central question of Phase 1.
+
+- Take MovieSum's IMDb IDs.
+- For each, look up the corresponding film in TMDB 5000.
+- Critically: TMDB 5000 doesn't have `imdb_id`. You'll need to find a
+  way to bridge the two. Options to evaluate (in order of preference):
+  1. Check whether MovieSum includes a TMDB ID alongside the IMDb ID
+     (some datasets do). If yes, join on TMDB ID directly.
+  2. Use title + year as a fuzzy join key. This is noisy but workable
+     for a feasibility check; use `rapidfuzz` or similar with a
+     reasonable threshold.
+  3. As a last resort, look up IMDb IDs for TMDB films via a free
+     lookup source (the TMDB website, an external mapping dataset on
+     Kaggle, etc.). Avoid the TMDB API for now since the prior attempt
+     failed and it's not strictly needed.
+- Among the joined films, count those that ALSO have non-zero budget
+  AND non-zero revenue. This is the working corpus size.
+
+Document which join strategy you used and why. If the strategy was
+fuzzy, sample 20 random matches and verify by eye that they look right.
+
+### Task 5: Profile the joined corpus
+
+For the joined films with all four data points (screenplay + rating +
+budget + revenue), produce diagnostic plots and statistics:
+
+- Year distribution
+- Genre distribution
+- Budget distribution (raw and log-scale)
+- Revenue distribution (raw and log-scale)
+- IMDb rating distribution
+- ROI distribution (revenue / budget)
+- Screenplay length distribution
+
+Save plots to `reports/figures/` with descriptive filenames
+(`phase1_year_distribution.png`, etc.).
+
+For each plot, write a one-to-two-sentence interpretation in the phase
+summary — what the plot shows and what it implies for the project.
+
+### Task 6: Save intermediate artifacts
+
+Save the joined working dataset (one row per film, all available columns)
+as Parquet to `data/interim/phase1_joined_corpus.parquet`. Phase 2 will
+rebuild this properly; the Phase 1 version is for inspection and to
+support the recommendation in the phase summary.
+
+### Task 7: Write the phase summary
+
+Use the template in `docs/CLAUDE_CODE_GUIDELINES.md` Section 7. Save to
+`docs/summaries/phase_1_summary.md`.
+
+Update `docs/PROJECT_CONTEXT.md` Section 5 (Data Summary) and Section 9
+(Phase Status) with the actual numbers found.
+
+---
+
+## 5. Decision Required at End of Phase 1
+
+This phase ends with a mandatory checkpoint
+(`PROJECT_CONTEXT.md` Section 11). At completion, prepare the following
+for the planning conversation and tell the user explicitly:
+
+> "Phase 1 complete. Please bring the summary and these questions to the
+> planning conversation before starting Phase 2."
+
+Specific questions to surface:
+
+1. What is the final joined-corpus size? Does it meet the ≥1,500 threshold?
+2. What is the year/genre/budget distribution? Any concerning skews?
+3. Was the join method clean (direct ID match) or fuzzy (title+year)? If
+   fuzzy, what's your confidence in match quality?
+4. Recommendation: proceed with MovieSum-only, add IMSDb supplementary,
+   or revise scope?
+5. Anything unexpected in the data that affects the project framing or
+   downstream phases?
+
+---
+
+## 6. Anti-Goals for This Phase
+
+Things to NOT do in Phase 1:
+
+- Do not build production-quality data pipeline code. That is Phase 2's
+  job. Phase 1 code can be exploratory and a bit rough.
+- Do not extract any features from screenplays. That is Phase 3.
+- Do not start any modeling or train/test splitting. That is Phase 3
+  onward.
+- Do not over-clean the data. The goal is to understand it, not perfect it.
+- Do not attempt to fix MovieSum or TMDB if data quality issues are found.
+  Document the issues and surface them in the phase summary.
+
+---
+
+## 7. When to Ask vs. When to Act
+
+Following `CLAUDE_CODE_GUIDELINES.md` Section 6:
+
+**Act on your own** for tactical choices like which fuzzy-match library
+to use, what threshold to set, plot styling, file naming, etc. Briefly
+state the rationale in the phase summary.
+
+**Ask the user in chat** if:
+- The join strategies above all fail and you need direction
+- The data files are corrupt, missing, or in a different format than
+  documented
+- You hit an environment issue (missing library, version conflict)
+- Anything in this brief is ambiguous
+
+**Tell the user to escalate to the planning conversation** if:
+- The corpus size after joining is unexpectedly far below 1,000 films
+- You discover a fundamental issue with one of the data sources that
+  affects the project framing
+- You believe a different data strategy would serve the project better
+  (per `PROJECT_CONTEXT.md` Section 11 "Proposing Alternatives")
+
+---
+
+## 8. Self-Check Before Marking Phase 1 Complete
+
+From `CLAUDE_CODE_GUIDELINES.md` Section 9:
+
+- [ ] Project folder structure created (`src/`, `data/`, `docs/`, etc.)
+- [ ] `.gitignore` in place
+- [ ] `src/utils/paths.py` and `src/utils/logging.py` exist and work
+- [ ] TMDB 5000 numbers reproduced (4,803 / 3,766 / 3,376 / 3,229)
+- [ ] MovieSum loaded and structure confirmed
+- [ ] Join executed; working corpus size determined
+- [ ] Diagnostic plots saved with interpretations in the summary
+- [ ] Working corpus saved to `data/interim/phase1_joined_corpus.parquet`
+- [ ] `docs/summaries/phase_1_summary.md` written using the template
+- [ ] `docs/PROJECT_CONTEXT.md` Section 5 and Section 9 updated
+- [ ] User told to bring summary to the planning conversation

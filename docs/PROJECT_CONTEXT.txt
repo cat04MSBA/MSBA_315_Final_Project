@@ -1,0 +1,468 @@
+# MSBA315 Project — Project Context
+
+> This document is the source of truth for the project. Read it at the start
+> of every phase. Update it (in the "Decisions Log" and "Data Summary" sections)
+> when material decisions are made or when data understanding evolves.
+> Do not delete content — append and date.
+
+---
+
+## 1. Project Framing
+
+### The problem
+
+Movie studios receive thousands of unproduced scripts each year. They must
+decide which to greenlight, knowing that:
+
+- Greenlighting a flop costs ~$50M (lost production budget)
+- Passing on a hit costs ~$100-200M (foregone revenue)
+- Human script readers are expensive but limited in throughput
+
+At the moment of decision (pre-greenlight), the strongest predictors of film
+success — budget, cast, marketing spend — do not yet exist. The only signal
+available is the **script itself**.
+
+### The user
+
+A development executive or script reader at a film studio, performing
+pre-greenlight triage on incoming screenplays.
+
+### What the system does
+
+Given a script's dialogue, the system outputs a triage decision —
+**Greenlight / Pass / Refer to human reader** — together with a calibrated
+confidence interval and scene-level explanations of what drove the decision.
+
+### Why this framing is defensible
+
+- The dialogue-only constraint is **operationally justified**, not arbitrary:
+  at pre-greenlight, no other signal exists.
+- The user, the moment of use, and the artifact are all clearly identified.
+- The cost asymmetry is real and quantifiable, which makes the decision
+  layer methodologically meaningful rather than decorative.
+
+---
+
+## 2. The Four-Layer System
+
+The system is a single pipeline with four layers stacked on top of one core
+predictive model. Each layer takes the previous layer's output and adds
+something. They are not four independent models.
+
+```
+Layer 4: Actionable feedback (which scenes drag prediction down/up)
+   ↑
+Layer 3: Asymmetric-cost decision (Greenlight / Pass / Refer)
+   ↑
+Layer 2: Calibrated uncertainty (confidence intervals via conformal prediction)
+   ↑
+Layer 1: Core prediction model (XGBoost on dialogue features)
+   ↑
+Data: Movie dialogues + outcomes (IMDb rating, box office)
+```
+
+### Layer 1 — Core prediction
+Standard ML: features extracted from dialogue → predicted outcome
+(IMDb rating and box office tier). Phase 4 benchmarks several candidate
+models and selects the primary one collaboratively.
+
+### Layer 2 — Calibrated uncertainty
+Wraps the model's output with calibrated confidence intervals. Uses
+conformal prediction (`mapie` library) and temperature scaling. Validates
+calibration empirically via reliability diagrams.
+
+### Layer 3 — Asymmetric-cost decision
+Takes the calibrated prediction and applies a cost matrix reflecting actual
+studio risk asymmetries. Outputs one of three actions. Includes sensitivity
+analysis across cost matrices.
+
+### Layer 4 — Actionable feedback
+Uses SHAP (TreeExplainer) for feature attribution. Where possible, attributes
+at the scene/chunk level so that explanations are actionable to writers.
+
+---
+
+## 3. Novelty Claim
+
+The combination of these four layers, applied to script triage, has not been
+published. The novelty is **architectural**, not algorithmic — known
+techniques assembled coherently for a use case that has not been served:
+
+- Cost-sensitive decision-making is standard in fraud / medical diagnosis
+  but not applied to script triage.
+- Calibrated uncertainty for film prediction is absent in the existing
+  literature (Eliashberg 2014, Mariani 2020, ScriptBook, Forecasting Film
+  Audience Ratings 2025).
+- Scene-level SHAP as actionable feedback to writers is novel for this
+  domain.
+
+The contribution is defensible as "methodological maturity in combining
+established techniques for an underserved use case."
+
+---
+
+## 4. Data Sources
+
+### Primary: MovieSum (Saxena & Keller, ACL 2024)
+- 2,200 movie screenplays, manually formatted in structured XML
+- Each screenplay tagged with IMDb ID natively — direct join to other datasets
+- XML structure preserves scene boundaries, character names, dialogue lines,
+  and stage directions / scene descriptions
+- Range: 1930–2023, all genres, English-language
+- Source: Hugging Face (`rohitsaxena/MovieSum`)
+- License: research use; cited paper available
+- Size: ~50-100MB total
+
+XML structure of each screenplay:
+```xml
+<script>
+  <scene>
+    <stage_direction>...</stage_direction>
+    <scene_description>...</scene_description>
+    <character>NAME</character>
+    <dialogue>...</dialogue>
+    ...
+  </scene>
+  ...
+</script>
+```
+
+### Primary: TMDB 5000 Movie Dataset (Kaggle)
+- ~4,803 films, ~3,229 with both budget and revenue
+- Source for: budget, revenue, runtime, genre, year, IMDb rating, popularity
+- Joined to MovieSum via IMDb ID
+
+### Fallback / Supplementary: IMSDb Kaggle script dumps
+- Used only if MovieSum + TMDB join yields fewer than ~1,000 films
+- Several available on Kaggle (Ismael 2024 has 1,172 scripts)
+- Lower quality than MovieSum (raw scrapes, inconsistent formatting)
+- Would require deduplication against MovieSum by IMDb ID
+
+### Cornell Movie-Dialogs Corpus (held-out validation, optional)
+- 617 films with cleaned dialogue
+- Used as an out-of-distribution validation set in Phase 8 if useful
+- Decision deferred until Phase 4 results are in
+
+### Why screenplays over subtitles
+
+The pre-greenlight framing assumes the system consumes what studios actually
+receive: screenplays. Subtitles (OpenSubtitles) would have given a larger
+corpus (~3,000 films) but with significant downsides:
+
+- Subtitles lack speaker attribution — features like number of speakers,
+  per-character dialogue volume, character interaction graphs become
+  impossible
+- Subtitles lack scene structure — Layer 4 (scene-level SHAP) would
+  degrade to coarse time-segment attribution
+- Subtitles include song lyrics, sound descriptions, and translation
+  artifacts as noise
+- Most importantly: training on subtitles when the deployed system
+  consumes screenplays creates a methodological gap that would need to
+  be defended in the report
+
+MovieSum's smaller corpus (~1,500-1,800 expected after join) is offset by
+significantly higher data quality and exact format alignment with the
+deployment target.
+
+---
+
+## 5. Data Summary
+
+> Updated by Claude Code as Phase 1 progresses. Add timestamps, do not
+> overwrite prior entries.
+
+**Status as of [DATE_DDMMYYYY] [TIME_HHMM AM/PM]:** Phase 1 in progress.
+
+### TMDB 5000 (Stage 2 of Phase 1, complete)
+- Total films: 4,803
+- Films with budget > 0: 3,766
+- Films with revenue > 0: 3,376
+- Films with both: 3,229
+- Year distribution: dense 1997–2016 (~100-170 films/year);
+  long thin tail back to 1916
+
+### MovieSum (Stage 3 of Phase 1, pending)
+- Total screenplays: 2,200 (per dataset documentation)
+- Confirmed download successful: [pending]
+- IMDb ID coverage: [pending — expected ~100% per dataset spec]
+
+### MovieSum × TMDB 5000 join (Stage 4 of Phase 1, pending)
+- Films with both screenplay AND budget+revenue: [pending]
+- Year distribution of joined set: [pending]
+- Genre distribution of joined set: [pending]
+
+### Decision criteria after Phase 1
+- ≥1,500 films joined: proceed with MovieSum-only as primary corpus
+- 1,000-1,500 films joined: proceed with MovieSum primary, document
+  smaller corpus as a limitation
+- <1,000 films joined: add IMSDb Kaggle scripts as supplementary,
+  dedupe by IMDb ID, expand corpus to ~1,500
+
+---
+
+## 6. Methodology Principles
+
+These are non-negotiable across all phases. Apply them consistently.
+
+### No data leakage
+- Train/test split happens **once**, before any feature engineering or
+  model fitting.
+- Test set is touched **once**, at final evaluation.
+- Cross-validation folds respect temporal ordering where relevant.
+- Calibration set is separate from training and test sets.
+- Features computed from the full corpus (e.g. LDA topics, TF-IDF
+  vocabularies) are fit on the **training fold only** and applied to test.
+
+### Reproducibility
+- All random seeds set explicitly. Standard seed: `42`.
+- Deterministic library settings where possible.
+- All scripts run from project root with relative paths.
+- Saved intermediate artifacts are timestamped and version-tagged in
+  filename when format changes.
+
+### Honest reporting
+- Negative results are reported as findings, not hidden.
+- Modest accuracy is reported honestly; the asymmetric-cost framing is
+  what makes the system useful, not headline R² numbers.
+- All limitations (survivorship bias, corpus skew, etc.) are explicit
+  in the report.
+
+### Statistical rigor
+- 5-fold cross-validation for model comparison.
+- Bootstrapped confidence intervals for performance metrics.
+- Multiple-comparison correction when testing many hypotheses
+  (Bonferroni or Benjamini-Hochberg).
+
+### Survivorship bias acknowledgment
+- The corpus contains films that got produced. The system predicts
+  among production-ready scripts, not among all possible scripts.
+- This is documented in every report section that discusses scope.
+
+---
+
+## 7. Project Structure
+
+```
+project_root/
+├── docs/
+│   ├── PROJECT_CONTEXT.md          # this file
+│   ├── CLAUDE_CODE_GUIDELINES.md   # engineering standards
+│   ├── PROJECT_ROADMAP.md          # phase-by-phase outline
+│   ├── briefs/
+│   │   ├── phase_1_brief.md        # execution brief per phase
+│   │   ├── phase_2_brief.md
+│   │   └── ...
+│   └── summaries/
+│       ├── phase_1_summary.md      # postmortem per phase
+│       ├── phase_2_summary.md
+│       └── ...
+├── src/
+│   ├── data/                       # data loading & joining
+│   ├── features/                   # feature extraction
+│   ├── models/                     # Layer 1 model code
+│   ├── calibration/                # Layer 2
+│   ├── decision/                   # Layer 3
+│   ├── explanation/                # Layer 4
+│   ├── evaluation/                 # metrics, error analysis
+│   └── utils/                      # logging, paths, seeds
+├── data/
+│   ├── raw/                        # downloaded source files (gitignored)
+│   ├── interim/                    # intermediate artifacts (gitignored)
+│   └── processed/                  # final working datasets (gitignored)
+├── notebooks/                      # exploratory notebooks (minimal)
+├── reports/
+│   ├── figures/                    # plots saved during phases
+│   └── tables/                     # tables saved during phases
+├── tests/                          # smoke tests for critical functions
+├── requirements.txt
+├── .gitignore
+└── README.md
+```
+
+---
+
+## 8. Decisions Log
+
+> Append to this section, with date, when material methodology choices
+> are made. Do not delete prior entries.
+
+### [PROPOSAL_DATE] — Project framing
+- Adopted the four-layer pre-greenlight triage framing.
+- Dropped the original Bechdel test / representation analysis after
+  literature review showed the gap was thinner than expected.
+- Dropped the dialogue-only success-prediction framing (Framing 2)
+  in favor of the pre-greenlight framing (Framing 3) for clearer
+  problem definition.
+
+### [PROPOSAL_DATE] — Data source committed: MovieSum + TMDB 5000
+- Selected MovieSum (Saxena & Keller 2024) as the primary screenplay
+  source. Reasons: structured XML with scene/character/dialogue tags;
+  IMDb IDs included natively; manually formatted; published precedent
+  (Gross 2025 used it for Oscar nomination prediction).
+- Rejected OpenSubtitles for the primary corpus despite larger potential
+  size: subtitles lack speaker attribution and scene structure, which
+  are essential for the features and SHAP granularity Layer 4 requires.
+  Training on subtitles when the deployed system consumes screenplays
+  also creates a domain mismatch.
+- Documented IMSDb Kaggle dumps as fallback if MovieSum × TMDB join
+  yields too few films (<1,000).
+- The 2,200-screenplay base of MovieSum is comparable to or larger than
+  established screenplay-prediction work (ScriptBase-j: 917; Eliashberg
+  2014: ~300).
+
+### [PROPOSAL_DATE] — Model choice (deferred)
+- The primary Layer 1 model is not yet selected.
+- Phase 4 begins with a simple baseline (Linear / Ridge Regression) to
+  establish that dialogue features carry signal at all.
+- A range of candidates are then trained and benchmarked: tree-based
+  (XGBoost, LightGBM, Random Forest), linear (Ridge, Lasso), and
+  optionally deep (DistilBERT fine-tune) if corpus size and compute permit.
+- Ensemble approaches (stacking, weighted averaging) are considered after
+  individual models are evaluated, if they offer meaningful improvement
+  and remain compatible with the calibration and SHAP layers.
+- Final selection happens after Phase 4 cross-validation results are in.
+  Selection criteria: predictive performance, stability across folds,
+  compatibility with downstream layers (calibration, SHAP), and
+  interpretability.
+- Claude Code should run the baseline first, report results, and request
+  guidance from the user before proceeding to ensemble work.
+
+### [PROPOSAL_DATE] — Outcome variables (both, then compare)
+- Phase 4 trains separate models for two outcomes:
+  - IMDb rating (continuous regression)
+  - Box office tier (Flop / Modest / Hit, three-class classification)
+- After Phase 4 completes, we compare which outcome the system predicts
+  more reliably from dialogue alone. The stronger outcome becomes the
+  primary; the weaker one becomes a secondary or supporting analysis.
+- The asymmetric-cost decision layer (Layer 3) requires box office to
+  define dollar costs. If box office prediction is too weak, we adapt
+  by deriving expected revenue from IMDb-rating predictions plus
+  rating→revenue regression on the training set.
+
+### [Add future entries here]
+
+---
+
+## 9. Phase Status
+
+> Update after each phase completes.
+
+| Phase | Title | Status | Summary doc |
+|---|---|---|---|
+| 1 | Data feasibility verification | In progress | (pending) |
+| 2 | Data pipeline | Not started | — |
+| 3 | Feature extraction | Not started | — |
+| 4 | Layer 1: Core prediction | Not started | — |
+| 5 | Layer 2: Calibration | Not started | — |
+| 6 | Layer 3: Decision | Not started | — |
+| 7 | Layer 4: SHAP explanations | Not started | — |
+| 8 | Integration & evaluation | Not started | — |
+| 9 | Report & presentation | Not started | — |
+
+---
+
+## 10. References
+
+### Foundational
+- Eliashberg et al. 2014. "Assessing the Future Box Office Performance of Movies Before Their Production." *Management Science.*
+- Hamilton et al. 2016. "Diachronic Word Embeddings Reveal Statistical Laws of Semantic Change." *ACL.* (background, not used directly)
+
+### Most relevant prior work
+- Saxena & Keller 2024. "MovieSum: An Abstractive Summarization Dataset for Movie Screenplays." *Findings of the ACL.*
+- Gross 2025. "Predicting Oscar-Nominated Screenplays with Sentence Embeddings." (uses MovieSum for prediction tasks)
+- Forecasting Film Audience Ratings 2025 (Sciencedirect) — closest methodological neighbor.
+- Mariani et al. 2020. (Nature HSSC) — large-scale subtitle-based prediction.
+- Del Vecchio et al. 2018 — emotional arcs from screenplays.
+
+### Methodology references
+- Guo et al. 2017. "On Calibration of Modern Neural Networks." *ICML.*
+- Angelopoulos & Bates 2021. "A Gentle Introduction to Conformal Prediction and Distribution-Free Uncertainty Quantification." (tutorial)
+- `mapie` library documentation for conformal prediction implementation.
+- `shap` library documentation, especially TreeExplainer.
+
+### Domain references
+- ScriptBook (commercial deployment, used by Fox on *Logan* in 2017).
+- Cinelytic, ScriptHop (industry tooling).
+
+---
+
+## 11. Flexibility & Alternatives
+
+This document encodes current decisions but is not a contract. Methodology
+choices made here can and should be revisited if execution reveals better
+options.
+
+### Brief upload cadence
+
+Phase briefs are uploaded by the user one at a time, as each phase begins.
+Do not look for future phase briefs in `docs/briefs/` — they don't exist
+yet. Each brief is drafted in the planning conversation after the previous
+phase's results are reviewed, then uploaded before the next phase starts.
+This keeps methodology choices flexible based on actual results rather
+than committed in advance.
+
+### When Claude Code should propose alternatives
+
+Claude Code is encouraged to suggest deviations from this plan when:
+
+- A library, technique, or approach better suited to the corpus or task
+  becomes apparent during implementation.
+- A planned step turns out to be unnecessary or redundant.
+- Diagnostics reveal a problem (data quality, leakage risk, distributional
+  issue) that the original plan does not address.
+- An unplanned analysis would meaningfully strengthen the report
+  (e.g., an additional baseline, a useful ablation, a robustness check).
+
+### How to propose alternatives
+
+When proposing a deviation, Claude Code should:
+
+1. State the proposed change concretely.
+2. Explain the rationale — what problem it solves or what it improves.
+3. Estimate the cost (additional time, complexity, risk).
+4. Compare against the current plan honestly, including downsides.
+5. Flag the proposal in the phase summary AND tell the user to bring it
+   to the planning conversation before executing it.
+
+### What Claude Code should NOT do unilaterally
+
+- Change the four-layer system architecture
+- Change the primary problem framing (pre-greenlight script triage)
+- Change which datasets are used as primary sources
+- Skip phases or merge phases
+- Make decisions that affect downstream phases without flagging them
+
+### What Claude Code can do without flagging
+
+- Choose specific library implementations (e.g., `optuna` vs `GridSearchCV`
+  for hyperparameter tuning) provided behavior is equivalent
+- Add diagnostic checks, assertions, and validation steps not in the brief
+- Refactor code for clarity or efficiency
+- Add comments and docstrings beyond what was specified
+- Save additional intermediate artifacts that aid reproducibility
+
+### Decision points where Claude Code MUST request guidance
+
+Some choices are too consequential to make unilaterally and too
+context-dependent to lock in advance. At each of these points, Claude Code
+must complete the relevant phase work, report results, and explicitly
+request that the user discuss with the planning conversation before
+proceeding:
+
+- **End of Phase 1:** corpus size and quality after all joins.
+  Decision needed: do we proceed with the planned scale, expand, or
+  reduce scope?
+- **End of Phase 4:** baseline + candidate models are trained and
+  benchmarked. Decisions needed: which model is primary, which outcome
+  variable is primary, do we add ensemble work or move to Phase 5?
+- **End of Phase 5:** calibration is empirically validated.
+  Decision needed: is calibration good enough for Layer 3 to use, or
+  does the model need rework?
+- **End of Phase 7:** SHAP results are computed.
+  Decision needed: are scene-level explanations meaningful, or do we
+  fall back to feature-level only?
+
+At each of these checkpoints, Claude Code writes the phase summary,
+prepares a short list of questions for the planning conversation, and
+tells the user: *"Phase N complete. Please bring the summary and these
+questions to the planning conversation before starting Phase N+1."*
