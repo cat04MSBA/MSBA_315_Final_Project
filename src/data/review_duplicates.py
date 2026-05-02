@@ -18,14 +18,10 @@ from src.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
-# 🔥 Increased preview size for deeper inspection
-PREVIEW_CHARS = 5000
-TAIL_CHARS = 5000
+# Increased preview size for deeper inspection
+PREVIEW_CHARS = 1500
+TAIL_CHARS = 1500
 SUMMARY_HEAD_CHARS = 1000
-
-# 🔥 Focus only on specific duplicate IMDb IDs
-FOCUS_IDS = ["tt0175526", "tt1022603", "tt5536736"]
-
 
 def _script_chunk(xml_string: str, n: int, mode: str = "head") -> str:
     if not xml_string:
@@ -69,9 +65,6 @@ def main() -> pd.DataFrame:
 
     dups = df[df.duplicated(subset="imdb_id", keep=False)].copy()
 
-    # 🔥 Apply filter here
-    dups = dups[dups["imdb_id"].isin(FOCUS_IDS)].copy()
-
     dups = dups.sort_values(
         ["imdb_id", "script_char_len"], ascending=[True, False]
     ).reset_index(drop=True)
@@ -114,7 +107,7 @@ def main() -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    # 🔥 Redirect output directly to Downloads
+    # Redirect output directly to Downloads
     output_path = Path.home() / "Downloads" / "focused_duplicates_review.txt"
     with open(output_path, "w", encoding="utf-8") as f:
         sys.stdout = f
