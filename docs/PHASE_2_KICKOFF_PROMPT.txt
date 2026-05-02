@@ -1,0 +1,58 @@
+================================================================
+Phase 2 kickoff prompt for the new chat (copy-paste this verbatim)
+================================================================
+
+I'm continuing the MSBA315 ML course project. Phase 1 is complete and
+pushed to git tagged `phase-1-complete`. We're now starting Phase 2.
+
+The four foundation documents are in `docs/` (read all of them):
+  - docs/PROJECT_CONTEXT.txt    -- project framing, methodology, decisions log,
+                                    data summary, and the rules for when you
+                                    must ask me before acting
+  - docs/CLAUDE_CODE_GUIDELINES.txt  -- engineering standards, escalation rules,
+                                        phase-summary template
+  - docs/PROJECT_ROADMAP.txt    -- nine-phase outline
+  - docs/briefs/phase_2_brief.txt   -- Phase 2 execution brief
+                                       (I will upload this before you start)
+
+Also read this for the Phase 1 outcome that Phase 2 builds on:
+  - docs/summaries/phase_1_summary.txt
+    Pay particular attention to the section "What we learned in EDA, and
+    what Phase 2 will do about it" -- it lists the items already decided
+    (apply directly), the items decided in principle but needing
+    confirmation, and the observations to carry into later phases.
+
+Three things you should know before reading:
+
+1. **Per PROJECT_CONTEXT.txt Section 11, before implementing any
+   preprocessing step in Phase 2** (imputation, scaling, feature
+   transforms, dedup, outlier handling, etc.), you must present the
+   available options with their tradeoffs and ask me to pick. Items
+   already-decided in the Phase 1 summary can be applied without
+   re-asking; everything else needs my confirmation. I want to keep the
+   ability to test alternative preprocessing techniques later.
+
+2. **Logging conventions** (already encoded in `src/utils/logging.py`):
+   default level is INFO. INFO messages should be at "main pipeline
+   milestones" granularity (loaded X rows, dedup X→Y, joined N films,
+   "saved K figures + M tables"). DO NOT include filesystem paths in
+   INFO. Per-item detail goes at DEBUG level.
+
+3. **Workflow conventions:**
+   - Code in `src/`, narrative notebooks in `notebooks/` calling those
+     functions. Don't define heavy logic inside the notebook itself.
+   - For each notebook, keep its content in a small builder script
+     (`notebooks/_build_<name>.py`) that emits the .ipynb. Easier to
+     diff and regenerate.
+   - Use git as the code-history mechanism. Don't keep `_old.py`,
+     `final_v2.py`, or `_archive/` folders. When something is
+     superseded, delete it; git remembers.
+   - Experiment tracking (Phase 4+) will use `runs/<phase>/<timestamp>_<name>/`
+     with metrics.json, params.json, preprocessing_summary.json,
+     features_used.json, model artifact, and run.log per run, plus a
+     top-level RUNS.md. We'll set this up when modeling starts; you
+     don't need to touch it in Phase 2.
+
+Please read the foundation documents and the Phase 1 summary before
+doing anything else. Once you've read them, walk through the Phase 2
+brief with me. If anything is unclear, stop and ask.

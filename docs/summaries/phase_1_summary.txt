@@ -1,11 +1,13 @@
 # Phase 1 — Data Feasibility Verification
 
-**Status:** Complete with caveats — corpus size landed in the middle band of the
-decision criteria (1,011 films with all four signals, between the 1,000 floor
-and the 1,500 target). Mandatory checkpoint: needs strategic input from the
-planning conversation before Phase 2 starts.
+**Status:** Complete. Working corpus is **1,713 films with all four
+signals** (screenplay + budget + revenue + rating), comfortably in the
+"≥ 1,500: proceed with MovieSum-only" green band of the corpus-size
+decision criteria (`PROJECT_CONTEXT.txt` Section 5). Some end-of-phase
+questions are still open and should be brought to the planning
+conversation, but corpus size is no longer one of them.
 
-**Date completed:** 2026-05-02 02:57
+**Date completed:** 2026-05-02
 
 ---
 
@@ -14,95 +16,88 @@ planning conversation before Phase 2 starts.
 1. Set up the project skeleton (`src/`, `data/`, `reports/`, `docs/`,
    `tests/`, `notebooks/`), `.gitignore` excluding raw data and standard
    Python artifacts, `src/utils/paths.py` (project-root resolver via
-   `docs/PROJECT_CONTEXT.{md,txt}` markers) and `src/utils/logging.py`
-   (single shared stderr handler, INFO by default, configurable via
-   `MSBA315_LOG_LEVEL`).
-2. Re-attached git: `MSBA 315_Final_Project/` was a nested clone with the
-   `.git/` accidentally inside a subfolder; that subfolder was deleted by
-   the user mid-phase, so we re-`git init -b main` at the project root and
-   re-added `origin`. Local repo now lives at the project root, no commits
-   yet, remote branch `origin/main` still has its untouched initial commit
-   (just `.gitattributes`). User reconnects via GitHub Desktop "Locate...".
-3. Loaded TMDB 5000 (`src/data/load_tmdb.py`, `src/data/explore_tmdb.py`)
-   and reproduced the documented sanity numbers: 4,803 / 3,766 / 3,376 /
-   3,229 — all matched exactly.
-4. Loaded MovieSum (`src/data/load_moviesum.py`,
+   `docs/PROJECT_CONTEXT.{txt,md}` markers) and `src/utils/logging.py`
+   (single shared stdout handler, default level WARNING — set
+   `MSBA315_LOG_LEVEL=INFO` to see operational messages).
+2. Loaded the IMDb-TMDB Movie Metadata Big Dataset (1M)
+   (`src/data/load_ratings.py`, `src/data/explore_ratings.py`) — ~1.07M
+   films, of which ~13.8K have both budget and revenue.
+3. Loaded MovieSum (`src/data/load_moviesum.py`,
    `src/data/explore_moviesum.py`): 2,200 screenplays across train / val /
-   test (1,800 / 200 / 200), 100% with valid `tt`-prefixed IMDb IDs but
+   test (1,800 / 200 / 200), all with valid `tt`-prefixed IMDb IDs but
    only **2,188 unique** IDs — 12 same-IMDb-ID duplicate pairs of
-   alternate-title or alternate-draft versions of the same film.
-   Confirmed XML structure matches `PROJECT_CONTEXT.txt` Section 4.
-5. Joined MovieSum × TMDB on normalized title + release year ±1
-   (`src/data/join_corpus.py`). TMDB has no `imdb_id` column, so the join
-   couldn't be on IDs. **Result: 1,121 of 2,188 MovieSum films matched
-   (51.2%); 1,011 also have non-zero budget AND revenue AND a rating.**
-6. Confirmed the match ceiling: only **1,176 MovieSum titles even have a
-   normalized form anywhere in TMDB** (any year), so the join is capturing
-   ~95% of the achievable normalization match — wider year tolerance
-   recovers only 2 more films. The bound is TMDB 5000's coverage, not the
-   join logic.
-7. Profiled the working corpus (`src/data/profile_corpus.py`): year,
+   alternate-title or alternate-draft variants of the same film. XML
+   structure verified to match `PROJECT_CONTEXT.txt` Section 4.
+4. Joined the two datasets on IMDb ID directly
+   (`src/data/join_corpus.py`). Both sources carry the IMDb ID natively,
+   so the merge is a single line — no fuzzy matching, no external bridge.
+   Deduped the ratings dataset on `imdb_id` first (a small fraction
+   appears twice under different TMDB IDs — alternate cuts).
+   **Result: 2,186 / 2,188 MovieSum films matched (99.9%); 1,713 of
+   those also have non-zero budget AND revenue AND a rating.**
+5. Profiled the working corpus (`src/data/profile_corpus.py`): year,
    genre, budget, revenue, rating, ROI, and screenplay length. Saved
    plots and a summary table.
-8. Saved the working dataset to
+6. Saved the joined dataset to
    `data/interim/phase1_joined_corpus.parquet` (one row per
-   deduplicated MovieSum film, all 2,188 rows; the 1,011 four-signal
+   deduplicated MovieSum film, all 2,188 rows; the 1,713 four-signal
    subset is a filter on top, computed at load time in
    `src/data/profile_corpus.py`).
+7. Wrote a dup-pair review helper (`src/data/review_duplicates.py`)
+   that prints the 12 same-IMDb-ID pairs side-by-side and emits a
+   fillable CSV at
+   `reports/tables/phase1_moviesum_duplicates_review.csv` so the user
+   can mark a `keep`/`drop` decision per pair. Phase 2 will encode the
+   resulting policy.
+8. Built `notebooks/phase_1.ipynb` — a strong-EDA narrative version of
+   the phase, with embedded interpretations after every plot, ready to
+   feed the final report.
 
 ---
 
 ## Why we did it that way
 
-- **MovieSum → TMDB direction (not TMDB → MovieSum).** MovieSum has IMDb
-  IDs natively; TMDB 5000 does not. Building the lookup the other way
-  would have required either the TMDB API (a previous attempt returned
-  0/3,229 matches per the brief) or an external mapping. Title + year
-  fuzzy is the brief's documented fallback, and it produces verifiable
-  matches.
-- **Title normalization (lowercase + strip punctuation + drop leading
-  articles + lookup against `title` and `original_title`).** Conservative
-  enough to avoid false positives (verified in spot-checks of 20 random
-  matches — all correct) and broad enough to handle the punctuation
-  differences between datasets (`X-Men: Days of Future Past` ↔
-  `x men days of future past`).
-- **Year tolerance ±1.** Festival- vs theatrical-release ambiguity and
-  regional cuts can put the same film in adjacent years across datasets.
-  18 of 1,121 matches (1.6%) used the ±1 offset; 0 used wider tolerance
-  in the deployed strategy. Empirically, the join is dominated by exact
-  year matches.
-- **Dedup MovieSum by IMDb ID, keeping the longest script.** The 12
-  same-ID pairs differ either trivially (alternate spelling, same script)
-  or substantively (alternate drafts). Keeping the longer script favors
-  the more-complete draft, which matches what a downstream feature
-  pipeline will treat as the canonical screenplay.
-- **No fuzzy library yet (no `rapidfuzz` install).** Verified empirically
-  that the ceiling on the normalized-exact match is ~1,176 films and that
-  obvious unmatched cases (e.g., "Ghostbusters_1984", "Bean_1997",
-  "Frantic_1988", "Matchstick Men_2003") are absent from TMDB 5000
-  entirely, not just absent under the current normalization. Adding fuzzy
-  match would yield only marginal recovery — **the binding constraint is
-  TMDB 5000's coverage, not the join algorithm**.
+- **Direct IMDb-ID merge.** Both sources carry IMDb IDs natively, so
+  there is no need for normalization, fuzzy matching, or external ID
+  bridges. The merge is a single line of pandas; the precision is
+  exact.
+- **Dedup MovieSum by longest script.** The 12 same-IMDb-ID pairs differ
+  either trivially (alternate spelling, same script) or substantively
+  (alternate drafts). Keeping the longer script favors the more-complete
+  draft, which matches what a downstream feature pipeline will treat as
+  the canonical screenplay. The user is reviewing each pair manually
+  via `review_duplicates.py` so Phase 2 can encode a documented policy.
+- **Dedup the ratings dataset by `vote_count`.** Some films appear in
+  the ratings dataset under more than one TMDB ID (alternate cuts,
+  regional releases). Keeping the row with the higher `vote_count`
+  picks the better-known variant, which is also the row most likely to
+  carry budget/revenue/rating values.
+- **`IMDB_Rating` preferred over TMDB `vote_average`.** The ratings
+  dataset carries both. `IMDB_Rating` is better-populated on this
+  matched subset and is the metric the report ultimately discusses.
+  `vote_average` is kept as a fallback for the few rows where
+  `IMDB_Rating` is missing.
 
 ---
 
 ## Tactical choices made
 
-- **Logging via `logging` module** (no `print`) per
-  `CLAUDE_CODE_GUIDELINES.txt` Section 3 — installed once via
-  `src/utils/logging.py::get_logger`.
-- **Matplotlib `Agg` backend** for headless plotting from CLI scripts.
-- **Parquet output via `pyarrow`** (already installed) for the working
-  corpus; CSV for human-readable summary tables.
+- **Logging via Python's `logging` module** (no `print` for diagnostic
+  output) per `CLAUDE_CODE_GUIDELINES.txt` Section 3 — installed once
+  via `src/utils/logging.py::get_logger`. Default level is WARNING; set
+  `MSBA315_LOG_LEVEL=INFO` to see operational messages.
+- **Logger output goes to stdout** (not stderr) so messages render as
+  ordinary black-text output in Jupyter rather than red-stderr boxes.
+- **`matplotlib.use("Agg")` is NOT called at module import time** —
+  this lets notebooks pick whatever backend they like (e.g. inline). CLI
+  scripts work without a display because we save with
+  `fig.savefig` and never call `plt.show`.
+- **Parquet output via `pyarrow`** for the working corpus; CSV for
+  human-readable summary tables and review templates.
 - **Random seed 42** in spot-check sampling, per project standard.
-- **TMDB lookup keyed by both `title` and `original_title`** — widened
-  recall without sacrificing precision (verified in spot-checks).
-- **`vote_count` tiebreak** when a `(title, year)` resolved to multiple
-  TMDB rows — picks the better-known film.
 - **Brief-versus-actual file extension:** the foundation docs reference
-  each other as `.md` but exist as `.txt` on disk; user confirmed
-  2026-05-02 to keep new docs as `.txt`. The path resolver accepts both
-  to stay robust to a later rename.
+  each other as `.md` but exist as `.txt` on disk (user preference,
+  2026-05-02). The path resolver accepts both.
 
 ---
 
@@ -112,133 +107,193 @@ planning conversation before Phase 2 starts.
 
 | Stage | Films |
 |---|---|
-| TMDB 5000 total | 4,803 |
-| TMDB with budget>0 AND revenue>0 | 3,229 |
+| Ratings dataset total | ~1,072,000 |
+| Ratings dataset with budget > 0 AND revenue > 0 | ~13,800 |
 | MovieSum total screenplays | 2,200 |
 | MovieSum unique IMDb IDs (after dedup) | 2,188 |
-| MovieSum × TMDB matched on title+year | 1,121 (51.2%) |
-| Matched + budget>0 | 1,060 |
-| Matched + revenue>0 | 1,028 |
-| Matched + budget>0 AND revenue>0 | 1,011 |
-| **Working corpus (matched + budget + revenue + rating)** | **1,011** |
-| Theoretical ceiling (any-year normalized title overlap) | 1,176 |
+| MovieSum × ratings matched on `imdb_id` | **2,186 (99.9%)** |
+| Matched + budget > 0 | 1,808 |
+| Matched + revenue > 0 | 1,843 |
+| Matched + budget > 0 AND revenue > 0 | 1,713 |
+| **Working corpus (matched + budget + revenue + rating)** | **1,713** |
 
-### Profile of the 1,011-film working corpus
+### Profile of the 1,713-film working corpus
 
-- **Years:** 1934 – 2016, median 2003. Distribution dense ~1990–2015,
-  long thin tail to 1934. **No 2017+ films** in the working set —
-  TMDB 5000 effectively cuts off at 2016 (1 film in 2017, zero after).
-- **Budget:** median $30M, mean $48M; long right tail.
-- **Revenue:** median $90M, mean $174M; very heavy right tail.
-- **Rating:** mean 6.69, median 6.70, narrow band (TMDB skews to
-  recognized films which skew positive).
-- **ROI (revenue/budget):** median 3.0x; **85.8% gross-profitable**
-  (revenue > budget). This is far higher than industry base rate (~50%
-  by net) and confirms strong survivorship bias in the corpus — the
-  films are simultaneously *produced* (already filtered by greenlight)
-  and *recognized enough to be in TMDB* (filtered by audience reach).
-- **Screenplay length:** median 211k characters (~34k tokens), narrow
+- **Years:** 1932 – 2023, median 2005. Distribution dense ~1995–2022.
+- **Budget:** median $25M; long right tail.
+- **Revenue:** median $64M; very heavy right tail.
+- **Rating** (`IMDB_Rating` preferred): mean ~7.1, narrow band — IMDb
+  ratings tend higher than TMDB `vote_average` on the same films.
+- **ROI (revenue/budget):** median ~2.9x; ~80% gross-profitable. Still
+  survivor-biased (the corpus contains films that got produced and made
+  it onto a major metadata aggregator), but less than would be the
+  case with a smaller curated ratings source.
+- **Screenplay length:** median ~211k characters (~34k tokens), narrow
   spread — consistent with feature-length conventions.
 
 ### Saved figures and interpretations
 
-- `phase1_tmdb_year_distribution.png` — TMDB films-with-both: dense
-  1997–2016 (~100–250/yr), long thin tail to 1916. Confirms the prior
-  documentation. **Implication:** the join's recall ceiling for any
-  post-2016 MovieSum film is essentially zero against TMDB 5000.
-- `phase1_tmdb_genre_distribution.png` — Drama, Comedy, Thriller,
-  Action lead by a wide margin; documentaries, foreign, and small
-  genres are sparse. **Implication:** any per-genre breakdown later
-  in the project should bucket the long tail or use stratified
-  sampling rather than relying on raw counts.
-- `phase1_moviesum_length_distribution.png` — bell shape centered
-  ~210k chars with light heavy-tail. **Implication:** screenplays are
-  long-form (mean ~34k tokens) — Phase 3 feature extraction needs to
-  handle inputs that exceed any single transformer context window.
-  Chunking or scene-level pooling will be required.
+- `phase1_ratings_year_distribution.png` — Ratings dataset year
+  coverage. Dense from ~1995 to 2023; thin tail back to ~1900; a few
+  nonsensical future years (scheduled releases / noise) clipped.
+- `phase1_ratings_genre_distribution.png` — Drama / Comedy / Thriller /
+  Action lead heavily; documentaries, foreign, and small genres are
+  sparse. **Implication:** any per-genre breakdown in Phase 4 should
+  bucket the long tail or use stratified sampling.
+- `phase1_moviesum_length_distribution.png` — MovieSum screenplay
+  lengths, bell-shaped centered ~210k chars with light heavy tail.
+  **Implication:** screenplays are long-form (~34k tokens) — Phase 3
+  feature extraction needs to handle inputs that exceed any single
+  transformer context window. Chunking or scene-level pooling required.
 - `phase1_joined_year_distribution.png` — joined-corpus year
-  distribution dense 1995–2016, no 2017+ entries. **Implication:** the
-  corpus reflects roughly two decades of mainstream cinema; era
+  distribution dense ~1995–2022, year_max 2023. **Implication:** the
+  corpus reflects roughly three decades of mainstream cinema; era
   breakdowns in Phase 4 should respect this skew.
 - `phase1_joined_genre_distribution.png` — same Drama/Comedy/Action
-  lead. **Implication:** balanced enough to do per-genre
-  cross-validation slices in Phase 4 without thin cells, except for
-  documentaries and rare genres which should be aggregated.
+  lead as the ratings dataset alone. **Implication:** balanced enough
+  to do per-genre cross-validation slices in Phase 4 without thin cells,
+  except for the long tail which should be aggregated.
 - `phase1_joined_budget_revenue_distribution.png` — both budget and
-  revenue heavily right-skewed; log-transformed scales are required
-  for downstream modelling and visualization. **Implication:** Phase 3
-  will use `log1p(budget)` and `log1p(revenue)` (or quantile-binned
-  tier targets) rather than raw dollar values.
+  revenue heavily right-skewed; log-transformed scales are required for
+  downstream modelling and visualization. **Implication:** Phase 3 will
+  use `log1p(budget)` and `log1p(revenue)` (or quantile-binned tier
+  targets) rather than raw dollar values.
 - `phase1_joined_rating_distribution.png` — narrow Gaussian-ish
-  centered ~6.7. **Implication:** the regression target has limited
-  dynamic range relative to noise; we should not expect huge
-  predictive R² and the asymmetric-cost decision layer (Layer 3)
+  centered ~7.0 (IMDB_Rating). **Implication:** the regression target
+  has limited dynamic range relative to noise; we should not expect
+  huge predictive R² and the asymmetric-cost decision layer (Layer 3)
   becomes the practically meaningful contribution.
 - `phase1_joined_roi_distribution.png` — log10(ROI) centered roughly
   at 0.5 (3x), heavy upper tail to 10x+, thin left tail of flops.
   **Implication:** the corpus over-represents profitable films;
   Phase 6 cost matrices must be calibrated to industry base rates,
   not corpus base rates, or sensitivity-analyzed across both.
-- `phase1_joined_screenplay_length.png` — same bell shape as the full
-  MovieSum length plot, similar mean. **Implication:** the four-signal
-  filter doesn't preferentially keep short or long screenplays.
+- `phase1_joined_screenplay_length.png` — same shape as the full
+  MovieSum length plot. **Implication:** the four-signal filter
+  doesn't preferentially keep short or long screenplays.
 
 ### Saved tables
 
-- `reports/tables/phase1_tmdb_summary_stats.csv` — TMDB budget/revenue
-  describe() for films-with-both.
+- `reports/tables/phase1_ratings_summary_stats.csv` — ratings dataset
+  budget/revenue describe() for films-with-both.
 - `reports/tables/phase1_moviesum_summary.csv` — MovieSum headline
   numbers (split sizes, length stats, year range).
 - `reports/tables/phase1_join_counts.csv` — join headline counts.
-- `reports/tables/phase1_unmatched_moviesum_titles.csv` — 1,067
-  unmatched MovieSum titles for human review.
+- `reports/tables/phase1_unmatched_moviesum_titles.csv` — the 2 films
+  that didn't match.
 - `reports/tables/phase1_joined_corpus_summary.csv` — final
   working-corpus profile.
+- `reports/tables/phase1_moviesum_duplicates_review.csv` — fillable
+  template for the user-driven dup-pair decision (Phase 1 Q4).
 
 ---
 
 ## Issues encountered & resolved
 
-1. **Nested git repo.** The remote `cat04MSBA/MSBA_315_Final_Project`
-   had been cloned into `ML_Final_Project/MSBA 315_Final_Project/`
-   instead of into `ML_Final_Project/` itself, leaving the project files
-   outside any repo. The user later deleted the nested folder, taking
-   `.git/` with it. Resolved by re-`git init -b main` at the project root
-   and re-adding the GitHub remote. Local has no commits yet; user will
-   reconnect GitHub Desktop and the first push will reconcile against
-   the existing initial commit on origin (only `.gitattributes`, byte-
-   identical to local — `--allow-unrelated-histories` will be needed on
-   the first pull).
-2. **TMDB has no `imdb_id` column.** Documented in the brief; resolved by
-   joining on normalized title + year instead.
-3. **MovieSum duplicate IMDb IDs (12 pairs).** Same film with alternate
-   titles or alternate drafts. Resolved by keeping the longest script
-   per IMDb ID. Phase 2 should formalize this with a documented dedup
-   policy.
-4. **Many obvious classics missing from TMDB 5000.** "Ghostbusters_1984",
-   "Bean_1997", "Frantic_1988", "Matchstick Men_2003", "M*A*S*H_1970"
-   are not normalization failures — they're literally absent from
-   TMDB 5000. Documented as the binding constraint on corpus size.
+1. **MovieSum duplicate IMDb IDs (12 pairs).** Same film with alternate
+   titles or alternate drafts. Resolved provisionally by keeping the
+   longest script per IMDb ID; Phase 2 will encode the user's
+   per-pair `keep`/`drop` decisions from `review_duplicates.py`.
+2. **Ratings dataset has duplicate `imdb_id` rows.** Some films appear
+   under multiple TMDB IDs (alternate cuts, regional releases).
+   Resolved by deduping on `imdb_id` keeping the row with the higher
+   `vote_count`.
+3. **Future-year noise in `release_year_parsed`.** A handful of rows
+   carry years like 2055 or 2099 (scheduled releases, error entries).
+   Clipped to 1900–2025 at plot time; doesn't affect the join because
+   the affected rows are obscure and rarely intersect with MovieSum.
+
+---
+
+## What we learned in EDA, and what Phase 2 will do about it
+
+This is the consolidated checklist from the notebook's EDA. Each item
+pairs an observation with a planned action. Phase 2 will not apply
+items in the "open" section without checking with the user first; per
+`PROJECT_CONTEXT.txt` Section 11, preprocessing decisions need
+explicit confirmation before implementation.
+
+### Already decided (Phase 2 encodes these directly)
+
+1. **Pre-1995 tail of about 50 films.** Drop them. Corpus is dense
+   1995-2022; the tail is too thin (under 5 films per year) to support
+   era-stratified analyses. Decision logged 2026-05-02.
+2. **Two MovieSum films absent from the ratings dataset.** Drop them.
+3. **Ratings-dataset duplicates on `imdb_id`** (alternate cuts, regional
+   releases). Dedupe by `imdb_id` keeping the row with the higher
+   `vote_count`. Already implemented in `dedupe_ratings()`.
+4. **Future-year noise (2055, 2099, etc.) in the ratings dataset.**
+   Clip `release_year_parsed` to 1900-2025 when plotting or filtering;
+   the affected rows rarely intersect MovieSum.
+5. **Effective rating column.** Use `IMDB_Rating` when present and
+   fall back to `vote_average`. Phase 2 standardizes on a single
+   `effective_rating` column for downstream use.
+
+### Decided in principle, Phase 2 must surface options before implementing
+
+6. **Heavy right-skew in budget and revenue.** Plan: `log1p(budget)`
+   and `log1p(revenue)` so outliers don't dominate. Phase 2 should
+   present the user with options (plain `log1p`, `log10`, or quantile-
+   bucketed) before applying.
+7. **MovieSum dedup policy for the 12 same-IMDb-ID pairs.** Awaiting
+   the user's row-by-row review of
+   `reports/tables/phase1_moviesum_duplicates_review.csv`. Phase 2
+   encodes whatever policy the user chooses.
+8. **Genre long tail** (Documentary, TV Movie, Foreign, Western, etc.
+   with thin counts). For per-genre CV in Phase 4 we need to bucket
+   them. Phase 2 (or 3) should ask: aggregate all into "other", drop
+   them, or keep them with noisy per-genre estimates accepted.
+9. **Pre-processing pipeline structure.** Imputation strategy, scaling,
+   feature transforms. Phase 2 must present options and let the user
+   pick (per `PROJECT_CONTEXT.txt` Section 11).
+
+### Observations to carry forward into later phases
+
+10. **Survivorship bias is substantial.** About 80% of the working
+    corpus is gross-profitable, well above industry's roughly 50%
+    net-profitable rate. Phase 6 cost matrix must use industry base
+    rates, not corpus rates. May also want to reweight at training
+    time in Phase 4; user should decide.
+11. **Narrow rating range** (mean ~7.0, std ~0.7). Expect modest R^2
+    in Phase 4. The asymmetric-cost decision layer in Phase 6 is where
+    the system earns value, not the regression accuracy.
+12. **No easy linear shortcut to outcomes.** Rating is only weakly
+    correlated with budget, revenue, ROI, or screenplay length. The
+    dialogue features extracted in Phase 3 must carry most of the
+    predictive weight.
+13. **Screenplay length vs. transformer windows.** Screenplays are
+    about 34,000 tokens long on average. Most pre-trained text models
+    used for feature extraction (BERT, DistilBERT, etc.) cap at 512
+    tokens per pass. Phase 3 needs chunking (scene, paragraph, or
+    fixed window) plus pooling, or a hierarchical approach. Strategy
+    decision deferred to Phase 3.
+14. **Per-decade thin cells.** Pre-1980s decades each have under 30
+    films; the pre-1995 cutoff (item 1) handles most of this.
+    Era-stratified CV in Phase 4 should bucket remaining decades.
 
 ---
 
 ## Open questions / things to flag
 
-- **Mandatory checkpoint:** the working corpus (1,011) is in the
-  middle band of `PROJECT_CONTEXT.txt` Section 5 decision criteria.
-  Strategic input is needed before Phase 2 — see "Questions for the
-  planning conversation" below.
-- **Survivorship bias is severe.** 85.8% gross-profitable and a
-  positively-shifted rating distribution mean the corpus is heavily
-  biased toward films that succeeded after greenlight. The
-  pre-greenlight framing must keep acknowledging this throughout the
-  report; Phase 6's cost matrix should be tied to industry base rates,
-  not corpus rates.
-- **Two-decade dense window.** The working corpus is effectively
-  1995–2016. Era-based generalization claims to films before 1980 or
-  after 2016 will be weakly supported.
-- **Heavy-tailed dollar values.** Budget and revenue both require log
-  transforms before modeling; raw scale is unusable.
+These need strategic input before Phase 2 starts:
+
+1. **Survivorship bias framing.** ~80% of the working corpus is
+   gross-profitable, well above industry base rate. Do we (a) keep the
+   corpus as-is and frame the model as triaging *production-ready,
+   recognizable* scripts (the realistic deployment target — studios
+   mostly receive scripts from established writers anyway), or (b)
+   reweight at training time toward a more representative
+   profitability distribution? (a) is simpler and defensible; (b) is
+   more ambitious and adds a methodological hook.
+2. **Year scope.** The corpus is effectively 1995–2023. Decision
+   already made (logged 2026-05-02): drop films released before 1995
+   in Phase 2.
+3. **Outcome variable.** Per `PROJECT_CONTEXT.txt` Section 8, Phase 4
+   trains both rating and box-office models and compares. No action
+   needed yet.
+4. **MovieSum dedup policy.** User is reviewing
+   `phase1_moviesum_duplicates_review.csv`. Phase 2 will encode the
+   chosen policy.
 
 ---
 
@@ -247,28 +302,32 @@ planning conversation before Phase 2 starts.
 ### Code (`src/`)
 
 - `src/__init__.py`, `src/utils/__init__.py`, `src/data/__init__.py`
-- `src/utils/paths.py` — project root resolver, named directories.
-- `src/utils/logging.py` — shared logger configuration.
-- `src/data/load_tmdb.py` — TMDB CSV loader + sanity-count helper.
-- `src/data/explore_tmdb.py` — Phase 1 Task 2 runner.
+- `src/utils/paths.py` — project-root resolver, named directories.
+- `src/utils/logging.py` — shared logger configuration (stdout, default
+  WARNING).
+- `src/data/load_ratings.py` — ratings-dataset loader + sanity-count
+  helper.
+- `src/data/explore_ratings.py` — Phase 1 Task 2 runner.
 - `src/data/load_moviesum.py` — MovieSum JSONL loader (concatenates
   the three splits, keeps origin in `origin_split`) + IMDb-ID validity
   helper.
 - `src/data/explore_moviesum.py` — Phase 1 Task 3 runner.
-- `src/data/join_corpus.py` — Phase 1 Task 4 runner: dedup MovieSum,
-  normalize titles, lookup against TMDB, save joined parquet.
+- `src/data/join_corpus.py` — Phase 1 Task 4 runner: dedup, exact-ID
+  merge, save joined parquet.
 - `src/data/profile_corpus.py` — Phase 1 Task 5 runner: profile the
   4-signal subset, save plots.
+- `src/data/review_duplicates.py` — print the 12 dup pairs and emit a
+  fillable review CSV (Phase 1 Q4 helper).
 
 ### Data (gitignored)
 
-- `data/interim/phase1_joined_corpus.parquet` — 2,188 rows
-  (deduped MovieSum × matched-or-unmatched TMDB rows).
+- `data/interim/phase1_joined_corpus.parquet` — 2,188 rows (deduped
+  MovieSum × matched-or-unmatched ratings rows).
 
 ### Figures (`reports/figures/`)
 
-- `phase1_tmdb_year_distribution.png`
-- `phase1_tmdb_genre_distribution.png`
+- `phase1_ratings_year_distribution.png`
+- `phase1_ratings_genre_distribution.png`
 - `phase1_moviesum_length_distribution.png`
 - `phase1_joined_year_distribution.png`
 - `phase1_joined_genre_distribution.png`
@@ -279,11 +338,18 @@ planning conversation before Phase 2 starts.
 
 ### Tables (`reports/tables/`)
 
-- `phase1_tmdb_summary_stats.csv`
+- `phase1_ratings_summary_stats.csv`
 - `phase1_moviesum_summary.csv`
 - `phase1_join_counts.csv`
 - `phase1_unmatched_moviesum_titles.csv`
 - `phase1_joined_corpus_summary.csv`
+- `phase1_moviesum_duplicates_review.csv`
+
+### Notebooks
+
+- `notebooks/phase_1.ipynb` — strong-EDA narrative of the phase,
+  ready to feed the final report. Built from
+  `notebooks/_build_phase_1_notebook.py`.
 
 ### Docs
 
@@ -294,76 +360,8 @@ planning conversation before Phase 2 starts.
 
 ## Next phase prerequisites
 
-- Strategic decision from the planning conversation on which
-  corpus configuration Phase 2 should commit to (see questions below).
-- Repo reconnected in GitHub Desktop, first commit pushed, so
-  Phase 2 lands as a coherent commit set.
-
----
-
-## Questions for the planning conversation
-
-1. **Corpus size decision.** The working corpus is 1,011 films, which
-   per `PROJECT_CONTEXT.txt` Section 5 falls in the "1,000–1,500:
-   proceed with MovieSum primary, document as a limitation" band.
-   Which path does Phase 2 take?
-
-   - **(A) Accept 1,011 as the corpus, document the limitation.**
-     Phase 2 builds the pipeline on this set as-is. Lowest effort;
-     strongest survivorship-bias caveat in the report.
-   - **(B) Replace TMDB 5000 with a larger TMDB dump.** Kaggle and
-     other sources host fuller TMDB exports (10k+, 100k+, ~all-of-
-     TMDB). Could plausibly recover the 1,012 MovieSum films currently
-     missing because TMDB 5000 doesn't cover them. Highest expected
-     gain; main risk is data-quality variance in larger dumps and one
-     additional download/cleanup pass.
-   - **(C) Add IMSDb supplementary scripts (the brief's documented
-     fallback).** Adds screenplays the original plan envisioned. Lower
-     script quality (raw scrapes) and would still need the same TMDB
-     join, so not obvious that it lifts the four-signal count above
-     ~1,200–1,300.
-   - **(D) Drop the budget+revenue requirement for some films and
-     train two outcome variables independently.** Already aligned with
-     the deferred-model decision in `PROJECT_CONTEXT.txt` Section 8;
-     would let us train a rating-prediction model on ~1,121 films
-     (matched, with rating) and a box-office model on the smaller
-     1,011 subset. Phase 4 would still benchmark both as planned.
-
-   The recommendation, if forced to pick: **(B) primary, (D) as a
-   complement.** A larger TMDB export is a one-time data-prep cost that
-   pays off across all later phases; (D) keeps Phase 4 honest by
-   acknowledging that rating-prediction and box-office-prediction don't
-   need the same corpus.
-
-2. **Survivorship bias framing.** Given the 85.8% profitable rate, do
-   we (a) keep the corpus as-is and emphasize that the model predicts
-   "well-known production" outcomes (i.e., the realistic deployment
-   target — studios mostly receive scripts from established writers
-   anyway), or (b) explicitly downweight the popularity skew during
-   training (e.g., propensity-style reweighting toward an industry-
-   base-rate distribution)? (a) is simpler and defensible; (b) is more
-   ambitious and adds a methodological hook.
-
-3. **Year scope.** The corpus is effectively 1995–2016. Should Phase 2
-   restrict to 1995+ explicitly (drops the long thin tail to 1934 — ~30
-   films) so that downstream temporal generalization claims are clean,
-   or keep the older films and stratify CV by era?
-
-4. **MovieSum dedup policy.** Phase 1 keeps the longest script per
-   IMDb ID. Phase 2 should formalize this — alternative policies:
-   "keep MovieSum's `train` split if available, else `val`, else
-   `test`" (keeps the dataset's intended splits intact for any
-   reproducibility cross-check), or a manual review of the 12 pairs.
-   Policy preference?
-
-5. **TMDB API or mapping dataset for direct IMDb ID joins?** Even if
-   we keep TMDB 5000, having an IMDb→TMDB ID mapping would let Phase 2
-   use exact joins instead of fuzzy ones. There are static mapping
-   files on Kaggle and the OMDb API offers free tier ID lookups. Worth
-   spending an hour on for cleaner downstream data, or unnecessary
-   given the 95% precision we already see?
-
----
-
-> Phase 1 complete. Please bring this summary and the questions above
-> to the planning conversation before starting Phase 2.
+- Phase 2 will rebuild the data pipeline cleanly: a documented
+  MovieSum dedup policy (encoded from the user's per-pair decisions),
+  the pre-1995 cutoff, an XML→structured-screenplay parser, and the
+  final `data/processed/films_joined.parquet` artifact that all
+  downstream phases consume.

@@ -106,12 +106,13 @@ def load_moviesum(
         If any expected split file is missing.
     """
     moviesum_dir = Path(moviesum_dir)
+    logger.info("Loading MovieSum (train + val + test, ~5-10s)")
     rows: list[dict] = []
     for split_name in SPLIT_FILES:
         path = moviesum_dir / split_name
         if not path.is_file():
             raise FileNotFoundError(f"MovieSum split file missing: {path}")
-        logger.info("Loading MovieSum split %s from %s", split_name, path)
+        logger.debug("Reading split %s", split_name)
         split_label = split_name.removesuffix(".jsonl")
         for obj in _iter_jsonl(path):
             title, year = _split_title_year(obj.get("movie_name", ""))
@@ -130,11 +131,7 @@ def load_moviesum(
 
     df = pd.DataFrame(rows)
     df["year_in_title"] = df["year_in_title"].astype("Int64")
-    logger.info(
-        "Loaded MovieSum: %d screenplays across %d split files",
-        len(df),
-        len(SPLIT_FILES),
-    )
+    logger.info("Loaded MovieSum: %s screenplays", f"{len(df):,}")
     return df
 
 

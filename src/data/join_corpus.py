@@ -1,270 +1,194 @@
-"""Phase 1, Task 4 — Join MovieSum and TMDB on title + year.
+"""Phase 1 — Join MovieSum and the ratings dataset on IMDb ID.
 
-TMDB 5000 has no ``imdb_id`` column (confirmed in Task 2), so the join
-goes from MovieSum (which carries IMDb IDs natively) to TMDB via
-normalized title + release year, with a ±1-year tolerance to absorb
-festival-vs-theatrical / regional release differences.
+Both sources carry IMDb IDs natively (MovieSum exposes them on every
+screenplay row; the ratings dataset has an ``imdb_id`` column). The
+join is therefore a direct exact-ID merge — no normalization, no fuzzy
+matching, no external bridge.
 
-Strategy:
+The script:
 
-1. Normalize titles in both datasets: lowercase, strip punctuation,
-   collapse whitespace, drop leading articles (``the/a/an``).
-2. Index TMDB by ``(normalized_title, release_year)`` and by
-   ``(normalized_title, release_year ± 1)``.
-3. For each MovieSum row (deduplicated by IMDb ID), look up TMDB.
-4. Save the joined corpus to ``data/interim/`` and a small audit table.
+1. Loads MovieSum and deduplicates on IMDb ID (12 same-IMDb-ID pairs
+   exist in MovieSum; we keep the longest-script row per ID — that's
+   typically the more-complete draft).
+2. Loads the ratings dataset (column-selective; see ``load_ratings``).
+3. Deduplicates the ratings dataset on IMDb ID (a small fraction of
+   films appear twice under different TMDB IDs — alternate cuts /
+   regional releases — keep the row with the highest ``vote_count``).
+4. Merges them on ``imdb_id`` and saves to
+   ``data/interim/phase1_joined_corpus.parquet``.
 
-Run from the project root:
+Run from the project root::
 
     python -m src.data.join_corpus
 """
 
 from __future__ import annotations
 
-import re
-import string
-from typing import Iterable
+# Allow running this script by file path; no-op under `python3 -m`.
+if __name__ == "__main__" and __package__ is None:
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import pandas as pd
 
 from src.data.load_moviesum import load_moviesum
-from src.data.load_tmdb import load_tmdb
+from src.data.load_ratings import load_ratings
 from src.utils import paths
 from src.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
-# Articles to strip from the start of a title before normalization.
-# Kept conservative — only the most common English articles, since stripping
-# more aggressively risks merging genuinely-different films.
-LEADING_ARTICLES = ("the ", "a ", "an ")
-
-# Films to spot-check by hand from the join output (logged at runtime).
-SPOT_CHECK_SAMPLE_SIZE = 20
-SPOT_CHECK_SEED = 42
-
-
-def _normalize_title(title: str | float | None) -> str:
-    """Normalize a film title for matching across datasets.
-
-    Steps: lowercase, replace ``&`` with ``and``, drop punctuation, collapse
-    whitespace, strip a leading article.
-
-    Returns ``""`` for missing values; the caller should treat empty
-    normalized titles as unmatchable rather than letting them collide.
-    """
-    if title is None or (isinstance(title, float) and pd.isna(title)):
-        return ""
-    s = str(title).lower().replace("&", "and")
-    # Replace punctuation with whitespace so word boundaries are preserved
-    # (e.g., "X-Men: Days of Future Past" -> "x men days of future past").
-    table = str.maketrans({c: " " for c in string.punctuation})
-    s = s.translate(table)
-    s = re.sub(r"\s+", " ", s).strip()
-    for article in LEADING_ARTICLES:
-        if s.startswith(article):
-            s = s[len(article):]
-            break
-    return s
+# Columns we attach from the ratings dataset onto each MovieSum row.
+RATINGS_COLUMNS_TO_ATTACH: tuple[str, ...] = (
+    "imdb_id",
+    "id",                    # TMDB id
+    "title",
+    "original_title",
+    "release_year_parsed",
+    "release_date",
+    "budget",
+    "revenue",
+    "runtime",
+    "vote_average",
+    "vote_count",
+    "IMDB_Rating",
+    "AverageRating",
+    "Meta_score",
+    "popularity",
+    "status",
+    "genres_parsed",
+    "Director",
+    "production_companies",
+    "production_countries",
+)
 
 
-def _build_tmdb_lookup(
-    tmdb: pd.DataFrame,
-) -> dict[tuple[str, int], list[int]]:
-    """Build a ``(normalized_title, year) -> [tmdb_row_index, ...]`` index.
-
-    A list (not a single index) is the value because title+year can collide
-    in TMDB itself (rare — e.g., reboots) and we want to detect ambiguity.
-    """
-    lookup: dict[tuple[str, int], list[int]] = {}
-    for idx, row in tmdb[["title", "original_title", "release_year"]].iterrows():
-        year = row["release_year"]
-        if pd.isna(year):
-            continue
-        year_int = int(year)
-        # Index by both the localized title and the original_title to widen
-        # the match set without sacrificing precision.
-        for raw_title in (row["title"], row["original_title"]):
-            key = (_normalize_title(raw_title), year_int)
-            if not key[0]:
-                continue
-            lookup.setdefault(key, []).append(idx)
-    return lookup
-
-
-def _lookup_with_year_tolerance(
-    lookup: dict[tuple[str, int], list[int]],
-    norm_title: str,
-    year: int,
-    tolerance: Iterable[int] = (0, -1, 1),
-) -> tuple[list[int], int | None]:
-    """Look up TMDB indices for a title across a small year window.
-
-    Returns ``(indices, year_offset)`` where ``year_offset`` is the offset
-    that produced the match (0 / -1 / +1), or ``None`` if no match was
-    found.
-    """
-    for offset in tolerance:
-        key = (norm_title, year + offset)
-        if key in lookup:
-            return lookup[key], offset
-    return [], None
-
-
-def _dedupe_moviesum(moviesum: pd.DataFrame) -> pd.DataFrame:
-    """Collapse MovieSum's 12 same-IMDb-ID duplicate pairs to one row each.
+def dedupe_moviesum(moviesum: pd.DataFrame) -> pd.DataFrame:
+    """Collapse MovieSum's same-IMDb-ID duplicate pairs to one row per ID.
 
     Keeps the row with the longest ``script_char_len`` per IMDb ID — the
-    intuition being that longer screenplays correspond to more-completed
-    drafts. Logs which IDs were collapsed.
+    intuition being that longer screenplays are usually more-complete
+    drafts. Phase 1 found 12 such pairs out of 2,200 rows; cell-level
+    review (``review_duplicates.py``) confirmed they are alternate
+    titles or alternate drafts of the same film.
     """
     before = len(moviesum)
-    moviesum_sorted = moviesum.sort_values("script_char_len", ascending=False)
-    dedup = moviesum_sorted.drop_duplicates(subset="imdb_id", keep="first").reset_index(drop=True)
-    after = len(dedup)
-    logger.info("Dedup MovieSum by IMDb ID: %d -> %d rows (%d collapsed)", before, after, before - after)
+    sorted_df = moviesum.sort_values("script_char_len", ascending=False)
+    dedup = sorted_df.drop_duplicates(subset="imdb_id", keep="first").reset_index(drop=True)
+    logger.info("Dedup MovieSum by IMDb ID: %d → %d (%d collapsed)",
+                before, len(dedup), before - len(dedup))
     return dedup
 
 
-def _attach_tmdb(
-    moviesum: pd.DataFrame, tmdb: pd.DataFrame, lookup: dict[tuple[str, int], list[int]]
-) -> pd.DataFrame:
-    """For each MovieSum row, look up its TMDB match and attach selected columns.
+def dedupe_ratings(ratings: pd.DataFrame) -> pd.DataFrame:
+    """One row per IMDb ID in the ratings dataset.
 
-    Adds: ``tmdb_id``, ``tmdb_title``, ``tmdb_release_year``, ``budget``,
-    ``revenue``, ``runtime``, ``vote_average``, ``vote_count``,
-    ``tmdb_genre_names``, ``join_year_offset``, ``join_strategy``,
-    ``join_match_count``.
+    Some films appear twice under different TMDB IDs (alternate cuts,
+    regional releases). Keep the row with the higher ``vote_count`` —
+    the better-known variant. Rows without IMDb IDs are dropped (they
+    can't be joined anyway).
     """
-    enriched_rows: list[dict] = []
-
-    for _, row in moviesum.iterrows():
-        norm_title = _normalize_title(row["title"])
-        year = row["year_in_title"]
-        if pd.isna(year) or not norm_title:
-            enriched_rows.append({"join_strategy": "skipped_no_title_or_year", "join_match_count": 0})
-            continue
-
-        indices, offset = _lookup_with_year_tolerance(lookup, norm_title, int(year))
-        if not indices:
-            enriched_rows.append({"join_strategy": "no_match", "join_match_count": 0, "join_year_offset": None})
-            continue
-
-        # When a title+year resolves to multiple TMDB rows, pick the one with
-        # the highest vote_count (the better-known one) — rare collision case.
-        if len(indices) > 1:
-            sub = tmdb.loc[indices].sort_values("vote_count", ascending=False)
-            best_idx = sub.index[0]
-        else:
-            best_idx = indices[0]
-        tmdb_row = tmdb.loc[best_idx]
-
-        enriched_rows.append(
-            {
-                "tmdb_id": int(tmdb_row["id"]),
-                "tmdb_title": tmdb_row["title"],
-                "tmdb_release_year": int(tmdb_row["release_year"]) if pd.notna(tmdb_row["release_year"]) else None,
-                "budget": tmdb_row["budget"],
-                "revenue": tmdb_row["revenue"],
-                "runtime": tmdb_row["runtime"],
-                "vote_average": tmdb_row["vote_average"],
-                "vote_count": tmdb_row["vote_count"],
-                "tmdb_genre_names": tmdb_row["genre_names"],
-                "join_year_offset": offset,
-                "join_strategy": "title_year_exact_norm",
-                "join_match_count": len(indices),
-            }
-        )
-
-    enriched = pd.DataFrame(enriched_rows, index=moviesum.index)
-    return pd.concat([moviesum.reset_index(drop=True), enriched.reset_index(drop=True)], axis=1)
+    before = len(ratings)
+    keepable = ratings.dropna(subset=["imdb_id"]).copy()
+    keepable = (
+        keepable.sort_values("vote_count", ascending=False)
+                .drop_duplicates(subset="imdb_id", keep="first")
+                .reset_index(drop=True)
+    )
+    logger.info(
+        "Dedup ratings by IMDb ID: %d → %d (%d dropped, %d had no IMDb ID)",
+        before, len(keepable), before - len(keepable),
+        int(ratings["imdb_id"].isna().sum()),
+    )
+    return keepable
 
 
-def _spot_check_matches(joined: pd.DataFrame, n: int = SPOT_CHECK_SAMPLE_SIZE) -> None:
-    """Log N random MovieSum→TMDB matches for human verification."""
-    matched = joined[joined["tmdb_id"].notna()]
-    if len(matched) == 0:
-        logger.warning("No matched rows to spot-check.")
-        return
-    sample = matched.sample(min(n, len(matched)), random_state=SPOT_CHECK_SEED)
-    logger.info("Spot-checking %d random MovieSum->TMDB matches:", len(sample))
-    for _, row in sample.iterrows():
-        logger.info(
-            "  %s | MovieSum=%r (%s) -> TMDB=%r (%s, off=%s)",
-            row["imdb_id"], row["movie_name"], row["year_in_title"],
-            row["tmdb_title"], row["tmdb_release_year"], row["join_year_offset"],
-        )
+def join_corpora(
+    moviesum: pd.DataFrame,
+    ratings: pd.DataFrame,
+    columns_to_attach: tuple[str, ...] = RATINGS_COLUMNS_TO_ATTACH,
+) -> pd.DataFrame:
+    """Left-merge MovieSum onto a column-selected slice of the ratings dataset.
+
+    Parameters
+    ----------
+    moviesum
+        Deduplicated MovieSum DataFrame (one row per IMDb ID).
+    ratings
+        Deduplicated ratings DataFrame (one row per IMDb ID).
+    columns_to_attach
+        Columns from ``ratings`` to keep in the joined output.
+        Must include ``imdb_id`` (the join key).
+
+    Returns
+    -------
+    pandas.DataFrame
+        MovieSum rows with the selected ratings columns merged in.
+        Films that don't match leave the ratings columns as NaN.
+    """
+    if "imdb_id" not in columns_to_attach:
+        raise ValueError("columns_to_attach must include 'imdb_id'")
+    return moviesum.merge(
+        ratings[list(columns_to_attach)], on="imdb_id", how="left",
+        suffixes=("_ms", "_rt"),
+    )
 
 
-def main() -> None:
+def main() -> pd.DataFrame:
+    """Run the Phase 1 join end-to-end and save to ``data/interim/``.
+
+    Returns the joined DataFrame for interactive use.
+    """
     paths.ensure_dirs()
 
     moviesum = load_moviesum(include_script=True)
-    moviesum = _dedupe_moviesum(moviesum)
-    tmdb = load_tmdb()
+    moviesum = dedupe_moviesum(moviesum)
 
-    lookup = _build_tmdb_lookup(tmdb)
-    logger.info("Built TMDB title-year lookup: %d unique keys", len(lookup))
+    ratings = load_ratings()
+    ratings = dedupe_ratings(ratings)
 
-    joined = _attach_tmdb(moviesum, tmdb, lookup)
+    joined = join_corpora(moviesum, ratings)
 
-    # Headline counts.
-    matched_mask = joined["tmdb_id"].notna()
-    has_budget = joined["budget"].fillna(0) > 0
-    has_revenue = joined["revenue"].fillna(0) > 0
-    has_rating = joined["vote_average"].fillna(0) > 0
+    matched_mask = joined["id"].notna()
+    has_budget   = joined["budget"].fillna(0) > 0
+    has_revenue  = joined["revenue"].fillna(0) > 0
+    has_rating   = (joined["vote_average"].fillna(0) > 0) | (joined["IMDB_Rating"].fillna(0) > 0)
 
     n_total = len(joined)
-    n_matched = int(matched_mask.sum())
-    n_with_budget = int((matched_mask & has_budget).sum())
-    n_with_revenue = int((matched_mask & has_revenue).sum())
-    n_with_both = int((matched_mask & has_budget & has_revenue).sum())
-    n_with_all_four = int((matched_mask & has_budget & has_revenue & has_rating).sum())
+    counts = {
+        "moviesum_deduped": n_total,
+        "matched_to_ratings": int(matched_mask.sum()),
+        "matched_with_budget": int((matched_mask & has_budget).sum()),
+        "matched_with_revenue": int((matched_mask & has_revenue).sum()),
+        "matched_with_budget_and_revenue": int((matched_mask & has_budget & has_revenue).sum()),
+        "matched_with_all_four_signals": int((matched_mask & has_budget & has_revenue & has_rating).sum()),
+    }
+    counts_table = pd.DataFrame(list(counts.items()), columns=["metric", "count"])
 
-    logger.info("=== Phase 1 join headline counts ===")
-    logger.info("MovieSum (deduped):                 %d", n_total)
-    logger.info("Matched to TMDB:                    %d (%.1f%%)", n_matched, 100 * n_matched / n_total)
-    logger.info("Match + budget>0:                   %d", n_with_budget)
-    logger.info("Match + revenue>0:                  %d", n_with_revenue)
-    logger.info("Match + budget>0 AND revenue>0:     %d", n_with_both)
-    logger.info("Match + budget + revenue + rating:  %d", n_with_all_four)
+    # Save artifacts.
+    out_parquet = paths.DATA_INTERIM_DIR / "phase1_joined_corpus.parquet"
+    joined.to_parquet(out_parquet, index=False)
+    logger.debug("Wrote %s", out_parquet)
 
-    # Year-offset breakdown of matches.
-    offset_counts = joined.loc[matched_mask, "join_year_offset"].value_counts(dropna=False).to_dict()
-    logger.info("Year-offset breakdown of matches: %s", offset_counts)
+    out_counts = paths.REPORTS_TABLES_DIR / "phase1_join_counts.csv"
+    counts_table.to_csv(out_counts, index=False)
+    logger.debug("Wrote %s", out_counts)
 
-    _spot_check_matches(joined)
+    # Note: ``title`` exists on both sides of the merge (MovieSum's title-with-year-stripped
+    # vs. ratings' canonical title), so they get split into ``title_ms`` / ``title_rt``
+    # by the merge's ``suffixes`` argument. Use the MovieSum side here for human readability.
+    unmatched = joined.loc[~matched_mask, ["imdb_id", "movie_name", "title_ms", "year_in_title"]]
+    out_unmatched = paths.REPORTS_TABLES_DIR / "phase1_unmatched_moviesum_titles.csv"
+    unmatched.to_csv(out_unmatched, index=False)
+    logger.debug("Wrote %s", out_unmatched)
 
-    # Save unmatched titles for human review.
-    unmatched = joined[~matched_mask][["imdb_id", "movie_name", "title", "year_in_title", "join_strategy"]]
-    unmatched_path = paths.REPORTS_TABLES_DIR / "phase1_unmatched_moviesum_titles.csv"
-    unmatched.to_csv(unmatched_path, index=False)
-    logger.info("Saved %d unmatched MovieSum titles to %s", len(unmatched), unmatched_path)
+    logger.info("Saved 1 parquet + 2 CSVs (corpus, counts, %d unmatched titles)",
+                len(unmatched))
 
-    # Save the full joined corpus (Phase 6 of the brief — this is the Phase 1
-    # working dataset, to be rebuilt cleanly in Phase 2).
-    joined_path = paths.DATA_INTERIM_DIR / "phase1_joined_corpus.parquet"
-    # Genre lists need to be plain Python objects for parquet roundtrip.
-    joined.to_parquet(joined_path, index=False)
-    logger.info("Saved joined corpus to %s (%d rows)", joined_path, len(joined))
-
-    # Save a small headline-counts table for the phase summary.
-    counts_table = pd.DataFrame(
-        {
-            "metric": [
-                "moviesum_deduped",
-                "matched_to_tmdb",
-                "matched_with_budget",
-                "matched_with_revenue",
-                "matched_with_budget_and_revenue",
-                "matched_with_all_four_signals",
-            ],
-            "count": [n_total, n_matched, n_with_budget, n_with_revenue, n_with_both, n_with_all_four],
-        }
-    )
-    counts_path = paths.REPORTS_TABLES_DIR / "phase1_join_counts.csv"
-    counts_table.to_csv(counts_path, index=False)
-    logger.info("Saved %s", counts_path)
+    print("\n=== MovieSum × ratings join — Phase 1 summary ===")
+    print(counts_table.to_string(index=False))
+    return joined
 
 
 if __name__ == "__main__":

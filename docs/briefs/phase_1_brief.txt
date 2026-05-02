@@ -21,7 +21,7 @@ The answer determines whether the project proceeds with MovieSum-only
 (target ≥1,500 films), MovieSum + IMSDb supplementary (target ~1,500
 after dedup), or scope reduction (<1,000 films).
 
-Decision criteria are documented in `PROJECT_CONTEXT.md` Section 5.
+Decision criteria are documented in `PROJECT_CONTEXT.txt` Section 5.
 
 ---
 
@@ -32,46 +32,38 @@ The user has already downloaded both raw datasets and will drop them into
 
 Expected files:
 
-- **TMDB 5000 movies CSV** — from
-  `https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata`. The relevant
-  file is `tmdb_5000_movies.csv`. Contains budget, revenue, runtime, genre,
-  release date, and a TMDB-internal `id` column. **Does NOT include
-  `imdb_id`** natively — this is a known issue from prior exploration and
-  has to be resolved during Phase 1.
+- **IMDb-TMDB Movie Metadata Big Dataset (1M)** — from Kaggle. The relevant
+  file is `IMDB TMDB Movie Metadata Big Dataset (1M).csv`, ~950 MB,
+  ~1.07M rows. Carries `imdb_id` (`tt`-prefixed) and TMDB `id` natively,
+  plus budget, revenue, runtime, genre list, release date, multiple rating
+  fields (TMDB `vote_average`, IMDb `IMDB_Rating`, Metacritic `Meta_score`),
+  director, production companies, and other metadata. Stored under
+  `data/raw/ratings_data/`.
 - **MovieSum** — from `https://huggingface.co/datasets/rohitsaxena/MovieSum`.
   2,200 movie screenplays in structured XML format, each tagged with an
-  IMDb ID. Format details documented in `PROJECT_CONTEXT.md` Section 4.
+  IMDb ID. Stored under `data/raw/script_data/` as three JSONL split files
+  (`train.jsonl`, `val.jsonl`, `test.jsonl`). Format details documented in
+  `PROJECT_CONTEXT.txt` Section 4.
 
 **Workflow:** After completing Task 1 (folder setup), pause and ask the
 user to confirm the data files are in place at `data/raw/`. Once
-confirmed, continue with the remaining tasks. Do not begin Task 2 before
-the user confirms the files are uploaded.
-
-If a programmatic download via `datasets.load_dataset("rohitsaxena/MovieSum")`
-turns out to be cleaner than reading the manually-downloaded files, you may
-switch to that — but only if it works without authentication friction. The
-manual path is fine.
+confirmed, continue with the remaining tasks.
 
 ---
 
 ## 3. What Has Already Been Done (Sanity Check)
 
-Prior exploration on `tmdb_5000_movies.csv` found:
+The ratings dataset is the user's curated download; we have no prior
+exploration numbers to reproduce. Use the `summarize_ratings` helper in
+the loader to get headline counts (total / with-budget / with-revenue /
+with-both / with-imdb_id) and sanity-check that:
 
-- 4,803 total films
-- 3,766 films with `budget > 0`
-- 3,376 films with `revenue > 0`
-- 3,229 films with both
-- Year distribution dense 1997–2016, long thin tail back to 1916
+- The total is in the order of ~1M rows (the file is ~950 MB).
+- A non-trivial fraction has both budget AND revenue (expected: ~13K).
+- Most rows have a valid `imdb_id` (expected: ~590K).
 
-Reproduce these numbers as your first sanity check. If they don't match
-within a small margin, something is wrong with the data file and you
-should flag it before continuing.
-
-A previous attempt to fetch IMDb IDs from the TMDB API returned 0/3,229
-matches. Most likely cause: invalid or unauthenticated API key. You do
-not need to use the TMDB API at all in Phase 1 — MovieSum has IMDb IDs
-natively, so the join can go MovieSum → TMDB instead of TMDB → MovieSum.
+Both datasets carry IMDb IDs natively, so the MovieSum→ratings join is a
+direct exact-ID merge — no fuzzy matching, no external bridge.
 
 ---
 
@@ -108,17 +100,20 @@ Set up `src/utils/logging.py` to configure a project logger at INFO level.
 
 Do not begin Task 2 until the user confirms.
 
-### Task 2: Load TMDB 5000 and reproduce known statistics
+### Task 2: Load the ratings dataset and profile it
 
-Write `src/data/load_tmdb.py` with a function that loads
-`tmdb_5000_movies.csv` and returns a clean DataFrame.
+Write `src/data/load_ratings.py` with a function that loads
+`IMDB TMDB Movie Metadata Big Dataset (1M).csv` and returns a clean
+DataFrame. Read column-selectively — the file is ~950 MB and we only
+need ~20 of the 42 columns for downstream use.
 
 In the loader or in a separate exploration script:
-- Reproduce the prior numbers (4,803 / 3,766 / 3,376 / 3,229)
+- Headline counts via `summarize_ratings` (total / with-budget /
+  with-revenue / with-both / with-imdb_id)
 - Print and save the year distribution of films-with-both
 - Print and save the genre distribution of films-with-both
 - Compute and save a few sanity statistics (budget median/mean/std,
-  revenue median/mean/std, ratio distribution)
+  revenue median/mean/std, revenue/budget ratio distribution)
 
 ### Task 3: Load MovieSum and explore its structure
 
@@ -136,28 +131,19 @@ Spot-check 5 random screenplays by hand — confirm they look like real
 screenplays with scenes, characters, dialogue, and stage directions. If
 the structure differs from what's documented, flag it.
 
-### Task 4: Join MovieSum and TMDB on IMDb ID
+### Task 4: Join MovieSum and the ratings dataset on IMDb ID
 
 This is the central question of Phase 1.
 
-- Take MovieSum's IMDb IDs.
-- For each, look up the corresponding film in TMDB 5000.
-- Critically: TMDB 5000 doesn't have `imdb_id`. You'll need to find a
-  way to bridge the two. Options to evaluate (in order of preference):
-  1. Check whether MovieSum includes a TMDB ID alongside the IMDb ID
-     (some datasets do). If yes, join on TMDB ID directly.
-  2. Use title + year as a fuzzy join key. This is noisy but workable
-     for a feasibility check; use `rapidfuzz` or similar with a
-     reasonable threshold.
-  3. As a last resort, look up IMDb IDs for TMDB films via a free
-     lookup source (the TMDB website, an external mapping dataset on
-     Kaggle, etc.). Avoid the TMDB API for now since the prior attempt
-     failed and it's not strictly needed.
-- Among the joined films, count those that ALSO have non-zero budget
-  AND non-zero revenue. This is the working corpus size.
-
-Document which join strategy you used and why. If the strategy was
-fuzzy, sample 20 random matches and verify by eye that they look right.
+- Both datasets carry `imdb_id` natively, so the join is a direct exact-ID
+  merge in `src/data/join_corpus.py`.
+- Deduplicate the ratings dataset on `imdb_id` first (a small fraction of
+  films appear twice under different TMDB IDs — alternate cuts, regional
+  releases). Keep the row with higher `vote_count`.
+- After merging, count: matched, matched + budget>0, matched + revenue>0,
+  matched + both, matched + all four (with rating). The last is the
+  working corpus size.
+- Spot-check 20 random matches by eye to verify the join is sane.
 
 ### Task 5: Profile the joined corpus
 
@@ -263,11 +249,11 @@ From `CLAUDE_CODE_GUIDELINES.md` Section 9:
 - [ ] Project folder structure created (`src/`, `data/`, `docs/`, etc.)
 - [ ] `.gitignore` in place
 - [ ] `src/utils/paths.py` and `src/utils/logging.py` exist and work
-- [ ] TMDB 5000 numbers reproduced (4,803 / 3,766 / 3,376 / 3,229)
+- [ ] Ratings dataset loaded; headline counts saved
 - [ ] MovieSum loaded and structure confirmed
-- [ ] Join executed; working corpus size determined
+- [ ] Join executed (exact IMDb-ID merge); working corpus size determined
 - [ ] Diagnostic plots saved with interpretations in the summary
 - [ ] Working corpus saved to `data/interim/phase1_joined_corpus.parquet`
-- [ ] `docs/summaries/phase_1_summary.md` written using the template
-- [ ] `docs/PROJECT_CONTEXT.md` Section 5 and Section 9 updated
+- [ ] `docs/summaries/phase_1_summary.txt` written using the template
+- [ ] `docs/PROJECT_CONTEXT.txt` Section 5 and Section 9 updated
 - [ ] User told to bring summary to the planning conversation

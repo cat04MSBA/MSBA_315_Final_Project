@@ -127,16 +127,24 @@ XML structure of each screenplay:
 </script>
 ```
 
-### Primary: TMDB 5000 Movie Dataset (Kaggle)
-- ~4,803 films, ~3,229 with both budget and revenue
-- Source for: budget, revenue, runtime, genre, year, IMDb rating, popularity
-- Joined to MovieSum via IMDb ID
+### Primary: IMDb-TMDB Movie Metadata (Kaggle, 1M-row release)
+- File: `data/raw/ratings_data/IMDB TMDB Movie Metadata Big Dataset (1M).csv`
+- ~1.07 million films, ~13,800 with both budget and revenue
+- Carries `imdb_id` (`tt`-prefixed) **and** TMDB `id` natively, so the
+  MovieSum→ratings join is a direct exact-ID merge (no fuzzy matching,
+  no external bridge required)
+- Source for: budget, revenue, runtime, genre list, release date,
+  TMDB rating (`vote_average`), IMDb rating (`IMDB_Rating`), Metacritic
+  score (`Meta_score`), director, production companies, etc.
+- License: see Kaggle dataset page (research / non-commercial use)
 
 ### Fallback / Supplementary: IMSDb Kaggle script dumps
-- Used only if MovieSum + TMDB join yields fewer than ~1,000 films
+- Used only if MovieSum + ratings join yields fewer than ~1,000 films
 - Several available on Kaggle (Ismael 2024 has 1,172 scripts)
 - Lower quality than MovieSum (raw scrapes, inconsistent formatting)
 - Would require deduplication against MovieSum by IMDb ID
+- (Phase 1 result, 1,713 four-signal films, makes invoking this fallback
+  unnecessary.)
 
 ### Cornell Movie-Dialogs Corpus (held-out validation, optional)
 - 617 films with cleaned dialogue
@@ -160,9 +168,9 @@ corpus (~3,000 films) but with significant downsides:
   consumes screenplays creates a methodological gap that would need to
   be defended in the report
 
-MovieSum's smaller corpus (~1,500-1,800 expected after join) is offset by
-significantly higher data quality and exact format alignment with the
-deployment target.
+MovieSum's smaller-than-OpenSubtitles corpus (~1,700 expected after the
+ratings join) is offset by significantly higher data quality and exact
+format alignment with the deployment target.
 
 ---
 
@@ -171,26 +179,29 @@ deployment target.
 > Updated by Claude Code as Phase 1 progresses. Add timestamps, do not
 > overwrite prior entries.
 
-**Status as of 02052026 02:57 AM:** Phase 1 complete; mandatory checkpoint
-pending. Numbers below are the actual measured values; see
-`docs/summaries/phase_1_summary.txt` for plots, interpretation, and the
-list of questions for the planning conversation.
+**Status as of 2026-05-02:** Phase 1 complete; corpus size lands above
+the 1,500-film "green band" threshold (1,713 four-signal films). Numbers
+below are the actual measured values; see
+`docs/summaries/phase_1_summary.txt` for plots and interpretation.
 
-### TMDB 5000 (Stage 2 of Phase 1, complete — 2026-05-02)
-- Total films: 4,803
-- Films with budget > 0: 3,766
-- Films with revenue > 0: 3,376
-- Films with both: 3,229
-- Year distribution: dense 1997–2016 (~100-170 films/year);
-  long thin tail back to 1916. **Effective hard cutoff at 2016**
-  (1 film in 2017, zero after).
+### Ratings dataset (Phase 1, complete — 2026-05-02)
+- Total films: 1,072,255
+- Films with `imdb_id` (`tt`-prefixed): ~589,000
+- Films with budget > 0: ~54,400
+- Films with revenue > 0: ~20,300
+- Films with both: ~13,800
+- Year coverage: dense 1995–2023; thin tail back to ~1900;
+  a handful of nonsensical future years (2055, 2099) — scheduled
+  releases or noise, dropped at plot time.
 
-### MovieSum (Stage 3 of Phase 1, complete — 2026-05-02)
+### MovieSum (Phase 1, complete — 2026-05-02)
 - Total screenplays: 2,200 (1,800 train + 200 val + 200 test;
   matches published documentation)
 - IMDb ID coverage: 100% well-formed (`tt\d{7,10}`); **2,188 unique IDs**
   due to 12 same-IMDb-ID duplicate pairs (alternate titles or alternate
-  drafts of the same film)
+  drafts of the same film). Dedup keeps the longest script per ID;
+  Phase 2 will formalize the policy after the user reviews the pairs
+  via `src/data/review_duplicates.py`.
 - Year range: 1931–2023, median 2007, ~21% post-2016
 - Mean screenplay length: ~207k characters (~34k tokens — matches the
   README's claim)
@@ -198,26 +209,22 @@ list of questions for the planning conversation.
   <scene_description>, <character>, <dialogue>}*</scene>*</script>`,
   parses cleanly with `xml.etree.ElementTree`
 
-### MovieSum × TMDB 5000 join (Stage 4 of Phase 1, complete — 2026-05-02)
-- Strategy: title+year exact match after normalization (lowercase, drop
-  punctuation, drop leading articles, lookup against both TMDB `title`
-  and `original_title`), with ±1-year tolerance.
-- Films matched to TMDB: **1,121 / 2,188 (51.2%)** — bound is TMDB 5000's
-  coverage, not the join. Maximum any-year normalized overlap is 1,176
-  films, so the join captures ~95% of achievable matches.
-- Year-offset breakdown: 1,103 exact, 18 at ±1 year.
+### MovieSum × ratings join (Phase 1, complete — 2026-05-02)
+- Strategy: direct exact-ID merge on `imdb_id` (both datasets carry the
+  IMDb ID natively). No fuzzy matching, no external bridge.
+- Films matched: **2,186 / 2,188 (99.9%)** — only 2 MovieSum films are
+  absent from the ratings dataset entirely.
 - **Working corpus (matched + budget>0 + revenue>0 + rating>0):
-  1,011 films.**
-- Year distribution: 1934–2016, median 2003, dense 1995–2016. No 2017+
-  films (TMDB 5000 cutoff).
+  1,713 films.**
+- Year distribution: 1932–2023, median 2005, dense 1995–2022.
 - Genre distribution: Drama / Comedy / Thriller / Action lead heavily;
   small genres and documentaries are sparse.
-- Budget median $30M (mean $48M, heavy right tail);
-  revenue median $90M (mean $174M);
-  rating mean 6.69 / median 6.70 (narrow band);
-  ROI median 3.0x, **85.8% gross-profitable** (severe survivorship bias).
+- Budget median $25M; revenue median $64M; rating mean ~7.1 (using
+  `IMDB_Rating` preferred over `vote_average`); ROI median ~2.9x,
+  **~80% gross-profitable** (still survivor-biased, but less than
+  alternative ratings sources would have produced).
 - Working dataset saved to
-  `data/interim/phase1_joined_corpus.parquet` (2,188 rows; the 1,011
+  `data/interim/phase1_joined_corpus.parquet` (2,188 rows; the 1,713
   four-signal subset is filtered at load time downstream).
 
 ### Decision criteria after Phase 1
@@ -324,7 +331,14 @@ Format: one entry per decision, newest first
 
 **Phase:** [Phase number and name]
 **Decision:** [One or two lines stating what was decided.]
-**See also:** `docs/summaries/phase_N_summary.md` for full rationale.
+**See also:** `docs/summaries/phase_N_summary.txt` for full rationale.
+
+
+## 2026-05-02 15:30 — Phase 1: pre-1995 cutoff for the working corpus
+
+**Phase:** Phase 1 — Data Feasibility Verification
+**Decision:** Working corpus will be restricted to films released ≥ 1995 starting in Phase 2. This drops the long thin tail of pre-1995 films (~50 films, mostly singletons per year) so era-based generalization claims in later phases are clean and the dense band of the corpus dominates training. Other end-of-Phase-1 questions (corpus configuration, survivorship-bias framing, MovieSum dedup policy) remain open.
+**See also:** `docs/summaries/phase_1_summary.txt`.
 
 
 ### [PROPOSAL_DATE] — Project framing
@@ -493,6 +507,16 @@ proceeding:
 - **End of Phase 1:** corpus size and quality after all joins.
   Decision needed: do we proceed with the planned scale, expand, or
   reduce scope?
+- **Beginning of Phase 2 — preprocessing decisions.** Before
+  implementing any preprocessing step (imputation strategy, scaling,
+  feature transforms, dedup policy, year cutoff, outlier handling,
+  etc.), Claude Code must present the available options with their
+  tradeoffs and request the user's choice. The user wants to keep the
+  ability to test alternative preprocessing techniques later, so the
+  pipeline must be built from explicitly-chosen knobs, not from
+  Claude Code's defaults. Items already-decided in Phase 1's summary
+  (e.g., pre-1995 cutoff) can be applied without re-asking; everything
+  else needs confirmation.
 - **End of Phase 4:** baseline + candidate models are trained and
   benchmarked. Decisions needed: which model is primary, which outcome
   variable is primary, do we add ensemble work or move to Phase 5?

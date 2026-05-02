@@ -18,13 +18,15 @@ Outputs:
 
 from __future__ import annotations
 
+# Allow running this script by file path; no-op under `python3 -m`.
+if __name__ == "__main__" and __package__ is None:
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
 import random
 import xml.etree.ElementTree as ET
 from collections import Counter
-
-import matplotlib
-
-matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -85,8 +87,7 @@ def _plot_length_distribution(df: pd.DataFrame, out_path) -> None:
     fig.suptitle(f"MovieSum screenplay length — N={len(df):,}")
     fig.tight_layout()
     fig.savefig(out_path, dpi=130)
-    plt.close(fig)
-    logger.info("Saved %s", out_path)
+    logger.debug("Wrote %s", out_path)
 
 
 def _spot_check(df: pd.DataFrame, n: int = 5, seed: int = RANDOM_SEED) -> None:
@@ -107,31 +108,34 @@ def _spot_check(df: pd.DataFrame, n: int = 5, seed: int = RANDOM_SEED) -> None:
         )
 
 
-def main() -> None:
+def main() -> pd.DataFrame:
+    """Run Task 3 end-to-end and return the loaded MovieSum DataFrame."""
     paths.ensure_dirs()
 
     df = load_moviesum()
-    logger.info("Total screenplays loaded: %d (expected %d)", len(df), EXPECTED_TOTAL)
     if len(df) != EXPECTED_TOTAL:
         logger.warning("MovieSum total mismatch: got %d, README claims %d", len(df), EXPECTED_TOTAL)
 
     validity = imdb_id_validity(df)
-    logger.info("IMDb ID validity: %s", validity)
+    logger.info("IMDb ID coverage: %d/%d valid, %d unique",
+                validity["valid_imdb_id"], validity["total"], validity["unique_valid_ids"])
+    logger.debug("Full validity dict: %s", validity)
 
     split_counts = df["origin_split"].value_counts().to_dict()
-    logger.info("Origin-split breakdown: %s", split_counts)
+    logger.debug("Origin-split breakdown: %s", split_counts)
 
     year_summary = df["year_in_title"].dropna().describe()
-    logger.info("Year-in-title summary:\n%s", year_summary.to_string())
+    logger.debug("Year-in-title summary:\n%s", year_summary.to_string())
 
     length_summary = df["script_char_len"].describe()
-    logger.info("Screenplay length (chars) summary:\n%s", length_summary.to_string())
+    logger.debug("Screenplay length (chars) summary:\n%s", length_summary.to_string())
 
     # Parse one screenplay end-to-end to verify the documented XML schema holds.
     sample_idx = 0
     sample_counts = _parse_one_script(df.iloc[sample_idx]["script"])
-    logger.info(
-        "Parsed sample screenplay (idx=%d, %s) structural counts: %s",
+    logger.info("XML structure verified on sample screenplay")
+    logger.debug(
+        "Sample screenplay (idx=%d, %s) structural counts: %s",
         sample_idx, df.iloc[sample_idx]["movie_name"], sample_counts,
     )
 
@@ -167,7 +171,13 @@ def main() -> None:
     )
     table_path = paths.REPORTS_TABLES_DIR / "phase1_moviesum_summary.csv"
     summary_table.to_csv(table_path, index=False)
-    logger.info("Saved %s", table_path)
+    logger.debug("Wrote %s", table_path)
+    logger.info("Saved 1 figure + 1 summary table to reports/")
+
+    # Print the clean human-readable summary at the end.
+    print("\n=== MovieSum — Phase 1 Task 3 summary ===")
+    print(summary_table.to_string(index=False))
+    return df
 
 
 if __name__ == "__main__":
