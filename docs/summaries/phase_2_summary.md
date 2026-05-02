@@ -86,6 +86,85 @@ The pre-1995 cutoff's reversal merits separate justification beyond just "the co
 - `phase2_summary_metrics.csv` — 18-row metric/value summary of the corpus.
 - `phase2_per_decade.csv` — counts and medians per decade (Phase 4 era-stratification reference).
 - `phase2_per_genre.csv` — counts and medians per `primary_genre_bucketed`.
+- `phase2_parse_warning_audit.csv` — see the audit section below.
+- `phase2_top5_warnings_inspection.md` — see the audit section below.
+
+### Audit of parser recovery rules
+
+Following the production build, the parser's recovery rules were
+empirically validated to confirm that warning-heavy films do not
+exhibit systematic bias on the structural metrics. The audit
+implementation lives in `src/data/audit_parse_warnings.py` and produces
+three outputs: the correlation table
+(`reports/tables/phase2_parse_warning_audit.csv`), the scatter grid
+(`reports/figures/phase2_parse_warning_correlations.png`), and the
+top-5 raw-vs-parsed inspection
+(`reports/tables/phase2_top5_warnings_inspection.md`). Both Pearson and
+Spearman coefficients are reported because the warning-count
+distribution is heavy-tailed; flag threshold is `|r| > 0.30` for
+numeric variables and `η² > 0.09` for the categorical
+`primary_genre_bucketed`.
+
+**Numeric correlations** (Spearman ρ shown; Pearson concordant):
+
+| Metric | Spearman ρ | Flagged | Interpretation |
+|---|---:|:---:|---|
+| `n_scenes` | -0.187 | no | small negative; no systematic bias |
+| `n_unique_characters` | **+0.483** | **yes** | strong positive; see below |
+| `n_dialogue_lines` | +0.129 | no | small positive |
+| `total_dialogue_chars` | +0.068 | no | effectively zero |
+| `dialogue_to_total_text_ratio` | +0.102 | no | small positive |
+| `mean_dialogue_line_length` | -0.046 | no | weak negative; direction matches case-analysis prediction |
+| `script_char_len` | -0.030 | no | effectively zero |
+| `decade` | +0.293 | no | mild upward trend over time, just below threshold |
+
+**Categorical correlation:** `primary_genre_bucketed` η² = 0.024
+(below the 0.09 threshold). Per-genre warning counts do not vary
+substantially.
+
+**The flagged finding: `n_unique_characters` (ρ = +0.48).** Films with
+more unique characters generate more parse warnings. Two mechanisms
+contribute:
+
+1. *Direct artifact of recovery rules.* Cases 5-8 in the parser
+   (a `<character>` element followed by a flow-breaking element or
+   another `<character>`) append an empty-text dialogue placeholder
+   keyed on the character name. Each such placeholder both raises
+   the warning count and (if the name is not seen elsewhere)
+   increments `n_unique_characters`. Phase 3 will filter empty-text
+   dialogue placeholders before counting, eliminating the artifactual
+   contribution.
+2. *Underlying-data correlation.* Films with large casts and many
+   character switches present more opportunities for the source XML's
+   structural irregularities to occur, independently of the parser.
+   This is a property of the screenplays, not a parser issue.
+
+The Phase 3 filtering step will isolate the artifactual portion.
+Until then, downstream code that conditions on
+`n_unique_characters` should be aware of the correlation.
+
+**Top-5 inspection findings.** The five highest-warning films are
+*Iron Man* (114 warnings), *Cat People* (62), *Batman: Mask of the
+Phantasm* (56), *Fletch* (53), and *Monsters University* (53). Manual
+inspection of their raw XML alongside the parsed output confirms that
+the parser's recoveries produced sensible output in every case
+checked. The dominant warning category is "character followed by
+another `<character>` or by a flow-breaking element" (Cases 5-8); the
+recoveries (empty-text placeholder, then continue) preserve correct
+attribution of subsequent legitimate dialogue. None of the inspected
+films contained orphan dialogue (Case 11) or unknown tags (Case 12).
+Several warnings were traced to genuine source-XML quirks rather than
+parser limitations: for example, *Iron Man* contained instances of
+the copyright header `© 2007 MARVEL STUDIOS, INC.` mistakenly
+formatted as `<character>` elements, which the parser correctly
+flagged and recovered from without corrupting the surrounding scene.
+
+**Patch applied.** The wrong-root-tag case (Case 3) now persists its
+warning to the `parse_warnings` field on the `ParsedScreenplay`
+dataclass, consistent with the empty-XML and parse-error cases. No
+films in the current corpus trigger this case, but the patch ensures
+future ingest with non-`<script>` roots will be visible to downstream
+audits.
 
 ---
 
@@ -101,9 +180,9 @@ The pre-1995 cutoff's reversal merits separate justification beyond just "the co
 
 ## Open questions / things to flag
 
-None for the planning conversation right now. Phase 2 has no mandatory checkpoint at the end (next checkpoint is end of Phase 4). Two items to keep in mind for future phases:
+None for the planning conversation right now. Phase 2 has no mandatory checkpoint at the end (next checkpoint is end of Phase 4). Items to keep in mind for future phases:
 
-- **The 40% parse-warning rate** (680 films with at least one warning, 2,949 warnings total). All warnings are minor structure breaks; no XML errors. Worth re-checking in Phase 3 if any specific feature ends up correlating with `parse_warning_count`.
+- **`n_unique_characters` is correlated with `parse_warning_count`** (Spearman ρ = +0.48; see audit section above). Phase 3 will filter empty-text dialogue placeholders before counting, which removes the artifactual portion of this correlation. Downstream code that conditions on `n_unique_characters` before that filter is applied should be aware.
 - **Pre-1980s decades have <30 films each** (1930s: 4, 1940s: 2, 1950s: 12, 1960s: 18, 1970s: 67). Phase 4 era-stratified CV needs to bucket these into a single "older films" stratum or exclude them from per-decade analyses to avoid noisy estimates.
 
 ---
@@ -114,6 +193,7 @@ None for the planning conversation right now. Phase 2 has no mandatory checkpoin
 - `src/data/parse_screenplay.py` — XML parser, Scene + ParsedScreenplay dataclasses, structural-metric computation
 - `src/data/build_corpus.py` — master orchestrator, `CorpusBuildConfig` dataclass, all preprocessing knobs
 - `src/data/validate_processed_corpus.py` — hard-asserts + Phase 2 figures and tables
+- `src/data/audit_parse_warnings.py` — empirical validation of parser recovery rules (correlation tests + top-5 XML inspection)
 
 ### Data
 - `data/processed/films_joined.parquet` (master table, 1,713 × 41)
@@ -125,11 +205,14 @@ None for the planning conversation right now. Phase 2 has no mandatory checkpoin
 - `phase2_budget_revenue_distribution.png`
 - `phase2_rating_roi_length.png`
 - `phase2_screenplay_structure.png`
+- `phase2_parse_warning_correlations.png` (parser-audit scatter grid)
 
 ### Tables (`reports/tables/`)
 - `phase2_summary_metrics.csv`
 - `phase2_per_decade.csv`
 - `phase2_per_genre.csv`
+- `phase2_parse_warning_audit.csv` (parser-audit correlation results)
+- `phase2_top5_warnings_inspection.md` (raw XML vs parsed output for the 5 highest-warning films)
 
 ### Docs
 - `docs/DATA_NOTES.md` (new)

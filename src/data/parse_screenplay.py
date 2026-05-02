@@ -277,12 +277,16 @@ def parse_screenplay(xml_string: str, imdb_id: str) -> ParsedScreenplay:
         logger.warning("XML parse failed for %s: %s", imdb_id, exc)
         return _empty_screenplay(imdb_id, f"XML parse error: {exc}")
 
+    warnings: list[str] = []
     if root.tag != "script":
         logger.warning("Root tag for %s is %r, expected 'script'", imdb_id, root.tag)
-        # Continue anyway — sometimes Roots get mislabeled but still
-        # contain valid <scene> children.
+        # Persist the anomaly on the dataclass so downstream audits can
+        # see it (consistency with the empty-XML and parse-error paths,
+        # which both record their issue in parse_warnings). Continue
+        # parsing because the mislabeled root may still contain valid
+        # <scene> children.
+        warnings.append(f"unexpected root tag {root.tag!r}")
 
-    warnings: list[str] = []
     scenes: list[Scene] = []
     for i, scene_el in enumerate(root.findall("scene"), start=1):
         scenes.append(_parse_one_scene(scene_el, scene_number=i, warnings=warnings))
