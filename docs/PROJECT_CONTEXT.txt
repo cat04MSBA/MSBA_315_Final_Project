@@ -312,8 +312,20 @@ project_root/
 
 ## 8. Decisions Log
 
-> Append to this section, with date, when material methodology choices
-> are made. Do not delete prior entries.
+> Append to this section, with date and time, for when any methodology choices or decisions
+> are made. This acts as a history log, to track all changes and decisions made. Do not delete prior entries. 
+> The decisions log is append-only. Old entries are never deleted or rewritten, even if a later decision reverses them — a > reversal is logged as a new entry referencing the old one. These changes should be succint with max 2 sentences
+> explaining the decision and big picture justification. The more detailed explanation and rationale should always be
+> detailed in the summary.
+
+Example of format to follow
+Format: one entry per decision, newest first
+## YYYY-MM-DD HH:MM — [Short decision title]
+
+**Phase:** [Phase number and name]
+**Decision:** [One or two lines stating what was decided.]
+**See also:** `docs/summaries/phase_N_summary.md` for full rationale.
+
 
 ### [PROPOSAL_DATE] — Project framing
 - Adopted the four-layer pre-greenlight triage framing.
