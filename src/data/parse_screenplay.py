@@ -1,0 +1,367 @@
+"""MovieSum screenplay XML parser.
+
+Phase 1 confirmed MovieSum's XML structure:
+
+::
+
+    <script>
+      <scene>
+        <stage_direction>EXT. PARIS - DAY</stage_direction>
+        <scene_description>The Eiffel Tower looms in the distance...</scene_description>
+        <character>ALICE</character>
+        <dialogue>Bonjour, Bob.</dialogue>
+        <character>BOB</character>
+        <dialogue>Bonjour.</dialogue>
+        ...
+      </scene>
+      ...
+    </script>
+
+A scene is a flat sequence of `stage_direction`, `scene_description`,
+`character`, and `dialogue` elements. Character/dialogue pairs alternate
+to encode "Alice says X, then Bob says Y." This parser reconstructs the
+implied (character, dialogue) pairs by walking the scene's elements in
+document order.
+
+Output is a frozen dataclass tree (``Scene`` and ``ParsedScreenplay``)
+plus a set of structural metrics computed at parse time. The parser is
+deterministic: same input always produces the same output.
+
+Edge cases (per Phase 2 brief Task 2):
+
+* Malformed XML — returns a degenerate ``ParsedScreenplay`` with empty
+  scenes and the error captured in ``parse_warnings``. Does not raise.
+* ``<parenthetical>`` elements (e.g. ``"(softly)"``, ``"(beat)"``).
+  These are a real, frequent screenplay element the brief didn't
+  document but MovieSum includes; we recognize them silently and use
+  them as "continuation markers" so dialogue that follows a
+  parenthetical without an intervening ``<character>`` is correctly
+  attributed to the same speaker.
+* Dialogue with no preceding ``<character>`` but the same speaker is
+  continuing (i.e. a stage_direction or scene_description has not
+  intervened) — attributed to the previous speaker, no warning.
+* Dialogue genuinely orphaned (no preceding character AND a
+  stage_direction or scene_description has reset the dialogue flow) —
+  paired with character ``""`` and a warning recorded.
+* Scenes with no dialogue — ``dialogue_units`` is an empty tuple.
+* Empty ``<stage_direction>`` or ``<scene_description>`` — stored as
+  empty strings rather than dropped.
+
+A ratio note: the Phase 2 brief defines
+``dialogue_to_action_ratio = total_dialogue_chars / (total_dialogue_chars
++ total_stage_direction_chars)``. In MovieSum, ``stage_direction`` is
+typically just the scene slugline ("INT. KITCHEN - DAY"), so this
+literal formula yields values close to 1 for most scripts. We expose
+the literal formula alongside a more informative
+``dialogue_to_total_text_ratio`` that includes ``scene_description``
+chars too, plus the raw character counts for both, so downstream phases
+can pick whichever is appropriate.
+"""
+
+from __future__ import annotations
+
+import xml.etree.ElementTree as ET
+from dataclasses import dataclass, field
+from typing import Iterable
+
+from src.utils.logging import get_logger
+
+logger = get_logger(__name__)
+
+
+@dataclass(frozen=True)
+class Scene:
+    """One scene within a screenplay.
+
+    Attributes
+    ----------
+    scene_number
+        1-indexed position in the screenplay.
+    stage_direction
+        Concatenated text of all ``<stage_direction>`` elements in the
+        scene. Usually a single slugline like ``"INT. KITCHEN - DAY"``.
+    scene_description
+        Concatenated text of all ``<scene_description>`` elements in
+        the scene. Usually one or more paragraphs of action.
+    dialogue_units
+        Ordered tuple of ``(character_name, dialogue_text)`` pairs.
+        Character names with no following dialogue, or dialogue with
+        no preceding character, are included with the missing side as
+        an empty string.
+    """
+    scene_number: int
+    stage_direction: str
+    scene_description: str
+    dialogue_units: tuple[tuple[str, str], ...]
+
+
+@dataclass(frozen=True)
+class ParsedScreenplay:
+    """Parsed structure for one MovieSum screenplay.
+
+    The structural metric fields are denormalized onto the master
+    DataFrame in `src.data.build_corpus`; the full ``scenes`` list is
+    saved separately to ``data/processed/screenplays_parsed.pkl``.
+    """
+    imdb_id: str
+    scenes: tuple[Scene, ...]
+    parse_warnings: tuple[str, ...]
+    # Structural metrics (denormalized onto the master parquet).
+    n_scenes: int
+    n_unique_characters: int
+    n_dialogue_lines: int
+    total_dialogue_chars: int
+    total_stage_direction_chars: int
+    total_scene_description_chars: int
+    total_action_chars: int  # stage_direction + scene_description
+    # Two ratios. ``dialogue_to_action_ratio`` follows the brief's literal
+    # formula and tends to be ~0.99 because stage_direction is usually
+    # just a slugline. ``dialogue_to_total_text_ratio`` is more
+    # informative for downstream features.
+    dialogue_to_action_ratio: float
+    dialogue_to_total_text_ratio: float
+
+
+def _stripped(text: str | None) -> str:
+    """Return ``text.strip()`` or ``""`` if ``text`` is ``None``."""
+    return text.strip() if text else ""
+
+
+def _parse_one_scene(
+    scene_element: ET.Element,
+    scene_number: int,
+    warnings: list[str],
+) -> Scene:
+    """Walk a ``<scene>`` element's children in order and build a Scene.
+
+    Reconstructs ``(character, dialogue)`` pairs from the alternating
+    sequence. If the structure breaks (e.g., two characters in a row,
+    or dialogue with no preceding character), records a warning and
+    keeps going with empty-string fillers so downstream code can still
+    iterate.
+    """
+    stage_directions: list[str] = []
+    scene_descriptions: list[str] = []
+    dialogue_units: list[tuple[str, str]] = []
+    # ``pending_character`` is set after a <character> tag, awaiting its
+    # paired <dialogue>. ``last_speaker`` is the most recent character
+    # who actually spoke; used to attribute continuation dialogue
+    # (e.g., second <dialogue> after a <parenthetical>) to the same
+    # speaker. ``last_speaker`` resets when a stage_direction or
+    # scene_description breaks the dialogue flow.
+    pending_character: str | None = None
+    last_speaker: str | None = None
+
+    for child in scene_element:
+        tag = child.tag
+        text = _stripped(child.text)
+        if tag == "stage_direction":
+            if pending_character is not None:
+                # Character without dialogue before this stage_direction.
+                dialogue_units.append((pending_character, ""))
+                warnings.append(
+                    f"scene {scene_number}: character {pending_character!r} "
+                    "had no following <dialogue>"
+                )
+                pending_character = None
+            last_speaker = None  # action breaks the dialogue flow
+            stage_directions.append(text)
+        elif tag == "scene_description":
+            if pending_character is not None:
+                dialogue_units.append((pending_character, ""))
+                warnings.append(
+                    f"scene {scene_number}: character {pending_character!r} "
+                    "had no following <dialogue>"
+                )
+                pending_character = None
+            last_speaker = None  # action breaks the dialogue flow
+            scene_descriptions.append(text)
+        elif tag == "character":
+            if pending_character is not None:
+                # Two characters in a row — first one had no dialogue.
+                dialogue_units.append((pending_character, ""))
+                warnings.append(
+                    f"scene {scene_number}: character {pending_character!r} "
+                    "followed by another <character>"
+                )
+            pending_character = text
+        elif tag == "parenthetical":
+            # Standard screenplay element; not a flow break. Don't reset
+            # pending_character or last_speaker. Don't store the
+            # parenthetical text (the brief's dialogue_units schema is
+            # 2-tuples; parentheticals would expand it).
+            pass
+        elif tag == "dialogue":
+            if pending_character is not None:
+                speaker = pending_character
+                pending_character = None
+            elif last_speaker is not None:
+                # Continuation: same speaker, with a parenthetical or
+                # similar non-flow-breaking element in between.
+                speaker = last_speaker
+            else:
+                # Genuinely orphaned: no <character> before this and a
+                # stage_direction or scene_description has reset the
+                # dialogue flow.
+                speaker = ""
+                warnings.append(
+                    f"scene {scene_number}: <dialogue> with no attributable speaker"
+                )
+            dialogue_units.append((speaker, text))
+            last_speaker = speaker if speaker else last_speaker
+        else:
+            # An unknown tag we haven't seen in the corpus survey.
+            # Record but don't fail.
+            warnings.append(f"scene {scene_number}: unexpected tag {tag!r}")
+
+    # If the scene ended on a dangling <character>, flush it.
+    if pending_character is not None:
+        dialogue_units.append((pending_character, ""))
+        warnings.append(
+            f"scene {scene_number}: scene ended with character {pending_character!r} "
+            "and no following <dialogue>"
+        )
+
+    return Scene(
+        scene_number=scene_number,
+        stage_direction=" ".join(s for s in stage_directions if s),
+        scene_description=" ".join(s for s in scene_descriptions if s),
+        dialogue_units=tuple(dialogue_units),
+    )
+
+
+def _empty_screenplay(imdb_id: str, warning: str) -> ParsedScreenplay:
+    """Build a degenerate ParsedScreenplay used when parsing fails."""
+    return ParsedScreenplay(
+        imdb_id=imdb_id,
+        scenes=(),
+        parse_warnings=(warning,),
+        n_scenes=0,
+        n_unique_characters=0,
+        n_dialogue_lines=0,
+        total_dialogue_chars=0,
+        total_stage_direction_chars=0,
+        total_scene_description_chars=0,
+        total_action_chars=0,
+        dialogue_to_action_ratio=0.0,
+        dialogue_to_total_text_ratio=0.0,
+    )
+
+
+def parse_screenplay(xml_string: str, imdb_id: str) -> ParsedScreenplay:
+    """Parse a MovieSum XML screenplay into a ``ParsedScreenplay``.
+
+    Parameters
+    ----------
+    xml_string
+        The full screenplay XML, as stored in MovieSum's ``script``
+        field.
+    imdb_id
+        The IMDb ID for this screenplay; included in the output for
+        traceability.
+
+    Returns
+    -------
+    ParsedScreenplay
+        Frozen dataclass with the parsed scenes, structural metrics,
+        and any warnings. Never raises on bad input — malformed XML
+        produces a degenerate object with the error in
+        ``parse_warnings``.
+    """
+    if not xml_string or not xml_string.strip():
+        return _empty_screenplay(imdb_id, "empty XML string")
+
+    try:
+        root = ET.fromstring(xml_string)
+    except ET.ParseError as exc:
+        logger.warning("XML parse failed for %s: %s", imdb_id, exc)
+        return _empty_screenplay(imdb_id, f"XML parse error: {exc}")
+
+    if root.tag != "script":
+        logger.warning("Root tag for %s is %r, expected 'script'", imdb_id, root.tag)
+        # Continue anyway — sometimes Roots get mislabeled but still
+        # contain valid <scene> children.
+
+    warnings: list[str] = []
+    scenes: list[Scene] = []
+    for i, scene_el in enumerate(root.findall("scene"), start=1):
+        scenes.append(_parse_one_scene(scene_el, scene_number=i, warnings=warnings))
+
+    return _summarize(imdb_id, scenes, warnings)
+
+
+def _summarize(
+    imdb_id: str, scenes: list[Scene], warnings: list[str]
+) -> ParsedScreenplay:
+    """Compute the structural metrics from a list of parsed scenes."""
+    n_scenes = len(scenes)
+    n_dialogue_lines = sum(len(s.dialogue_units) for s in scenes)
+    total_dialogue_chars = sum(
+        len(text) for s in scenes for _, text in s.dialogue_units
+    )
+    total_stage_direction_chars = sum(len(s.stage_direction) for s in scenes)
+    total_scene_description_chars = sum(len(s.scene_description) for s in scenes)
+    total_action_chars = total_stage_direction_chars + total_scene_description_chars
+
+    unique_characters = {
+        name for s in scenes for name, _ in s.dialogue_units if name
+    }
+    n_unique_characters = len(unique_characters)
+
+    # Brief's literal formula: dialogue / (dialogue + stage_direction).
+    if total_dialogue_chars + total_stage_direction_chars > 0:
+        dialogue_to_action_ratio = total_dialogue_chars / (
+            total_dialogue_chars + total_stage_direction_chars
+        )
+    else:
+        dialogue_to_action_ratio = 0.0
+
+    # More informative variant: dialogue / (dialogue + all non-dialogue text).
+    if total_dialogue_chars + total_action_chars > 0:
+        dialogue_to_total_text_ratio = total_dialogue_chars / (
+            total_dialogue_chars + total_action_chars
+        )
+    else:
+        dialogue_to_total_text_ratio = 0.0
+
+    return ParsedScreenplay(
+        imdb_id=imdb_id,
+        scenes=tuple(scenes),
+        parse_warnings=tuple(warnings),
+        n_scenes=n_scenes,
+        n_unique_characters=n_unique_characters,
+        n_dialogue_lines=n_dialogue_lines,
+        total_dialogue_chars=total_dialogue_chars,
+        total_stage_direction_chars=total_stage_direction_chars,
+        total_scene_description_chars=total_scene_description_chars,
+        total_action_chars=total_action_chars,
+        dialogue_to_action_ratio=dialogue_to_action_ratio,
+        dialogue_to_total_text_ratio=dialogue_to_total_text_ratio,
+    )
+
+
+def parse_many(
+    items: Iterable[tuple[str, str]],
+) -> dict[str, ParsedScreenplay]:
+    """Parse a batch of screenplays.
+
+    Parameters
+    ----------
+    items
+        Iterable of ``(imdb_id, xml_string)`` pairs.
+
+    Returns
+    -------
+    dict[str, ParsedScreenplay]
+        Keyed by ``imdb_id``. If the same ID appears twice in
+        ``items`` the second one wins (caller should dedupe upstream).
+    """
+    out: dict[str, ParsedScreenplay] = {}
+    for imdb_id, xml in items:
+        out[imdb_id] = parse_screenplay(xml, imdb_id)
+    n_with_warnings = sum(1 for v in out.values() if v.parse_warnings)
+    logger.info(
+        "Parsed %s screenplays (%s with warnings)",
+        f"{len(out):,}", f"{n_with_warnings:,}",
+    )
+    return out

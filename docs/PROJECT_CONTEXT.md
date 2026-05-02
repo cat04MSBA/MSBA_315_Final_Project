@@ -234,6 +234,27 @@ below are the actual measured values; see
 - <1,000 films joined: add IMSDb Kaggle scripts as supplementary,
   dedupe by IMDb ID, expand corpus to ~1,500
 
+### Phase 2 processed corpus (complete — 2026-05-02)
+- **Final master corpus: 1,713 films** in
+  `data/processed/films_joined.parquet`. Same scale as the Phase 1
+  working corpus (the planned pre-1995 cutoff was reversed mid-phase
+  after a Phase 1 EDA recount; see decisions log).
+- Year range 1932-2023, median 2005.
+- Budget median $25M, revenue median $64M, rating mean ~6.94,
+  ROI median ~2.9x, ~80% gross-profitable.
+- 41 columns: source columns + derived columns
+  (`effective_rating`, `log_budget`, `log_revenue`, `primary_genre`,
+  `genres_bucketed`, `primary_genre_bucketed`) + screenplay-structural
+  metrics (`n_scenes`, `n_unique_characters`, `n_dialogue_lines`,
+  character / action / dialogue char counts, two ratios).
+- Per-screenplay structured form saved separately to
+  `data/processed/screenplays_parsed.pkl` (228 MB,
+  `dict[imdb_id, ParsedScreenplay]`); Phase 3 reads both.
+- Median 130 scenes / 56 unique characters / 880 dialogue lines per
+  film.
+- See `docs/DATA_NOTES.md` for the full column glossary, edge-case
+  documentation, and biases-to-remember.
+
 ---
 
 ## 6. Methodology Principles
@@ -334,11 +355,24 @@ Format: one entry per decision, newest first
 **See also:** `docs/summaries/phase_N_summary.txt` for full rationale.
 
 
+## 2026-05-02 23:50 — Phase 2: dataset swap audit-trail entry (TMDB 5000 → IMDb-TMDB 1M)
+
+**Phase:** Phase 2 — Data Pipeline (audit entry; the swap itself happened mid-Phase-1)
+**Decision:** Phase 1 began with TMDB 5000 (~4,800 films, hard 2016 cutoff) as the planned ratings source. After the MovieSum × TMDB 5000 join capped at 1,019 four-signal films (in the brief's "document as a limitation" band), the user swapped the ratings source to the **IMDb-TMDB Movie Metadata Big Dataset (1M)** (~1.07M films, native `imdb_id` + `id` columns, year coverage through 2023). Phase 1 working corpus jumped from 1,019 to 1,713 films (+68%); year coverage extended from 2016 to 2023; gross-profitable rate dropped from 86% to 80%, slightly less survivor-biased. The swap was applied retroactively to the foundation docs (Section 4 data sources, Section 5 data summary, Phase 1 brief and summary) so they read as if the new dataset was always the choice. This entry exists in the decisions log to preserve the audit trail per Phase 2 brief Task 6.
+**See also:** `docs/PLANNING_HANDOFF.md` for the full numbers and rationale, `docs/summaries/phase_1_summary.md` for what Phase 1 actually produced.
+
+## 2026-05-02 23:35 — Phase 2: pre-1995 cutoff REVERSED
+
+**Phase:** Phase 2 — Data Pipeline
+**Decision:** The pre-1995 cutoff committed in the 2026-05-02 15:30 entry below is reversed. The Phase 1 EDA's claim of "~50 pre-1995 films" was a count error: the actual number is 398 films (about 23% of the 1,713-film working corpus). The 1995 cutoff was based on a faulty premise and would have shrunk the corpus to 1,315 films, below the brief's 1,400 floor. Working corpus retains all 1,713 films, year range 1932-2023; Phase 4 era-stratified CV will bucket pre-1980s decades into a single "older films" stratum rather than enforce a hard cutoff. The `min_year` knob in `src.data.build_corpus.CorpusBuildConfig` is exposed for future experimentation.
+**See also:** `docs/summaries/phase_1_summary.md` (corrected via strikethrough on the original claim), and the upcoming `docs/summaries/phase_2_summary.md`.
+
 ## 2026-05-02 15:30 — Phase 1: pre-1995 cutoff for the working corpus
 
 **Phase:** Phase 1 — Data Feasibility Verification
 **Decision:** Working corpus will be restricted to films released ≥ 1995 starting in Phase 2. This drops the long thin tail of pre-1995 films (~50 films, mostly singletons per year) so era-based generalization claims in later phases are clean and the dense band of the corpus dominates training. Other end-of-Phase-1 questions (corpus configuration, survivorship-bias framing, MovieSum dedup policy) remain open.
-**See also:** `docs/summaries/phase_1_summary.txt`.
+**Note added 2026-05-02 23:35:** REVERSED — see entry above. The "~50 films" basis was a count error; actual is 398.
+**See also:** `docs/summaries/phase_1_summary.md`.
 
 
 ### [PROPOSAL_DATE] — Project framing
@@ -411,8 +445,8 @@ Format: one entry per decision, newest first
 
 | Phase | Title | Status | Summary doc |
 |---|---|---|---|
-| 1 | Data feasibility verification | Complete with caveats; awaiting planning-conversation decision on corpus configuration | `docs/summaries/phase_1_summary.txt` |
-| 2 | Data pipeline | Not started | — |
+| 1 | Data feasibility verification | Complete | `docs/summaries/phase_1_summary.md` |
+| 2 | Data pipeline | Complete | `docs/summaries/phase_2_summary.md` |
 | 3 | Feature extraction | Not started | — |
 | 4 | Layer 1: Core prediction | Not started | — |
 | 5 | Layer 2: Calibration | Not started | — |

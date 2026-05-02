@@ -74,10 +74,14 @@ Foundation-doc state
 
 Per user instruction, the foundation docs were rewritten as if the
 IMDb-TMDB 1M dataset had always been the ratings source. The
-decisions log entry that mentions the swap was removed; the only
-remaining decisions-log entry from Phase 1 is the pre-1995 cutoff
-(2026-05-02). This is intentional: the foundation docs guide
-execution, this handoff note carries the strategic context.
+decisions log entry that mentions the swap was removed; the
+decisions-log entries from Phase 1 / early Phase 2 are: the
+pre-1995 cutoff (2026-05-02 15:30) and its REVERSAL
+(2026-05-02 23:35) after a Phase 1 EDA recount found 398
+pre-1995 films (not the "~50" originally claimed). The corpus is
+1,713 films, year range 1932-2023. This is intentional: the
+foundation docs guide execution, this handoff note carries the
+strategic context.
 
 The Phase 1 summary (`docs/summaries/phase_1_summary.txt`) is the
 authoritative record of Phase 1 work and includes the consolidated
@@ -96,7 +100,7 @@ one-line change. The preprocessing decisions Claude Code is making:
 
   Item                               | Phase 2 default            | Knob name (suggested)
   -----------------------------------|----------------------------|----------------------
-  Pre-1995 cutoff                    | Drop films < 1995          | `min_year`
+  Year cutoff (pre-1995 reversed)    | No cutoff (min_year=1900)  | `min_year`
   MovieSum dedup                     | Per filled CSV decisions   | (CSV-driven)
   Drop the 2 unmatched MovieSum films| Drop                       | `require_ratings_match`
   Ratings-dataset dedup              | Keep highest `vote_count`  | `ratings_dedup_strategy`

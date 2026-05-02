@@ -215,9 +215,16 @@ explicit confirmation before implementation.
 
 ### Already decided (Phase 2 encodes these directly)
 
-1. **Pre-1995 tail of about 50 films.** Drop them. Corpus is dense
-   1995-2022; the tail is too thin (under 5 films per year) to support
-   era-stratified analyses. Decision logged 2026-05-02.
+1. ~~**Pre-1995 tail of about 50 films.** Drop them.~~ **CORRECTED
+   2026-05-02 (mid-Phase-2):** the "~50 pre-1995 films" claim was a
+   Phase 1 EDA count error. The actual number is **398 films pre-1995**
+   (about 23% of the working corpus, not a thin noise tail). Once the
+   recount surfaced in Phase 2, the cutoff was reversed: the working
+   corpus retains all 1,713 films, year range 1932-2023. Era-
+   stratified CV in Phase 4 will need to bucket pre-1980s decades
+   (each <30 films) into a single "older films" stratum rather than
+   relying on a hard cutoff. See `docs/PROJECT_CONTEXT.md` Section 8
+   for the reversal entry.
 2. **Two MovieSum films absent from the ratings dataset.** Drop them.
 3. **Ratings-dataset duplicates on `imdb_id`** (alternate cuts, regional
    releases). Dedupe by `imdb_id` keeping the row with the higher
@@ -306,8 +313,9 @@ explicit confirmation before implementation.
     fixed window) plus pooling, or a hierarchical approach. Strategy
     decision deferred to Phase 3.
 14. **Per-decade thin cells.** Pre-1980s decades each have under 30
-    films; the pre-1995 cutoff (item 1) handles most of this.
-    Era-stratified CV in Phase 4 should bucket remaining decades.
+    films. With the pre-1995 cutoff reversed (item 1), the full pre-
+    1980 tail (~104 films) stays in the corpus. Era-stratified CV in
+    Phase 4 should bucket pre-1980s decades into a single stratum.
 
 ---
 
@@ -323,9 +331,13 @@ These need strategic input before Phase 2 starts:
    reweight at training time toward a more representative
    profitability distribution? (a) is simpler and defensible; (b) is
    more ambitious and adds a methodological hook.
-2. **Year scope.** The corpus is effectively 1995–2023. Decision
-   already made (logged 2026-05-02): drop films released before 1995
-   in Phase 2.
+2. **Year scope.** The corpus is 1932-2023. Originally a pre-1995
+   cutoff was decided based on the EDA's miscount of ~50 pre-1995
+   films; the recount in Phase 2 found 398 films, so the cutoff was
+   reversed (logged in `PROJECT_CONTEXT.md` Section 8). Original text
+   below preserved for audit purposes; do not act on it:
+   ~~Decision already made (logged 2026-05-02): drop films released before 1995
+   in Phase 2.~~
 3. **Outcome variable.** Per `PROJECT_CONTEXT.txt` Section 8, Phase 4
    trains both rating and box-office models and compares. No action
    needed yet.

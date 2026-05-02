@@ -304,6 +304,15 @@ using this template:
 **Status:** [Complete / Complete with caveats / Blocked]
 **Date completed:** [YYYY-MM-DD HH:MM]
 
+## Strategic decisions made before/during this phase
+What came out of the planning conversation that shaped this phase, with
+dates and the rationale captured at the time. Each entry should record:
+the decision, who/what informed it (planning conversation, prior phase
+finding, user judgement call), and the date it was made. This is the
+strategic audit trail for the phase, distinct from "Tactical choices
+made" below which records implementation-level decisions Claude Code
+made on its own.
+
 ## What we did
 Chronological list of what was executed.
 
@@ -313,7 +322,9 @@ of the final report.
 
 ## Tactical choices made
 Brief list of tactical choices made within the phase, each with a
-one-sentence rationale.
+one-sentence rationale. (Tactical = implementation-level, made by
+Claude Code without escalation. Strategic decisions go in the section
+above.)
 
 ## Results
 Key numbers, tables, findings. Reference saved figures and tables, and
