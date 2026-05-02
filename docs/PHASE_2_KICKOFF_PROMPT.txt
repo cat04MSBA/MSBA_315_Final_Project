@@ -32,13 +32,20 @@ Four things you should know before reading:
 
 
 
-1. **Per PROJECT_CONTEXT.txt Section 11, before implementing any
-   preprocessing step in Phase 2** (imputation, scaling, feature
-   transforms, dedup, outlier handling, etc.), you must present the
-   available options with their tradeoffs and ask me to pick. Items
-   already-decided in the Phase 1 summary can be applied without
-   re-asking; everything else needs my confirmation. I want to keep the
-   ability to test alternative preprocessing techniques later.
+1. **Per PROJECT_CONTEXT.txt Section 11, you OWN the tactical
+   preprocessing decisions** (imputation, scaling, feature transforms,
+   bucketing, outlier handling, etc.). You did the Phase 1 EDA, so
+   you know the data; you don't need to ask me to pick from raw
+   options. Two structural requirements:
+     (a) Ground each choice in the Phase 1 EDA observations and
+         document the rationale in the Phase 2 summary.
+     (b) Implement preprocessing as configurable knobs (a config
+         dict or function arguments with sensible defaults), not as
+         hardcoded values, so testing alternative techniques later is
+         a one-line change.
+   Strategic choices that affect the project's framing (survivorship-
+   bias treatment, primary outcome variable, split ratios, etc.) DO
+   require escalation before implementation.
 
 2. **Logging conventions** (already encoded in `src/utils/logging.py`):
    default level is INFO. INFO messages should be at "main pipeline

@@ -175,6 +175,21 @@ CELLS = [
     """),
 
     md("### 2.2 Missingness across the columns we care about"),
+    md("""
+        Important note before reading the table: in this dataset, missing
+        financial data (budget, revenue) is encoded as the integer `0`,
+        not as `NaN`. That's a TMDB-source convention: CSV integer columns
+        cannot hold true NaNs, so the dataset's authors use 0 as a
+        sentinel for "we don't know." Plain `isna()` would report 0
+        missing for budget and revenue, which is true literally but
+        misleading in practice.
+
+        The cell below computes both: (1) plain `isna` missingness for
+        every column, and (2) "effective missingness" for budget, revenue,
+        and runtime, which adds rows where the value is 0. Read the
+        `pct_effective_missing` column for these monetary / runtime
+        fields, and `pct_missing` for everything else.
+    """),
     code("""
         cols = [
             "imdb_id", "id", "title", "release_date", "release_year_parsed",
@@ -183,21 +198,44 @@ CELLS = [
             "Meta_score", "popularity", "genres_parsed",
             "Director", "production_companies",
         ]
-        miss = ratings[cols].isna().sum().sort_values(ascending=False)
+        miss = ratings[cols].isna().sum()
         miss_pct = (miss / len(ratings) * 100).round(1)
-        miss_report = pd.DataFrame({"missing": miss, "pct_missing": miss_pct})
+
+        # For columns where 0 is a "we don't know" sentinel, also count
+        # zeros as missing.
+        ZERO_SENTINEL_COLUMNS = {"budget", "revenue", "runtime"}
+        eff_missing = {}
+        for c in cols:
+            if c in ZERO_SENTINEL_COLUMNS:
+                eff_missing[c] = int(ratings[c].isna().sum() + (ratings[c] == 0).sum())
+            else:
+                eff_missing[c] = int(miss[c])
+        eff_pct = {c: round(eff_missing[c] / len(ratings) * 100, 1) for c in cols}
+
+        miss_report = pd.DataFrame({
+            "missing (isna)": miss,
+            "pct_missing": miss_pct,
+            "effective_missing": pd.Series(eff_missing),
+            "pct_effective_missing": pd.Series(eff_pct),
+        }).sort_values("pct_effective_missing", ascending=False)
         miss_report
     """),
     md("""
-        Look at the `pct_missing` column. Some columns are sparsely populated
-        across the full dataset (`IMDB_Rating`, `Meta_score`, `Director`,
-        `budget`, `revenue` are the worst offenders). Most films just
-        don't have these signals filled in.
+        Read the table this way. Most film-metadata columns
+        (`IMDB_Rating`, `Meta_score`, `Director`, `production_companies`)
+        are sparsely populated across the full 1.07M-row dataset, which
+        is a "long-tail of obscure films" effect. That's expected and
+        fine for our purposes since we only keep the roughly 2,000 films
+        that match MovieSum, and those tend to be mainstream titles where
+        these fields are populated.
 
-        That's actually fine for our purposes. We're only going to keep the
-        roughly 2,000 films that match MovieSum, and those tend to be
-        mainstream titles where these fields are populated. The Task 4 join
-        filters us down to that subset.
+        The eye-opener is in `pct_effective_missing` for `budget` and
+        `revenue`: about 95% and 98% respectively. Plain `isna()` reports
+        0 missing because the dataset uses integer `0` as the
+        sentinel for "we don't know." This is why the join down to
+        budget+revenue >0 reduces the corpus from ~590K films-with-IMDb-IDs
+        to ~14K films-with-financials. Same convention applies to
+        `runtime` to a milder degree.
     """),
 
     md("### 2.3 Year coverage"),

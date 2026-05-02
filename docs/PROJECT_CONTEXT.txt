@@ -514,16 +514,23 @@ proceeding:
 - **End of Phase 1:** corpus size and quality after all joins.
   Decision needed: do we proceed with the planned scale, expand, or
   reduce scope?
-- **Beginning of Phase 2 — preprocessing decisions.** Before
-  implementing any preprocessing step (imputation strategy, scaling,
-  feature transforms, dedup policy, year cutoff, outlier handling,
-  etc.), Claude Code must present the available options with their
-  tradeoffs and request the user's choice. The user wants to keep the
-  ability to test alternative preprocessing techniques later, so the
-  pipeline must be built from explicitly-chosen knobs, not from
-  Claude Code's defaults. Items already-decided in Phase 1's summary
-  (e.g., pre-1995 cutoff) can be applied without re-asking; everything
-  else needs confirmation.
+- **Phase 2 preprocessing decisions are Claude Code's to make**, but
+  with two structural requirements:
+    (a) Each choice (imputation, scaling, feature transforms,
+        bucketing, outlier handling, etc.) must be grounded in the
+        Phase 1 EDA observations and explained in the Phase 2 summary
+        so the user can review the rationale.
+    (b) The preprocessing pipeline must be implemented as
+        configurable knobs (e.g., a config dict or function arguments
+        with sensible defaults), NOT as hardcoded values. This way
+        testing alternative techniques later is a one-line change,
+        not a refactor.
+  Claude Code does NOT have to ask before implementing tactical
+  preprocessing choices; the user reviews them in the phase summary
+  and can override knob values if they disagree. Strategic choices
+  that affect the project's framing (survivorship-bias treatment,
+  primary outcome variable, train/calibration/test ratio, etc.) are a
+  separate matter and DO require escalation before implementation.
 - **End of Phase 4:** baseline + candidate models are trained and
   benchmarked. Decisions needed: which model is primary, which outcome
   variable is primary, do we add ensemble work or move to Phase 5?

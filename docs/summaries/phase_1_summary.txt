@@ -228,25 +228,62 @@ explicit confirmation before implementation.
 5. **Effective rating column.** Use `IMDB_Rating` when present and
    fall back to `vote_average`. Phase 2 standardizes on a single
    `effective_rating` column for downstream use.
+5b. **`0` is a missing-value sentinel for budget and revenue (and
+   runtime to a lesser extent).** Confirmed via direct check: 0 NaN
+   values for these columns in the raw CSV, but ~95% of rows have
+   `budget=0` and ~98% have `revenue=0`. This is a TMDB-source CSV
+   convention (INT columns can't hold NaN). The Phase 1 join already
+   handles this correctly via `> 0` filters. Phase 2 must continue to
+   treat 0 as missing for these columns; downstream phases must NOT
+   compute statistics on raw budget/revenue without first filtering
+   out zeros. The notebook's missingness section reports both
+   `pct_missing` (literal NaN) and `pct_effective_missing` (NaN OR
+   zero for monetary / runtime fields) so this isn't easy to overlook.
 
-### Decided in principle, Phase 2 must surface options before implementing
+### Decided based on EDA — Phase 2 implements with these defaults
+(implemented as configurable knobs so the user can override later)
 
-6. **Heavy right-skew in budget and revenue.** Plan: `log1p(budget)`
-   and `log1p(revenue)` so outliers don't dominate. Phase 2 should
-   present the user with options (plain `log1p`, `log10`, or quantile-
-   bucketed) before applying.
+6. **Heavy right-skew in budget and revenue.** Apply `log1p` at
+   corpus-build time. Save BOTH the raw columns (`budget`, `revenue`)
+   and transformed columns (`log_budget`, `log_revenue`) to the
+   processed parquet so downstream phases choose per task. `log1p`
+   over plain `log` because it handles zeros gracefully (the working
+   corpus is already filtered to >0, but defensive). The transform
+   choice is a config knob; alternatives `log10` or quantile-bucketing
+   are one-line swaps.
 7. **MovieSum dedup policy for the 12 same-IMDb-ID pairs.** User has
    completed the row-by-row review and filled in the `decision`
    column at `reports/tables/phase1_moviesum_duplicates_review.csv`.
-   Phase 2 must read that file and encode the chosen policy
-   (one `keep` row and one `drop` row per IMDb ID).
+   Phase 2 reads that file and encodes the chosen policy (one `keep`
+   row and one `drop` row per IMDb ID).
 8. **Genre long tail** (Documentary, TV Movie, Foreign, Western, etc.
-   with thin counts). For per-genre CV in Phase 4 we need to bucket
-   them. Phase 2 (or 3) should ask: aggregate all into "other", drop
-   them, or keep them with noisy per-genre estimates accepted.
-9. **Pre-processing pipeline structure.** Imputation strategy, scaling,
-   feature transforms. Phase 2 must present options and let the user
-   pick (per `PROJECT_CONTEXT.txt` Section 11).
+   with thin counts). Bucket genres with fewer than 30 films in the
+   working corpus into an `Other` category at corpus-build time. Save
+   the original `genres_parsed` alongside `genres_bucketed` for
+   traceability. The threshold (30) is a config knob.
+9. **Imputation.** Defer to Phase 3 — imputation must happen
+   AFTER the train/cal/test split to avoid leakage, and Phase 3 is
+   where that split lives. Phase 2 preserves raw nullable columns;
+   no imputation at corpus-build time.
+10. **Scaling.** Defer to Phase 4 (model-specific). Tree-based models
+    (XGBoost, LightGBM, RF) don't need scaling; linear models (Ridge,
+    Lasso) do. Phase 2 saves un-scaled values; Phase 4 wraps with
+    `StandardScaler` only inside the linear-model pipelines.
+11. **Outlier handling.** Don't cap or drop in Phase 2. `log1p` (item
+    6) compresses the right-skew enough to handle the standard cases.
+    If specific outliers cause Phase 4 model issues, address them
+    then with model-specific robust techniques.
+
+### Strategic choices that need user input before Phase 2 implements
+
+12. **Survivorship-bias treatment.** ~80% of the working corpus is
+    gross-profitable, well above industry's roughly 50% net rate. Two
+    options: (a) keep the corpus as-is and document explicitly in the
+    report's limitations section, run sensitivity analysis in Phase 6
+    with multiple cost matrices to test robustness; (b) reweight at
+    training time toward an industry base-rate distribution. (a) is
+    simpler and what we have data to support; (b) requires industry
+    base-rate data we don't have. Recommendation: (a). User confirms.
 
 ### Observations to carry forward into later phases
 
