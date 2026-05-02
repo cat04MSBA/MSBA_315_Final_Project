@@ -82,7 +82,7 @@ Phase 2 commits to processing the full data once. Subsequent phases
 read the artifact this phase produces and never re-run the pipeline.
 
 **What it delivers:**
-- Loaders for each raw source (MovieSum, TMDB 5000, optionally IMSDb fallback)
+- Loaders for each raw source (MovieSum, IMDb-TMDB ratings dataset, optionally IMSDb fallback)
 - A joining module that produces the master film table
 - A screenplay parser that extracts structured content from MovieSum's
   XML format (scenes, characters, dialogue, stage directions)

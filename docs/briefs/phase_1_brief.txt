@@ -95,8 +95,10 @@ Set up `src/utils/logging.py` to configure a project logger at INFO level.
 
 **At the end of Task 1, pause and tell the user:**
 
-> "Folder structure is ready. Please drop `tmdb_5000_movies.csv` and the
-> MovieSum files into `data/raw/`, then confirm so I can proceed."
+> "Folder structure is ready. Please drop the ratings CSV
+> (`IMDB TMDB Movie Metadata Big Dataset (1M).csv` under
+> `data/raw/ratings_data/`) and the MovieSum JSONL files (under
+> `data/raw/script_data/`), then confirm so I can proceed."
 
 Do not begin Task 2 until the user confirms.
 

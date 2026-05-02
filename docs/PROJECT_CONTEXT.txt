@@ -349,7 +349,7 @@ Format: one entry per decision, newest first
   in favor of the pre-greenlight framing (Framing 3) for clearer
   problem definition.
 
-### [PROPOSAL_DATE] — Data source committed: MovieSum + TMDB 5000
+### [PROPOSAL_DATE] — Data sources committed: MovieSum + IMDb-TMDB Movie Metadata Big Dataset (1M)
 - Selected MovieSum (Saxena & Keller 2024) as the primary screenplay
   source. Reasons: structured XML with scene/character/dialogue tags;
   IMDb IDs included natively; manually formatted; published precedent
@@ -359,8 +359,15 @@ Format: one entry per decision, newest first
   are essential for the features and SHAP granularity Layer 4 requires.
   Training on subtitles when the deployed system consumes screenplays
   also creates a domain mismatch.
-- Documented IMSDb Kaggle dumps as fallback if MovieSum × TMDB join
-  yields too few films (<1,000).
+- Selected the IMDb-TMDB Movie Metadata Big Dataset (1M) as the primary
+  ratings source. Reasons: carries `imdb_id` and TMDB `id` natively
+  (direct exact-ID join with MovieSum, no fuzzy matching); contains
+  budget, revenue, runtime, multiple rating fields, director, and other
+  metadata; year coverage extends through 2023, so MovieSum's post-2016
+  films are matchable.
+- Documented IMSDb Kaggle dumps as fallback if MovieSum × ratings join
+  yields too few films (<1,000). Phase 1 result of 1,713 four-signal
+  films makes invoking this fallback unnecessary.
 - The 2,200-screenplay base of MovieSum is comparable to or larger than
   established screenplay-prediction work (ScriptBase-j: 917; Eliashberg
   2014: ~300).

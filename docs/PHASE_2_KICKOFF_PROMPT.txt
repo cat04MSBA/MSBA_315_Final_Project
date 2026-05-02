@@ -22,7 +22,15 @@ Also read this for the Phase 1 outcome that Phase 2 builds on:
     (apply directly), the items decided in principle but needing
     confirmation, and the observations to carry into later phases.
 
-Three things you should know before reading:
+Four things you should know before reading:
+
+0. **The MovieSum dedup CSV is already filled.** I went row-by-row
+   through `reports/tables/phase1_moviesum_duplicates_review.csv` and
+   marked `keep` / `drop` for each of the 24 rows (12 pairs). When
+   Phase 2 implements the dedup, read that file directly rather than
+   regenerating it. The `decision` column is the source of truth.
+
+
 
 1. **Per PROJECT_CONTEXT.txt Section 11, before implementing any
    preprocessing step in Phase 2** (imputation, scaling, feature

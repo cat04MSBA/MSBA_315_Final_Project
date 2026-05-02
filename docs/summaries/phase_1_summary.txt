@@ -235,10 +235,11 @@ explicit confirmation before implementation.
    and `log1p(revenue)` so outliers don't dominate. Phase 2 should
    present the user with options (plain `log1p`, `log10`, or quantile-
    bucketed) before applying.
-7. **MovieSum dedup policy for the 12 same-IMDb-ID pairs.** Awaiting
-   the user's row-by-row review of
-   `reports/tables/phase1_moviesum_duplicates_review.csv`. Phase 2
-   encodes whatever policy the user chooses.
+7. **MovieSum dedup policy for the 12 same-IMDb-ID pairs.** User has
+   completed the row-by-row review and filled in the `decision`
+   column at `reports/tables/phase1_moviesum_duplicates_review.csv`.
+   Phase 2 must read that file and encode the chosen policy
+   (one `keep` row and one `drop` row per IMDb ID).
 8. **Genre long tail** (Documentary, TV Movie, Foreign, Western, etc.
    with thin counts). For per-genre CV in Phase 4 we need to bucket
    them. Phase 2 (or 3) should ask: aggregate all into "other", drop
@@ -291,9 +292,9 @@ These need strategic input before Phase 2 starts:
 3. **Outcome variable.** Per `PROJECT_CONTEXT.txt` Section 8, Phase 4
    trains both rating and box-office models and compares. No action
    needed yet.
-4. **MovieSum dedup policy.** User is reviewing
-   `phase1_moviesum_duplicates_review.csv`. Phase 2 will encode the
-   chosen policy.
+4. **MovieSum dedup policy.** User has filled in
+   `phase1_moviesum_duplicates_review.csv` with `keep`/`drop` per row.
+   Phase 2 reads the file and encodes the policy.
 
 ---
 
