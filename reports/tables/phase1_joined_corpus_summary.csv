@@ -1,0 +1,15 @@
+metric,value
+films_with_all_four_signals,1011.0
+year_min,1934.0
+year_max,2016.0
+year_median,2003.0
+budget_median_usd,30000000.0
+budget_mean_usd,47523431.0
+revenue_median_usd,90426405.0
+revenue_mean_usd,173700454.0
+rating_mean,6.688
+rating_median,6.7
+roi_median,3.005
+roi_pct_profitable,85.76
+screenplay_chars_median,210509.0
+screenplay_chars_mean,211860.0

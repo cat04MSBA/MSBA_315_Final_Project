@@ -1,0 +1,7 @@
+metric,count
+moviesum_deduped,2188
+matched_to_tmdb,1121
+matched_with_budget,1060
+matched_with_revenue,1028
+matched_with_budget_and_revenue,1011
+matched_with_all_four_signals,1011

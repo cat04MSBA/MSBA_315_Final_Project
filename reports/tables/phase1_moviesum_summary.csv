@@ -1,0 +1,14 @@
+metric,value
+total_screenplays,2200
+valid_imdb_id,2200
+invalid_or_missing_imdb_id,0
+unique_valid_imdb_ids,2188
+split_train,1800
+split_val,200
+split_test,200
+length_mean_chars,207396
+length_median_chars,205871
+length_min_chars,37207
+length_max_chars,537140
+year_min,1931
+year_max,2023

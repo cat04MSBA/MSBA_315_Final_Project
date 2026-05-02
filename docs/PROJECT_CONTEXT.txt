@@ -171,25 +171,54 @@ deployment target.
 > Updated by Claude Code as Phase 1 progresses. Add timestamps, do not
 > overwrite prior entries.
 
-**Status as of [DATE_DDMMYYYY] [TIME_HHMM AM/PM]:** Phase 1 in progress.
+**Status as of 02052026 02:57 AM:** Phase 1 complete; mandatory checkpoint
+pending. Numbers below are the actual measured values; see
+`docs/summaries/phase_1_summary.txt` for plots, interpretation, and the
+list of questions for the planning conversation.
 
-### TMDB 5000 (Stage 2 of Phase 1, complete)
+### TMDB 5000 (Stage 2 of Phase 1, complete — 2026-05-02)
 - Total films: 4,803
 - Films with budget > 0: 3,766
 - Films with revenue > 0: 3,376
 - Films with both: 3,229
 - Year distribution: dense 1997–2016 (~100-170 films/year);
-  long thin tail back to 1916
+  long thin tail back to 1916. **Effective hard cutoff at 2016**
+  (1 film in 2017, zero after).
 
-### MovieSum (Stage 3 of Phase 1, pending)
-- Total screenplays: 2,200 (per dataset documentation)
-- Confirmed download successful: [pending]
-- IMDb ID coverage: [pending — expected ~100% per dataset spec]
+### MovieSum (Stage 3 of Phase 1, complete — 2026-05-02)
+- Total screenplays: 2,200 (1,800 train + 200 val + 200 test;
+  matches published documentation)
+- IMDb ID coverage: 100% well-formed (`tt\d{7,10}`); **2,188 unique IDs**
+  due to 12 same-IMDb-ID duplicate pairs (alternate titles or alternate
+  drafts of the same film)
+- Year range: 1931–2023, median 2007, ~21% post-2016
+- Mean screenplay length: ~207k characters (~34k tokens — matches the
+  README's claim)
+- XML structure verified: `<script><scene>{<stage_direction>,
+  <scene_description>, <character>, <dialogue>}*</scene>*</script>`,
+  parses cleanly with `xml.etree.ElementTree`
 
-### MovieSum × TMDB 5000 join (Stage 4 of Phase 1, pending)
-- Films with both screenplay AND budget+revenue: [pending]
-- Year distribution of joined set: [pending]
-- Genre distribution of joined set: [pending]
+### MovieSum × TMDB 5000 join (Stage 4 of Phase 1, complete — 2026-05-02)
+- Strategy: title+year exact match after normalization (lowercase, drop
+  punctuation, drop leading articles, lookup against both TMDB `title`
+  and `original_title`), with ±1-year tolerance.
+- Films matched to TMDB: **1,121 / 2,188 (51.2%)** — bound is TMDB 5000's
+  coverage, not the join. Maximum any-year normalized overlap is 1,176
+  films, so the join captures ~95% of achievable matches.
+- Year-offset breakdown: 1,103 exact, 18 at ±1 year.
+- **Working corpus (matched + budget>0 + revenue>0 + rating>0):
+  1,011 films.**
+- Year distribution: 1934–2016, median 2003, dense 1995–2016. No 2017+
+  films (TMDB 5000 cutoff).
+- Genre distribution: Drama / Comedy / Thriller / Action lead heavily;
+  small genres and documentaries are sparse.
+- Budget median $30M (mean $48M, heavy right tail);
+  revenue median $90M (mean $174M);
+  rating mean 6.69 / median 6.70 (narrow band);
+  ROI median 3.0x, **85.8% gross-profitable** (severe survivorship bias).
+- Working dataset saved to
+  `data/interim/phase1_joined_corpus.parquet` (2,188 rows; the 1,011
+  four-signal subset is filtered at load time downstream).
 
 ### Decision criteria after Phase 1
 - ≥1,500 films joined: proceed with MovieSum-only as primary corpus
@@ -349,7 +378,7 @@ project_root/
 
 | Phase | Title | Status | Summary doc |
 |---|---|---|---|
-| 1 | Data feasibility verification | In progress | (pending) |
+| 1 | Data feasibility verification | Complete with caveats; awaiting planning-conversation decision on corpus configuration | `docs/summaries/phase_1_summary.txt` |
 | 2 | Data pipeline | Not started | — |
 | 3 | Feature extraction | Not started | — |
 | 4 | Layer 1: Core prediction | Not started | — |
