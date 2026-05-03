@@ -255,6 +255,48 @@ below are the actual measured values; see
 - See `docs/DATA_NOTES.md` for the full column glossary, edge-case
   documentation, and biases-to-remember.
 
+### Phase 3 feature matrix (complete — 2026-05-03)
+- **Consolidated feature matrix: 1,713 films x 131 columns** in
+  `data/processed/features.parquet`. 127 feature columns (the
+  `all_five` union of structural baseline + lexical + sentiment +
+  topic + character_network + embedding) + 3 target columns
+  (`log_roi`, `roi_gt_1`, `roi_gt_2`) + 1 split-assignment column.
+- Per-group feature parquets retained on disk:
+  `features_lexical.parquet` (13 model features),
+  `features_sentiment.parquet` (22), `features_topic.parquet` (22),
+  `features_character_network.parquet` (12),
+  `features_embedding.parquet` (32 PCA components).
+- Headline ablation finding: 2 standalone-null groups (lexical,
+  sentiment), 3 standalone-partial-positive groups (topic on
+  `roi_gt_1`, character_network on `roi_gt_2`, embedding on
+  `log_roi` regression). The Phase 3c combinations sub-phase
+  surfaced that SVM-RBF, the worst-of-four standalone family,
+  becomes the best-of-four on combinations: SVM on `all_five`
+  reaches `roi_gt_2` AUC 0.665 OOF (lift +0.063) and SVM on
+  `topic_plus_cn` reaches `roi_gt_1` AUC 0.639 OOF (lift +0.081,
+  the largest classification lift of the phase). Linear
+  regression on `log_roi` is signal-limited at the corpus's
+  survivorship structure.
+- Auxiliary artifacts on disk: `embeddings_minilm_pooled.parquet`
+  (1,713 x 384, the raw MiniLM cache);
+  `topic_model_artifacts/` (TF-IDF vectorizer + LDA model +
+  train_ids index, fit on training fold only);
+  `embedding_pca.joblib` (32-component PCA, train-fitted).
+- Train/calibration/test split saved at
+  `data/processed/split_assignments.parquet` (1,199 / 257 / 257
+  films, stratified by primary_genre_bucketed and decade_bucket
+  with rare-cell pooling, seed 42, 57 strata, every named stratum
+  with at least one film in each split).
+- See `docs/FEATURE_NOTES.md` for the full feature-column glossary,
+  per-feature handling decisions (especially the wordfreq deviation
+  for lexical, the NRC stop-word policy for sentiment, the LDA
+  K = 20 character-name dominance for topic, the
+  `treat_flagged_as_nan=True` default for character_network), and
+  references to the Phase 3 ablation tables.
+- See `docs/summaries/phase_3_summary.md` for the Phase 3 final
+  summary using the standard Section 7 template, replacing the
+  seven interim handoffs as the canonical Phase 3 record.
+
 ---
 
 ## 6. Methodology Principles
@@ -510,7 +552,7 @@ Format: one entry per decision, newest first
 |---|---|---|---|
 | 1 | Data feasibility verification | Complete | `docs/summaries/phase_1_summary.md` |
 | 2 | Data pipeline | Complete | `docs/summaries/phase_2_summary.md` |
-| 3 | Feature extraction | In progress (3a + 3b + 3c complete; final summary + FEATURE_NOTES.md pending before Phase 4) | `docs/handoffs/phase_3a_handoff.md`, `docs/handoffs/phase_3b_*_handoff.md` (5), `docs/handoffs/phase_3c_combinations_handoff.md` |
+| 3 | Feature extraction | Complete | `docs/summaries/phase_3_summary.md` |
 | 4 | Layer 1: Core prediction | Not started | — |
 | 5 | Layer 2: Calibration | Not started | — |
 | 6 | Layer 3: Decision | Not started | — |
