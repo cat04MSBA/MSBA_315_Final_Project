@@ -364,6 +364,12 @@ Format: one entry per decision, newest first
 **See also:** `docs/summaries/phase_N_summary.txt` for full rationale.
 
 
+## 2026-05-03 22:00 — Phase 3c complete: combinations sub-phase results elevate SVM-RBF and surface non-additive lift pattern
+
+**Phase:** Phase 3c — Combinations sub-phase (closes Phase 3 before Phase 4)
+**Decision:** Four pre-specified combinations (`all_five`, `partial_positives`, `topic_plus_cn`, `semantic_trio`) evaluated against the Phase 3a revised dialogue-only floor under the same 4-family multi-family harness as Phase 3b. The set was locked at proposal time; pre-registration discipline preserved at the combinations level. Two findings shape Phase 4. (1) Pre-registered direction was wrong on 10 of 12 linear-OOF headline bands: standalone group lifts do not compose additively under linear regression; combinations larger than ~60 features hurt linear log_roi RMSE. The mechanism is the same noise-vs-regularization interaction the lexical group's negative lift surfaced, scaling with feature count. (2) SVM-RBF dominates classification under combinations: it goes from worst-of-four standalone to best-of-four on combinations, with the largest classification lift in the entire Phase 3 work being SVM on `topic_plus_cn` `roi_gt_1` AUC at +0.081, and SVM on `all_five` `roi_gt_2` AUC at +0.063 (reaching 0.665 OOF, within the project's forward-expected 0.65-0.72 band). The verdict: `topic_plus_cn` is the parsimonious combination winner on linear (only combination with both classification AUCs lifted positively), `all_five` is the maximum-information matrix Phase 4 should benchmark against, and SVM-RBF is elevated to a serious Phase 4 candidate alongside the originally-planned linear and tree ensembles. The standalone-group "earned its place" criterion is too restrictive given combination evidence; Phase 4 input matrix should be the union of all five Phase 3b groups, with the model search weighting features.
+**See also:** `docs/handoffs/phase_3c_combinations_handoff.md` for the multi-family lift tables, the parsimonious-combination winner, and the explicit Phase 4 implications.
+
 ## 2026-05-03 20:50 — Phase 3b complete: embedding standalone result is partial positive (broadest signal of the phase)
 
 **Phase:** Phase 3 — Feature Extraction (sub-phase 3b, fifth and final of the standalone groups)
