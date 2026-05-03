@@ -1,0 +1,16 @@
+{
+  "_notes": "Phase 3b ablation row 4 of 5. Character-network features (12) added on top of revised dialogue-only baseline. Pre-registered linear OOF: log_roi RMSE -0.040..-0.010; roi_gt_1 AUC 0.000..+0.015; roi_gt_2 AUC +0.020..+0.045. Strongest remaining genre-orthogonality candidate.",
+  "bootstrap_alpha": 0.05,
+  "bootstrap_iter": 1000,
+  "min_dialogue_lines_per_character": 5,
+  "model_families": [
+    "linear",
+    "histgb",
+    "knn",
+    "svm"
+  ],
+  "n_cv_folds": 5,
+  "seed": 42,
+  "top_lead_decile_fraction": 0.1,
+  "treat_flagged_films_as_nan": true
+}

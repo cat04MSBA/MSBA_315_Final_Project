@@ -364,6 +364,12 @@ Format: one entry per decision, newest first
 **See also:** `docs/summaries/phase_N_summary.txt` for full rationale.
 
 
+## 2026-05-03 19:50 — Phase 3b: sentiment standalone result is null; nrclex deviation accepted
+
+**Phase:** Phase 3 — Feature Extraction (sub-phase 3b, second of five groups)
+**Decision:** Sentiment features (22 columns: 3 VADER aggregates over dialogue, 8 NRC emotion proportions over non-stopword dialogue tokens, 5 quartile-trajectory features, 6 Reagan archetype similarities) implemented per proposal v2; the multi-family ablation produced a null verdict. Linear OOF lift went the wrong direction on 7 of 8 pre-registered metrics; the eighth (`roi_gt_2` AUC, +0.008) moved in the predicted direction but below the predicted band of +0.015 to +0.030. HistGB drops `roi_gt_2` AUC by 0.018 with sentiment added, mirroring the lexical group's pattern. The negative-lift row is appended to `phase3_ablation.csv` as the honest finding; all 22 features are retained in the matrix for the Phase 3c combinations evaluation. The NRC EmoLex source deviation (`nrclex` package in place of the form-gated canonical download from saifmohammad.com) was the documented fallback in proposal v2 Section 6.2 and is logged in the run's preprocessing metadata, matching the wordfreq-vs-SUBTLEX-US precedent set in the lexical group. Two consecutive null results across two independent feature groups (lexical, sentiment) reinforce the genre-residual hypothesis from the lexical handoff and strengthen the case for the Phase 3c combinations sub-phase. The diagnostic threshold trips on the inherited 15% NRC OOV rate and the 0.5-unit archetype-variance bound are documented as definitional / shape mismatches rather than implementation defects (the bundled NRC lexicon is filtered to ~6,500 emotion-bearing entries, so high OOV is mechanical; archetype cosine similarity against smooth analytic templates is geometrically bounded at small magnitude). The first project-level `requirements.txt` was created during this work to capture the accumulated Phase 3 dependency stack.
+**See also:** `docs/handoffs/phase_3b_sentiment_handoff.md` for headline numbers, full diagnostic table, and mechanism analysis.
+
 ## 2026-05-03 19:00 — Phase 3: metric vocabulary updated (drop R², add MSE/CVRMSE/F1/log-loss; report train and OOF)
 
 **Phase:** Phase 3 — Feature Extraction (cross-cutting; affects Phase 3a baselines, Phase 3b ablations, and the Phase 3c combinations sub-phase)
@@ -480,7 +486,7 @@ Format: one entry per decision, newest first
 |---|---|---|---|
 | 1 | Data feasibility verification | Complete | `docs/summaries/phase_1_summary.md` |
 | 2 | Data pipeline | Complete | `docs/summaries/phase_2_summary.md` |
-| 3 | Feature extraction | In progress (3a multi-family floor complete; lexical group complete with null verdict; sentiment proposal next) | `docs/handoffs/phase_3a_handoff.md`, `docs/handoffs/phase_3b_lexical_handoff.md` |
+| 3 | Feature extraction | In progress (3a multi-family floor complete; lexical and sentiment groups complete, both null; topic group next) | `docs/handoffs/phase_3a_handoff.md`, `docs/handoffs/phase_3b_lexical_handoff.md`, `docs/handoffs/phase_3b_sentiment_handoff.md` |
 | 4 | Layer 1: Core prediction | Not started | — |
 | 5 | Layer 2: Calibration | Not started | — |
 | 6 | Layer 3: Decision | Not started | — |

@@ -1,0 +1,59 @@
+# MSBA315 Final Project — Python dependencies.
+#
+# Pinned to the versions used during Phase 3 development (May 2026).
+# Install from a fresh checkout with::
+#
+#     pip3 install --user -r requirements.txt
+#
+# After installing, NLTK punkt + punkt_tab + vader_lexicon resources are
+# downloaded on demand by the feature modules' ``ensure_nltk_resources``
+# helpers; no manual ``nltk.download`` is required.
+#
+# Versions are upper-bound-pinned but lower-bound flexible so a future
+# minor-version bump still installs cleanly.
+
+# --- Core scientific stack ---
+numpy>=2.0,<3
+pandas>=2.0,<4
+scipy>=1.11,<2
+scikit-learn>=1.4,<2
+joblib>=1.3,<2
+pyarrow>=15,<22
+
+# --- Plotting + notebook tooling ---
+matplotlib>=3.7,<4
+ipykernel>=6.20,<7
+ipython>=8.0,<10
+jupyterlab>=4,<5
+notebook>=7,<8
+
+# --- Phase 3 lexical feature group ---
+nltk>=3.8,<4
+wordfreq>=3.0,<4
+
+# --- Phase 3 sentiment feature group ---
+# nrclex bundles the NRC Word-Emotion Association Lexicon (Mohammad &
+# Turney 2013). Used in place of a hash-checked direct download from
+# saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm because the canonical
+# distribution is form-gated; nrclex ships the same word-emotion mappings
+# under the author's research-use license. See
+# docs/handoffs/phase_3b_sentiment_handoff.md for the deviation rationale.
+nrclex>=4.1,<5
+# textblob is an indirect dependency of nrclex's load_raw_text (used for
+# tokenization/lemmatization). The sentiment module uses load_token_list
+# instead, so textblob is not directly invoked, but it is required at
+# import time by some nrclex versions.
+textblob>=0.18,<1
+
+# --- Phase 3 character-network feature group ---
+networkx>=3,<4
+
+# --- Phase 3 embedding feature group ---
+# sentence-transformers pulls torch + transformers as transitive
+# dependencies (~1 GB on disk). The encoder all-MiniLM-L6-v2 is
+# downloaded from Hugging Face on first use and cached under
+# ~/.cache/huggingface/.
+sentence-transformers>=2.2,<5
+
+# --- Tests ---
+pytest>=8,<10

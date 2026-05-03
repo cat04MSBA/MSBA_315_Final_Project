@@ -1,0 +1,15 @@
+{
+  "character_network_feature_count": 12,
+  "data_quality_flag_handling": "NaN-fallback: 24 train-split flagged films receive NaN across all 12 model features. Trainer's median imputer handles them at fold-fit time.",
+  "graph_construction": "scene-cooccurrence undirected graph; nodes = significant characters (>=5 non-empty dialogue lines); edges weighted by shared-scene count.",
+  "include_character_network": true,
+  "include_lexical": false,
+  "include_log_budget": false,
+  "include_log_runtime": true,
+  "include_sentiment": false,
+  "include_topic": false,
+  "log_transform_structural": true,
+  "split": "70_15_15_seed_42",
+  "stratification": "(primary_genre_bucketed, decade_bucket)",
+  "structural_features_count": 7
+}

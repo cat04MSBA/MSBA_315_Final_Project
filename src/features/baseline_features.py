@@ -113,6 +113,41 @@ class BaselineFeatureConfig:
     lexical_features_path: Path = field(
         default_factory=lambda: paths.DATA_PROCESSED_DIR / "features_lexical.parquet"
     )
+    # Phase 3b: include the precomputed sentiment feature matrix from
+    # ``data/processed/features_sentiment.parquet`` (or the path given
+    # by ``sentiment_features_path``). The diagnostic-only columns
+    # ``_nrc_oov_rate_dialogue`` and ``_vader_zero_compound_rate`` are
+    # excluded from the model-input matrix (they share the leading-
+    # underscore convention with the lexical group).
+    include_sentiment: bool = False
+    sentiment_features_path: Path = field(
+        default_factory=lambda: paths.DATA_PROCESSED_DIR / "features_sentiment.parquet"
+    )
+    # Phase 3b: include the precomputed topic feature matrix from
+    # ``data/processed/features_topic.parquet``. Topic features are
+    # produced by LDA fit on training-fold tokens only and applied to
+    # all films via ``transform``. No diagnostic-only columns; the
+    # ``topic_dominant_id`` integer column is included as a feature.
+    include_topic: bool = False
+    topic_features_path: Path = field(
+        default_factory=lambda: paths.DATA_PROCESSED_DIR / "features_topic.parquet"
+    )
+    # Phase 3b: include the precomputed character-network feature matrix
+    # from ``data/processed/features_character_network.parquet``. The
+    # leading-underscore diagnostic column ``_n_dropped_minor_characters``
+    # is excluded from the model-input matrix.
+    include_character_network: bool = False
+    character_network_features_path: Path = field(
+        default_factory=lambda: paths.DATA_PROCESSED_DIR / "features_character_network.parquet"
+    )
+    # Phase 3b: include the precomputed embedding feature matrix from
+    # ``data/processed/features_embedding.parquet``. PCA components are
+    # fit on training-fold pooled MiniLM embeddings only; transform
+    # applied uniformly to all 1,713 films.
+    include_embedding: bool = False
+    embedding_features_path: Path = field(
+        default_factory=lambda: paths.DATA_PROCESSED_DIR / "features_embedding.parquet"
+    )
 
 
 def build_baseline_features(
@@ -182,5 +217,33 @@ def build_baseline_features(
         # up as all-NaN rows that the modelling pipeline's imputer
         # handles.
         out = out.join(lex, how="left")
+
+    if cfg.include_sentiment:
+        sent = pd.read_parquet(cfg.sentiment_features_path)
+        # Drop the diagnostic-only columns (same leading-underscore
+        # convention as the lexical group).
+        diag_cols = [c for c in sent.columns if c.startswith("_")]
+        sent = sent.drop(columns=diag_cols)
+        out = out.join(sent, how="left")
+
+    if cfg.include_topic:
+        top = pd.read_parquet(cfg.topic_features_path)
+        diag_cols = [c for c in top.columns if c.startswith("_")]
+        if diag_cols:
+            top = top.drop(columns=diag_cols)
+        out = out.join(top, how="left")
+
+    if cfg.include_character_network:
+        cn = pd.read_parquet(cfg.character_network_features_path)
+        diag_cols = [c for c in cn.columns if c.startswith("_")]
+        cn = cn.drop(columns=diag_cols)
+        out = out.join(cn, how="left")
+
+    if cfg.include_embedding:
+        emb = pd.read_parquet(cfg.embedding_features_path)
+        diag_cols = [c for c in emb.columns if c.startswith("_")]
+        if diag_cols:
+            emb = emb.drop(columns=diag_cols)
+        out = out.join(emb, how="left")
 
     return out

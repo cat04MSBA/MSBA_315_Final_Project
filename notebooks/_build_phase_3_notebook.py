@@ -1143,9 +1143,204 @@ CELLS = [
     """),
 
     # ============================================================
-    # 10. Outputs and what comes next
+    # 10. Second Part B group: sentiment features
     # ============================================================
-    md("---\n\n## 10. Outputs and next steps"),
+    md("---\n\n## 10. Second Part B group: sentiment features"),
+    md("""
+        ### What sentiment features try to capture
+
+        The sentiment group introduces twenty-two features at three
+        levels of pooling abstraction, each capturing information the
+        other two cannot derive from the screenplay's dialogue.
+
+        * **Whole-screenplay aggregates (eleven features).** Three
+          VADER compound-score statistics over dialogue lines (mean,
+          standard deviation, range), plus eight NRC emotion
+          proportions over non-stopword dialogue tokens (anger,
+          anticipation, disgust, fear, joy, sadness, surprise,
+          trust). These describe the emotional content of the film
+          as a single distribution.
+        * **Quartile-windowed trajectory (five features).** The
+          dialogue is divided into four equal-sized contiguous
+          windows by line index. We compute the mean VADER compound
+          score within each quartile, plus a single
+          volatility-concentration feature that captures whether
+          emotional volatility is concentrated in one quartile or
+          spread across the film. These describe the temporal
+          structure of the emotional arc.
+        * **Reagan archetype similarities (six features).** Reagan,
+          Mitchell, Kiley, Danforth, and Dodds (2016) identified six
+          recurring emotional arc shapes in narrative text:
+          Rags-to-Riches (monotonic rise), Tragedy (monotonic fall),
+          Man-in-a-Hole (fall then rise), Icarus (rise then fall),
+          Cinderella (rise-fall-rise), and Oedipus (fall-rise-fall).
+          Each film's per-line compound trajectory is interpolated
+          to length 100, z-score normalized, and compared to each
+          archetype template via cosine similarity. These describe
+          which canonical narrative shape the film most resembles.
+
+        The three pooling levels are computed and combined into one
+        matrix because each preserves information the other two
+        cannot derive. The whole-screenplay block tells the model
+        "this film has high overall positive valence." The
+        quartile-windowed block tells it "this film's valence rises
+        sharply between Q3 and Q4." The arc-clustered block tells it
+        "this film is best classified as a Man-in-a-Hole." A linear
+        or tree model receiving all three can pick which level of
+        abstraction is most informative for each target.
+
+        Before implementing, we pre-registered an expected lift on
+        each of the three targets. The regression bands were posted
+        as RMSE reductions of 0.030 to 0.010 (lower is better) on
+        `log_roi`, an AUC lift between 0.000 and 0.010 on
+        `roi_gt_1`, and an AUC lift between 0.015 and 0.030 on
+        `roi_gt_2`. The mechanism we hypothesized was that
+        sentiment captures information genre and structural counts
+        do not fully absorb: emotional shape, valence dynamics, and
+        archetype-tagged narrative form.
+
+        A note on the NRC source. The proposal specified the
+        canonical NRC EmoLex (Mohammad and Turney 2013) as the
+        word-emotion lookup. The canonical distribution is form-
+        gated (a manual web form must be submitted to receive the
+        zip), which blocks an automated reproducible download. We
+        therefore use the `nrclex` Python package, which ships the
+        same word-emotion mappings under the author's research-use
+        license. The bundled lexicon contains 6,468 emotion-bearing
+        word entries, fewer than the canonical 14,000, but the
+        missing entries are emotionally neutral words that would
+        contribute zero to every per-emotion proportion. This
+        deviation matches the pattern set in the lexical group,
+        where the canonical SUBTLEX-US distribution was replaced by
+        the `wordfreq` package for the same reproducibility reason.
+
+        ### What the data showed
+
+        We computed the twenty-two features on the full corpus,
+        joined them onto the structural baseline matrix, and ran
+        the same multi-family evaluation. Restricting to the
+        out-of-fold numbers and the headline metrics:
+    """),
+    code("""
+        ablation = pd.read_csv(paths.REPORTS_TABLES_DIR / "phase3_ablation.csv")
+        sentiment = ablation[ablation["feature_group"] == "sentiment"]
+
+        # OOF lifts on the headline metrics: RMSE for log_roi,
+        # AUC-ROC for the two classification targets.
+        headline = sentiment[
+            (sentiment["eval_set"] == "oof")
+            & (
+                ((sentiment["target"] == "log_roi") & (sentiment["metric"] == "rmse"))
+                | ((sentiment["target"].isin(["roi_gt_1", "roi_gt_2"])) & (sentiment["metric"] == "auc_roc"))
+            )
+        ].copy()
+        headline["lift"] = headline["lift"].round(3)
+        headline["phase_3a_floor"] = headline["phase_3a_floor"].round(3)
+        headline["phase_3b_actual"] = headline["phase_3b_actual"].round(3)
+        headline.pivot_table(
+            index=["target", "metric"],
+            columns="model_family",
+            values="lift",
+        )
+    """),
+    md("""
+        Reading the table (each cell is the actual lift on
+        out-of-fold predictions, in absolute units, of the
+        sentiment-augmented matrix over the Phase 3a floor for the
+        same family). For `log_roi` RMSE, lower is better, so
+        positive lift means worse performance; for AUC, higher
+        is better, so positive lift means improvement.
+
+        * **Linear** gets worse on `log_roi` RMSE by 0.019, worse
+          on `roi_gt_1` AUC by 0.012, and slightly better on
+          `roi_gt_2` AUC by 0.008. The pre-registered direction
+          was wrong on the regression target and on `roi_gt_1`.
+          The single right-direction lift on `roi_gt_2` is well
+          below the predicted band of 0.015 to 0.030.
+        * **Gradient boosting** stays flat on `log_roi` RMSE
+          (within 0.001 of the floor) and gets worse on both
+          classification targets, with `roi_gt_2` AUC dropping
+          0.018. This is the same pattern the lexical group
+          produced: if sentiment features carried genuine
+          non-linear signal, gradient boosting would extract some
+          of it. It instead extracts noise.
+        * **K-nearest-neighbours** loses on every metric, with
+          RMSE rising 0.023 and both classification AUCs dropping
+          more than 0.030.
+        * **RBF support vector machine** improves modestly on
+          `roi_gt_2` AUC (0.036), but starts from the worst floor
+          in the matrix; its sentiment-augmented OOF numbers are
+          still below every other family's pre-augmentation floor.
+
+        We confirmed the cause by computing each sentiment
+        feature's Pearson correlation with each of the three
+        targets on the training split: no feature exceeds an
+        absolute value of 0.10 with any target. The strongest is
+        `nrc_anger_proportion` correlated with `log_roi` at -0.083.
+
+        ### Why the features behave this way
+
+        Two consecutive null results from two independent feature
+        groups (lexical and now sentiment) reinforce the
+        genre-residual hypothesis from the lexical handoff. The
+        most likely mechanism is not that sentiment carries no
+        information at all. The mechanism is that sentiment
+        carries information genre, era, and structural counts have
+        already absorbed. Action and Thriller films systematically
+        have higher VADER range and higher fear-tagged emotion
+        proportions; Animation, Family, and Comedy films have
+        higher whole-screenplay positive valence; Drama has higher
+        sadness-tagged emotion proportions. Each pairing is one
+        sentiment feature aligning with one or two genre dummies.
+        Even the arc-archetype features partially align: the
+        classic Hollywood three-act structure produces a Cinderella-
+        like shape in many films; tragedies skew toward Tragedy or
+        Oedipus.
+
+        Sentiment also pays an additional cost the lexical group
+        did not. The arc-archetype features are mechanically
+        low-amplitude. A film's per-line compound trajectory is a
+        long noisy time series; interpolating it to length 100 and
+        z-normalizing produces a shape whose cosine similarity to a
+        smooth analytic template is bounded in absolute value by
+        roughly the inverse square root of the trajectory's
+        effective degrees of freedom. Across our corpus the six
+        archetype-similarity standard deviations all land between
+        0.10 and 0.12. The features carry directional information
+        (positive vs negative similarity to Man-in-a-Hole), but
+        the magnitude is small enough that distinguishing real
+        signal from noise requires more samples than the corpus
+        provides.
+
+        ### What we do with this finding
+
+        Three actions follow, mirroring the pattern set by the
+        lexical group.
+
+        * The negative-lift row is recorded honestly in the
+          ablation table at `reports/tables/phase3_ablation.csv`.
+          The sentiment features stay computed on disk so the
+          modelling phase can re-evaluate them in any model
+          family its benchmark tests, and so they are available
+          to the combinations evaluation described in Part B's
+          methodology.
+        * The three reflection-pair archetype features (Tragedy,
+          Icarus, Oedipus) are retained despite each being a
+          mathematical reflection of its partner (Rags-to-Riches,
+          Man-in-a-Hole, Cinderella). The reflection identity is
+          handled naturally by both linear and tree models, and
+          dropping based on a corpus-independent algebraic
+          identity would close off optionality for the modelling
+          phase.
+        * The next Part B ablation (topic features) proceeds.
+          After all five Part B groups land, a pre-specified
+          combinations evaluation runs against the same floor.
+    """),
+
+    # ============================================================
+    # 11. Outputs and what comes next
+    # ============================================================
+    md("---\n\n## 11. Outputs and next steps"),
     md("""
         ### Files produced so far
 
@@ -1157,6 +1352,9 @@ CELLS = [
         * `data/processed/features_lexical.parquet`. The fourteen
           lexical features, one row per film. Kept on disk for the
           modelling phase to re-evaluate.
+        * `data/processed/features_sentiment.parquet`. The
+          twenty-two sentiment features, one row per film, also
+          retained on disk.
         * `reports/tables/phase3_split_diagnostics.csv`. The full
           per-stratum split-count table.
         * `reports/tables/phase3a_baseline.csv`. Headline metrics
@@ -1164,8 +1362,10 @@ CELLS = [
           families, with both the original and the log-transformed
           parameterizations preserved. One hundred twelve rows.
         * `reports/tables/phase3_ablation.csv`. The Part B
-          ablation table. Currently contains the lexical group
-          (twenty-eight rows: four families x seven metric rows).
+          ablation table. Currently contains lexical and sentiment
+          (one hundred ninety-two rows: two groups x four families
+          x two evaluation sets x three targets x seven metric
+          rows per group).
         * `reports/figures/phase3_target_distributions.png`.
           Visual diagnostics of the three prediction targets.
         * `reports/figures/phase3_log_transform_effect.png`.
@@ -1174,37 +1374,43 @@ CELLS = [
 
         ### What remains in Part B
 
-        Four feature groups still to evaluate, each with its own
+        Three feature groups still to evaluate, each with its own
         proposal, pre-registration, implementation, and
         multi-family ablation.
 
-        1. **Sentiment features.** Aggregate sentiment over
-           dialogue, plus measures of sentiment trajectory across
-           the screenplay (does the emotional arc rise, fall, or
-           peak in the middle). Shares NLTK preprocessing with
-           lexical and is therefore inexpensive to add.
-        2. **Topic features.** Latent topic distributions
+        1. **Topic features.** Latent topic distributions
            computed on the screenplay text. Fit on training data
            only and applied to the calibration and test sets.
+        2. **Character network features.** Graph metrics derived
+           from a character-cooccurrence graph: density, number
+           of components, dominance of leading characters. The
+           remaining group most plausibly orthogonal to genre,
+           given that two consecutive standalone evaluations have
+           returned null on signal that genre absorbs.
         3. **Embedding features.** Sentence-transformer
            embeddings of dialogue and action text, pooled to film
            level. Most computationally expensive and saved for
            last.
-        4. **Character network features.** Graph metrics derived
-           from a character-cooccurrence graph: density, number
-           of components, dominance of leading characters. We
-           expect this group to add information that is
-           orthogonal to genre and likely lifts ROI more than
-           rating.
 
         Each group will produce its own ablation rows in
         `phase3_ablation.csv`, evaluated under all four model
         families for the same diagnostic disambiguation we used
-        on lexical. After all groups have landed, the modelling
-        phase selects the strongest feature combination, runs a
-        full benchmark of candidate models with hyperparameter
-        tuning, wraps the chosen model with a calibration layer,
-        and connects it to the asymmetric-cost decision rule.
+        on lexical and sentiment. After all groups have landed,
+        a pre-specified combinations evaluation (Phase 3c) runs
+        a small set of joint feature configurations against the
+        same Phase 3a floor. The combinations methodology was
+        added in response to two consecutive standalone null
+        results: a feature group can look dead in isolation
+        against a baseline that already includes genre and era
+        but contribute meaningfully when combined with another
+        group whose signal lives in a different part of the
+        residual.
+
+        After Part B and Phase 3c land, the modelling phase
+        selects the strongest feature combination, runs a full
+        benchmark of candidate models with hyperparameter tuning,
+        wraps the chosen model with a calibration layer, and
+        connects it to the asymmetric-cost decision rule.
     """),
 ]
 
