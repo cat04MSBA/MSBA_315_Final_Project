@@ -1,0 +1,19 @@
+{
+  "dimensionality_reduction": "PCA-32 fit on train fold only",
+  "embedding_feature_count": 32,
+  "encoder": "sentence-transformers/all-MiniLM-L6-v2 (Reimers & Gurevych 2019; Wang et al. 2020)",
+  "include_character_network": false,
+  "include_embedding": true,
+  "include_lexical": false,
+  "include_log_budget": false,
+  "include_log_runtime": true,
+  "include_sentiment": false,
+  "include_topic": false,
+  "log_transform_structural": true,
+  "no_leakage_discipline": "Pre-trained encoder applied as-is to all 1,713 films (no fitting). PCA fit on training-fold pooled embeddings only; transform applied uniformly to all films.",
+  "pca_cumulative_variance_explained": 0.7386,
+  "pooling": "per-line MiniLM forward pass, mean-pooled per film to 384-dim",
+  "split": "70_15_15_seed_42",
+  "stratification": "(primary_genre_bucketed, decade_bucket)",
+  "structural_features_count": 7
+}

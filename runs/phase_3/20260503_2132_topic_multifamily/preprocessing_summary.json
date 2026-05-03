@@ -1,0 +1,14 @@
+{
+  "include_lexical": false,
+  "include_log_budget": false,
+  "include_log_runtime": true,
+  "include_sentiment": false,
+  "include_topic": true,
+  "lda_backend": "sklearn LatentDirichletAllocation (variational Bayes, batch)",
+  "log_transform_structural": true,
+  "no_leakage_discipline": "CountVectorizer and LDA fit on train_ids only; transform applied to all 1,713 films using train-fitted artifacts.",
+  "split": "70_15_15_seed_42",
+  "stratification": "(primary_genre_bucketed, decade_bucket)",
+  "structural_features_count": 7,
+  "topic_feature_count": 22
+}

@@ -1,0 +1,15 @@
+{
+  "feature_count_total": 92,
+  "histgb_preprocessing": "passthrough (native NaN handling, no scaling)",
+  "include_log_budget": false,
+  "include_log_runtime": true,
+  "knn_preprocessing": "SimpleImputer(median) + StandardScaler",
+  "linear_imputer": "SimpleImputer(strategy='median')",
+  "linear_scaler": "StandardScaler",
+  "log_transform_structural": true,
+  "rare_cell_threshold": 5,
+  "split": "70_15_15_seed_42",
+  "stratification": "(primary_genre_bucketed, decade_bucket)",
+  "structural_features_count": 7,
+  "svm_preprocessing": "SimpleImputer(median) + StandardScaler"
+}

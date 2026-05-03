@@ -1,0 +1,21 @@
+{
+  "_notes": "Phase 3b ablation row 3 of 5. Topic features (22) added on top of revised dialogue-only baseline. Pre-registered linear OOF: log_roi RMSE -0.030..-0.005; roi_gt_1 AUC 0.000..+0.015; roi_gt_2 AUC +0.015..+0.040. K=20 LDA via sklearn.",
+  "bootstrap_alpha": 0.05,
+  "bootstrap_iter": 1000,
+  "lda_learning_method": "batch",
+  "lda_max_df": 0.5,
+  "lda_max_iter": 10,
+  "lda_min_df": 5,
+  "lda_random_state": 42,
+  "min_token_length": 3,
+  "model_families": [
+    "linear",
+    "histgb",
+    "knn",
+    "svm"
+  ],
+  "n_cv_folds": 5,
+  "n_topics": 20,
+  "remove_stopwords": true,
+  "seed": 42
+}
