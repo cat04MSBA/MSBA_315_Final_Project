@@ -1338,23 +1338,500 @@ CELLS = [
     """),
 
     # ============================================================
-    # 11. Outputs and what comes next
+    # 11. Third Part B group: topic features
     # ============================================================
-    md("---\n\n## 11. Outputs and next steps"),
+    md("---\n\n## 11. Third Part B group: topic features"),
     md("""
-        ### Files produced so far
+        ### What topic features try to capture
+
+        The topic group introduces twenty-two features derived from
+        Latent Dirichlet Allocation over per-film concatenated
+        dialogue text. The features split into three sub-blocks:
+
+        * **Twenty topic proportions.** For each film, the per-
+          film posterior topic distribution from a K = 20 LDA
+          model. The proportions sum to one by construction.
+        * **One distribution-concentration measure.** Shannon
+          entropy of the per-film topic distribution, rescaled to
+          the unit interval. Films focused on one or two topics
+          have low entropy; topically diffuse films approach one.
+        * **One dominant-topic identifier.** The integer index of
+          the topic that captures the largest probability mass for
+          each film, encoded as a numeric feature.
+
+        Topic features are the first Part B group whose mechanism
+        plausibly produces signal that is orthogonal to genre. The
+        previous two standalone evaluations attributed their flat
+        results to information overlap with the genre dummies and
+        structural counts already in the baseline. Topic
+        distributions are different in kind: two films can sit in
+        the same genre but address very different subjects (a
+        courtroom drama versus a coming-of-age story), and that
+        distinction shows up in their topic distributions even
+        when the genre dummy is the same.
+
+        The no-leakage discipline applies for the first time in
+        Part B. The vocabulary and the LDA model are fit on the
+        training-fold films only; the resulting topic-word
+        distributions are then applied uniformly to all 1,713
+        films via the standard LDA `transform` operation. The
+        calibration and test films contribute zero information to
+        the fitted vocabulary or the topic-word distributions, and
+        a unit test in `tests/test_topic.py` asserts that the
+        per-film topic-distribution outputs are independent of the
+        inference batch composition.
+
+        The pre-registered expectation, in the linear family's
+        out-of-fold metric vocabulary, was an RMSE reduction of
+        0.030 to 0.005 on `log_roi`, an AUC lift between zero and
+        0.015 on `roi_gt_1`, and an AUC lift between 0.015 and
+        0.040 on `roi_gt_2`. The mechanism we hypothesized was
+        that subject matter aligns with audience-targeting clarity
+        in ways that genre dummies under-represent.
+
+        ### What the data showed
+    """),
+    code("""
+        ablation = pd.read_csv(paths.REPORTS_TABLES_DIR / "phase3_ablation.csv")
+        topic = ablation[ablation["feature_group"] == "topic"]
+
+        headline = topic[
+            (topic["eval_set"] == "oof")
+            & (
+                ((topic["target"] == "log_roi") & (topic["metric"] == "rmse"))
+                | ((topic["target"].isin(["roi_gt_1", "roi_gt_2"])) & (topic["metric"] == "auc_roc"))
+            )
+        ].copy()
+        headline["lift"] = headline["lift"].round(3)
+        headline.pivot_table(
+            index=["target", "metric"],
+            columns="model_family",
+            values="lift",
+        )
+    """),
+    md("""
+        Reading the table (each cell is the actual lift on
+        out-of-fold predictions, in absolute units, of the topic-
+        augmented matrix over the Phase 3a floor for the same
+        family). For `log_roi` RMSE, lower is better, so positive
+        lift means worse performance; for AUC, higher is better,
+        so positive lift means improvement.
+
+        * **All four model families lift `roi_gt_1` AUC.** Linear
+          gains 0.032, gradient boosting gains 0.026, k-nearest-
+          neighbours gains 0.028, and the radial-basis support
+          vector machine gains 0.052. This is the first time any
+          Part B group has produced consistent across-family
+          directional movement on a target. The previous two
+          groups had flat or negative `roi_gt_1` AUC lifts.
+        * **Linear `roi_gt_2` AUC lifts 0.012.** Just below the
+          predicted band's lower bound of 0.015. Gradient boosting
+          and k-nearest-neighbours go modestly negative on this
+          target; the kernel SVM stays near zero.
+        * **The regression target moves the wrong direction across
+          families.** Linear's RMSE lifts by 0.016, gradient
+          boosting by 0.009, k-nearest-neighbours by 0.012; only
+          the SVM is near-flat. Topic features, like the lexical
+          and sentiment groups before them, do not improve
+          continuous-outcome accuracy on this corpus.
+
+        We confirmed the multivariate nature of the signal by
+        computing each topic feature's univariate Pearson
+        correlation with each of the three targets on the
+        training split. No feature exceeds an absolute value of
+        0.10 with any target. The strongest is the topic-
+        concentration entropy correlated with log_roi at -0.080.
+        The signal therefore lives in the joint composition of
+        which topics dominate which films, not in any single
+        topic's correlation with the target.
+
+        ### Why the features behave this way
+
+        The topic features land partial-positive on `roi_gt_1`
+        rather than on the higher-headroom `roi_gt_2`. The
+        mechanism: the gross-profitability target's discriminating
+        information lives on the unprofitable minority (twenty
+        percent of the corpus). Topics that signal narrow audience
+        appeal are useful here, and their information is genuinely
+        orthogonal to genre because a niche subject can land in
+        any genre. The net-profitability target by contrast is
+        more directly tied to production-scale information that
+        genre and budget already encode; topic features have less
+        residual signal to extract on that target.
+
+        Inspecting the top words of each topic surfaces a known
+        property of LDA on screenplay text: several topics are
+        dominated by character names rather than thematic content.
+        Examples include a topic with top words ``jack``, ``paul``,
+        ``mickey``, ``doc`` mixed with action vocabulary, and a
+        topic with ``peter``, ``bruce``, ``elizabeth``, ``charlie``.
+        Other topics are cleaner thematic clusters: a politics-
+        and-military topic with ``president``, ``general``,
+        ``american``, ``army``, and a medieval-period topic with
+        ``shall``, ``lord``, ``king``, ``queen``. The character-
+        name pollution is partly a property of the corpus's
+        dialogue conventions and partly a property of the unigram
+        vocabulary at this `K`. The full per-topic top-word table
+        is saved to `reports/tables/phase3_topic_labels.csv` for
+        the report's narrative.
+
+        ### What we do with this finding
+
+        The partial-positive row is recorded in the ablation table
+        at `reports/tables/phase3_ablation.csv`. The fitted
+        vectorizer, the fitted LDA model, and the training-fold
+        IMDb-ID list are persisted to
+        `data/processed/topic_model_artifacts/` so the modelling
+        phase can reload them directly. All twenty-two topic
+        features remain in the matrix for the Phase 3c
+        combinations evaluation; the multivariate signal extracted
+        on `roi_gt_1` is distributed across the topic features
+        rather than concentrated in any single column, and pruning
+        individual topics at this stage would close off
+        optionality.
+    """),
+
+    # ============================================================
+    # 12. Fourth Part B group: character-network features
+    # ============================================================
+    md("---\n\n## 12. Fourth Part B group: character-network features"),
+    md("""
+        ### What character-network features try to capture
+
+        The character-network group introduces twelve features
+        derived from a per-film character-cooccurrence graph.
+        Nodes are characters who deliver at least five non-empty
+        dialogue lines (a quality filter that drops the long tail
+        of incidental walk-on characters); edges connect characters
+        who appear in the same scene; edge weights are the number
+        of shared scenes. The twelve features split into four
+        sub-blocks:
+
+        * **Cast structure (three features).** Number of
+          significant characters, count of characters in the top
+          decile of the cast by line count, and a Gini coefficient
+          of the dialogue-line distribution across the significant
+          cast. Together these capture how concentrated the
+          dialogue load is.
+        * **Density and connectivity (three features).** Network
+          density (edges over possible edges), number of connected
+          components, and the mean local clustering coefficient.
+          Together these describe how interconnected the characters
+          are and whether there are parallel storylines.
+        * **Lead-character dominance (three features).** The
+          dialogue share of the top-1 character, the combined share
+          of the top three, and the eigenvector centrality of the
+          top-1 character in the graph. These distinguish single-
+          protagonist structure from ensemble structure.
+        * **Graph topology (three features).** Newman-Girvan
+          modularity from greedy community detection, the maximum
+          betweenness centrality across nodes, and the diameter of
+          the largest connected component. These describe higher-
+          order structure: whether the cast splits cleanly into
+          subgroups, whether one bridge character connects them,
+          and how loosely or tightly the largest cluster of
+          characters is connected.
+
+        The mechanism for predictive lift is genre-orthogonal in a
+        different way from the topic group. Cast structure is not
+        directly encoded by the genre dummies. A 30-character
+        ensemble blockbuster and a 3-character chamber drama have
+        very different graph structure even when their genre
+        labels are similar, and that within-genre variation is
+        what these features try to capture.
+
+        Films with degenerate scene structure, identified by the
+        Phase 2 `data_quality_flag`, do not have meaningful graph
+        features (their dialogue is concentrated in a handful of
+        scenes and the cooccurrence graph becomes either trivially
+        dense or trivially sparse). The pipeline emits NaN for all
+        twelve model features on flagged films; the trainer's
+        median imputer absorbs the missing values at fold-fit time
+        on the linear, k-nearest-neighbours, and SVM families, and
+        the gradient-boosting family handles missing values
+        natively in its splits.
+
+        The pre-registered expectation, on the linear family's
+        out-of-fold numbers, was an RMSE reduction of 0.040 to
+        0.010 on `log_roi`, an AUC lift between zero and 0.015 on
+        `roi_gt_1`, and an AUC lift between 0.020 and 0.045 on
+        `roi_gt_2`. The character-network group was the strongest
+        remaining genre-orthogonality candidate going into the
+        ablation, and the predicted bands lean wider than for the
+        previous groups.
+
+        ### What the data showed
+    """),
+    code("""
+        cn = ablation[ablation["feature_group"] == "character_network"]
+
+        headline = cn[
+            (cn["eval_set"] == "oof")
+            & (
+                ((cn["target"] == "log_roi") & (cn["metric"] == "rmse"))
+                | ((cn["target"].isin(["roi_gt_1", "roi_gt_2"])) & (cn["metric"] == "auc_roc"))
+            )
+        ].copy()
+        headline["lift"] = headline["lift"].round(3)
+        headline.pivot_table(
+            index=["target", "metric"],
+            columns="model_family",
+            values="lift",
+        )
+    """),
+    md("""
+        The result is a partial positive with a different shape
+        from the topic group:
+
+        * **All four families lift `roi_gt_2` AUC.** Linear gains
+          0.016 (just below the predicted band's lower bound of
+          0.020), gradient boosting gains 0.004, k-nearest-
+          neighbours gains 0.022, and the SVM gains 0.061. The SVM
+          lift is the single largest gain on this target across
+          any standalone Part B row.
+        * **`roi_gt_1` AUC lifts on three of four families.**
+          Linear gains 0.013 and lands inside the predicted band;
+          k-nearest-neighbours and SVM lift modestly; gradient
+          boosting drops 0.009.
+        * **The regression target stays null on three of four
+          families.** Linear, gradient boosting, and k-nearest-
+          neighbours all show small positive (worse) RMSE lifts;
+          the SVM is the only family to improve, and its
+          improvement is small (-0.012).
+
+        Linear lands two predicted-band hits in this row: one on
+        `roi_gt_1` AUC and one on `roi_gt_1` PR-AUC. This is the
+        first time any Part B group has put two metrics inside the
+        pre-registered band on the same family, and it is the
+        single piece of evidence that the proposal's predicted-
+        band calibration was reasonable when applied to a group
+        whose mechanism is genuinely genre-orthogonal.
+
+        The univariate diagnostic surfaces a finding that the
+        topic group did not produce. The number of lead-role
+        characters per film correlates with `roi_gt_2` at
+        `r = -0.102`, exceeding the |r| > 0.10 threshold the
+        previous groups never crossed. The interpretation: films
+        with more "lead" characters (top-decile by line count)
+        trend less net-profitable. This is consistent with
+        audience-identification theory in screenwriting craft:
+        ensemble films diffuse audience attachment across multiple
+        leads, which correlates with weaker franchise potential
+        and lower post-marketing revenue. The correlation is small
+        but real, and it explains why the model has at least one
+        feature with genuine univariate signal to anchor on plus
+        eleven more contributing multivariate information.
+
+        ### Why the regression target stays null
+
+        The univariate signal lives at the binary
+        net-profitability threshold rather than across the
+        continuous log_roi distribution. The lead-role feature
+        correlates -0.102 with `roi_gt_2` (binary) but only -0.082
+        with `log_roi` (continuous). RMSE penalizes errors
+        uniformly across the distribution, which mutes a signal
+        concentrated at a specific threshold. The same shape
+        appears in the topic group's regression nulls and is
+        likely to recur for the embedding group as well.
+
+        ### What we do with this finding
+
+        The character-network group lands the second partial
+        positive of Part B. Together with the topic group, the
+        two demonstrate that genre-orthogonal feature groups can
+        lift the ablation while genre-redundant groups
+        (lexical, sentiment) do not. The two groups also
+        complement each other on which target they lift: topic
+        on `roi_gt_1`, character network on `roi_gt_2`. A
+        Phase 3c combination of the two is the natural test of
+        whether their non-overlapping mechanisms compose
+        cleanly into a joint matrix that improves on both
+        targets together.
+
+        All twelve features are retained in the matrix for the
+        Phase 3c combinations evaluation. The 24 train-split
+        flagged films contribute NaN values that the imputer
+        handles at fold-fit time; their handling was empirically
+        validated by the diagnostic step.
+    """),
+
+    # ============================================================
+    # 13. Fifth Part B group: embedding features
+    # ============================================================
+    md("---\n\n## 13. Fifth Part B group: embedding features"),
+    md("""
+        ### What embedding features try to capture
+
+        The embedding group is the most computationally expensive
+        of the five Part B groups. It uses a pre-trained sentence-
+        transformer encoder to embed every non-empty dialogue line
+        of every film into a 384-dimensional semantic space, then
+        mean-pools per film to a single 384-dimensional film-level
+        vector, then reduces the dimensionality to 32 features via
+        principal component analysis.
+
+        The encoder is `sentence-transformers/all-MiniLM-L6-v2`,
+        the standard small-and-fast sentence-transformer used in
+        published screenplay-prediction work, including Gross
+        (2025) on Oscar nomination prediction with the same
+        MovieSum corpus. The mean-pooling step produces one vector
+        per film whose components encode a mixture of style,
+        register, era, and content information. The PCA step
+        reduces the dimensionality to 32 components fit on the
+        training-fold films only, which keeps the feature count
+        manageable for all four model families and preserves the
+        no-leakage discipline.
+
+        The pre-trained encoder applied uniformly to all films
+        does not leak training-fold information; the encoder is
+        fixed by its public model weights and produces the same
+        embedding for the same input regardless of corpus. The
+        PCA fit, by contrast, depends on the data distribution
+        and is therefore restricted to the training-fold films.
+        The resulting principal components are then applied to the
+        full 1,713-film corpus, projecting all films into the same
+        32-dimensional space.
+
+        The pre-registered expectation, in the linear family's
+        out-of-fold metric vocabulary, was an RMSE reduction of
+        0.050 to 0.015 on `log_roi`, an AUC lift between zero and
+        0.020 on `roi_gt_1`, and an AUC lift between 0.025 and
+        0.060 on `roi_gt_2`. The lower bound was the most
+        ambitious of any group in the phase, reflecting the
+        literature prior that sentence embeddings carry strong
+        signal on related tasks.
+
+        ### What the data showed
+    """),
+    code("""
+        emb = ablation[ablation["feature_group"] == "embedding"]
+
+        headline = emb[
+            (emb["eval_set"] == "oof")
+            & (
+                ((emb["target"] == "log_roi") & (emb["metric"] == "rmse"))
+                | ((emb["target"].isin(["roi_gt_1", "roi_gt_2"])) & (emb["metric"] == "auc_roc"))
+            )
+        ].copy()
+        headline["lift"] = headline["lift"].round(3)
+        headline.pivot_table(
+            index=["target", "metric"],
+            columns="model_family",
+            values="lift",
+        )
+    """),
+    md("""
+        Embedding features produce the broadest across-family
+        signal of any Phase 3b group, despite landing only a
+        single in-band hit on the linear pre-registration:
+
+        * **All four families improve on `log_roi` RMSE.** Linear
+          drops by 0.007, gradient boosting by 0.009, k-nearest-
+          neighbours by 0.003, and the SVM by 0.025. This is the
+          first time across-family regression improvement has
+          shown up in Part B; no previous group had it.
+        * **All four families lift `roi_gt_1` AUC.** Linear gains
+          0.003 (in-band), gradient boosting gains 0.017, k-
+          nearest-neighbours gains 0.038, and the SVM gains 0.056.
+        * **Three of four families lift `roi_gt_2` AUC.** Linear
+          gains 0.006, k-nearest-neighbours gains 0.022, and the
+          SVM gains 0.069 (the single largest standalone-row gain
+          on this target). Gradient boosting drops 0.037, the
+          familiar tree-overfit pattern from the lexical and
+          sentiment rows.
+
+        The pre-registered magnitudes were the clearest
+        miscalibration of the phase. Linear `log_roi` RMSE
+        improved -0.007 against a predicted band of -0.050 to
+        -0.015; the actual lift is roughly one-quarter the
+        predicted lower bound. The Gross 2025 prior on Oscar
+        prediction does not transfer cleanly to ROI targets on
+        this corpus. Nevertheless, the directions are mostly
+        right: four of nine pre-registered linear-OOF metrics
+        moved in the predicted direction, and one landed inside
+        its band.
+
+        Two embedding features cross the |r| > 0.10 univariate
+        threshold against the targets: the second principal
+        component correlates with `log_roi` at +0.114, and the
+        fifth principal component correlates with `roi_gt_2` at
+        +0.106. This is the strongest single-feature signal of
+        any Phase 3b group, and it explains why embedding
+        produces the broadest across-family lift: the model has
+        two features with genuine univariate signal anchoring it,
+        plus thirty more contributing multivariate information.
+
+        ### How PCA captures the variance
+
+        The 32 leading principal components, fit on the training-
+        fold pooled embeddings, capture 73.9% of the cumulative
+        variance in the 384-dimensional space. The first eight
+        components alone capture 43.2%, the first sixteen 59.5%.
+        The leading components correlate moderately with genre
+        dummies in the 0.20 to 0.31 range (PC1 with `Action` at
+        -0.31, PC0 with `Adventure` at +0.27, PC0 with `Comedy`
+        at -0.27), confirming that pre-trained embeddings encode
+        some of the same information as the genre features. The
+        trailing components correlate more weakly with genre,
+        which is where the genre-orthogonal signal lives and
+        where the lift on regression metrics likely originates.
+
+        ### Why the linear and SVM rows differ so much
+
+        The SVM-RBF row produces the strongest lifts of any
+        family across embedding-augmented targets: -0.025 on
+        `log_roi` RMSE, +0.056 on `roi_gt_1` AUC, +0.069 on
+        `roi_gt_2` AUC, and +0.052 on `roi_gt_2` PR-AUC. The
+        kernel-induced similarity in the 32-dimensional PCA
+        space appears to capture non-linear interactions that
+        the linear family cannot represent. This is the
+        clearest single piece of guidance for the modelling
+        phase: when embedding features are in the matrix, kernel
+        methods (SVM-RBF or analogues) should be high-priority
+        candidates in the model search.
+
+        ### What we do with this finding
+
+        The third partial positive of Part B lands. The fitted
+        PCA estimator and the cached pooled embeddings are
+        persisted to `data/processed/embedding_pca.joblib` and
+        `data/processed/embeddings_minilm_pooled.parquet`
+        respectively, so downstream phases can re-evaluate the
+        embedding features under any model family without
+        re-running the encoder forward pass. All thirty-two PCA
+        components are retained for the Phase 3c combinations
+        evaluation.
+    """),
+
+    # ============================================================
+    # 14. Outputs and what comes next
+    # ============================================================
+    md("---\n\n## 14. Outputs and next steps"),
+    md("""
+        ### Files produced across Phase 3
 
         * `data/processed/split_assignments.parquet`. One row per
           film with columns for the IMDb identifier, the
           stratification cell, and the assigned split. The
           authoritative split definition used by every downstream
           phase.
-        * `data/processed/features_lexical.parquet`. The fourteen
-          lexical features, one row per film. Kept on disk for the
-          modelling phase to re-evaluate.
-        * `data/processed/features_sentiment.parquet`. The
-          twenty-two sentiment features, one row per film, also
-          retained on disk.
+        * `data/processed/features_lexical.parquet`,
+          `features_sentiment.parquet`, `features_topic.parquet`,
+          `features_character_network.parquet`,
+          `features_embedding.parquet`. The five Part B feature
+          matrices, one row per film, kept on disk for the
+          modelling phase to re-evaluate under any model family.
+        * `data/processed/topic_model_artifacts/`. The fitted
+          vectorizer, the fitted LDA model, and the training-fold
+          IMDb-ID list. Re-loadable directly so the modelling
+          phase does not need to refit.
+        * `data/processed/embeddings_minilm_pooled.parquet`. The
+          1,713-by-384 matrix of mean-pooled MiniLM embeddings.
+          The most expensive single artifact in the phase; cached
+          so subsequent runs skip the encoder forward pass.
+        * `data/processed/embedding_pca.joblib`. The fitted PCA
+          estimator that projects pooled embeddings to the 32
+          feature columns.
         * `reports/tables/phase3_split_diagnostics.csv`. The full
           per-stratum split-count table.
         * `reports/tables/phase3a_baseline.csv`. Headline metrics
@@ -1362,51 +1839,69 @@ CELLS = [
           families, with both the original and the log-transformed
           parameterizations preserved. One hundred twelve rows.
         * `reports/tables/phase3_ablation.csv`. The Part B
-          ablation table. Currently contains lexical and sentiment
-          (one hundred ninety-two rows: two groups x four families
-          x two evaluation sets x three targets x seven metric
-          rows per group).
+          ablation table. Four hundred eighty rows covering all
+          five groups (lexical, sentiment, topic, character
+          network, embedding), four model families, two evaluation
+          sets, three targets, and seven metric rows per group.
+        * `reports/tables/phase3_topic_labels.csv`. Per-topic top-
+          ten words plus an empty `human_label` column for the
+          report.
         * `reports/figures/phase3_target_distributions.png`.
           Visual diagnostics of the three prediction targets.
         * `reports/figures/phase3_log_transform_effect.png`.
           Before-and-after histograms for three representative
           structural counts.
 
-        ### What remains in Part B
+        ### Summary of Part B results
 
-        Three feature groups still to evaluate, each with its own
-        proposal, pre-registration, implementation, and
-        multi-family ablation.
+        Five standalone feature groups have been evaluated
+        against the Phase 3a revised dialogue-only baseline,
+        across the same four model families, using the same
+        out-of-fold cross-validation discipline. Two of the five
+        landed null (lexical, sentiment) and three landed
+        partial-positive (topic, character network, embedding).
 
-        1. **Topic features.** Latent topic distributions
-           computed on the screenplay text. Fit on training data
-           only and applied to the calibration and test sets.
-        2. **Character network features.** Graph metrics derived
-           from a character-cooccurrence graph: density, number
-           of components, dominance of leading characters. The
-           remaining group most plausibly orthogonal to genre,
-           given that two consecutive standalone evaluations have
-           returned null on signal that genre absorbs.
-        3. **Embedding features.** Sentence-transformer
-           embeddings of dialogue and action text, pooled to film
-           level. Most computationally expensive and saved for
-           last.
+        The shape of the result is consistent across the three
+        partial positives: lift comes from multivariate feature
+        interactions rather than single-feature univariate
+        correlations, and it varies more by feature group than
+        by model family. The two groups that landed null share
+        a common mechanism: their information is heavily
+        absorbed by the genre dummies and structural counts in
+        the baseline, so the marginal residual they can extract
+        is too thin for any of the four families to surface. The
+        three partial-positive groups are each genre-orthogonal
+        in a different way: topic captures within-genre subject
+        matter, character network captures cast structure, and
+        embedding captures style-and-content information that
+        partly overlaps with genre but also extends beyond it.
 
-        Each group will produce its own ablation rows in
-        `phase3_ablation.csv`, evaluated under all four model
-        families for the same diagnostic disambiguation we used
-        on lexical and sentiment. After all groups have landed,
-        a pre-specified combinations evaluation (Phase 3c) runs
-        a small set of joint feature configurations against the
-        same Phase 3a floor. The combinations methodology was
-        added in response to two consecutive standalone null
-        results: a feature group can look dead in isolation
-        against a baseline that already includes genre and era
-        but contribute meaningfully when combined with another
-        group whose signal lives in a different part of the
-        residual.
+        Each partial-positive group lifts a different metric
+        family. Topic lifts `roi_gt_1` AUC across all four
+        families. Character network lifts `roi_gt_2` AUC across
+        all four families and produces the first feature in any
+        Part B group with a univariate target correlation
+        exceeding |r| > 0.10. Embedding lifts `log_roi` RMSE
+        across all four families and produces the strongest
+        single-feature univariate signal in the phase. The
+        complementarity is meaningful: the three partial-positive
+        groups each address a different prediction target, which
+        is the configuration the next sub-phase is designed to
+        exploit.
 
-        After Part B and Phase 3c land, the modelling phase
+        ### What comes next
+
+        Phase 3c (combinations sub-phase) evaluates a small set
+        of pre-specified joint feature configurations against
+        the same Phase 3a floor. The combinations are pre-
+        specified before any are measured, preserving the
+        pre-registration discipline at the combinations level
+        too. The natural pre-specifications based on the Part B
+        results are: all five groups together; the three partial-
+        positives combined (topic plus character network plus
+        embedding); and topic plus character network alone (which
+        target different binary thresholds with non-overlapping
+        mechanisms). After Phase 3c lands, the modelling phase
         selects the strongest feature combination, runs a full
         benchmark of candidate models with hyperparameter tuning,
         wraps the chosen model with a calibration layer, and
