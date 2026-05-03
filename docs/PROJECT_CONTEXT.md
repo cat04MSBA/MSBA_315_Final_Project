@@ -355,6 +355,12 @@ Format: one entry per decision, newest first
 **See also:** `docs/summaries/phase_N_summary.txt` for full rationale.
 
 
+## 2026-05-03 14:10 — Phase 3a: baseline feature parameterization revised (log-transforms + log_runtime added)
+
+**Phase:** Phase 3 — Feature Extraction (sub-phase 3a)
+**Decision:** The Phase 3a baseline as originally implemented placed point estimates just above the brief's escalation thresholds (R² 0.051, AUC 0.559 / 0.582 dialogue-only) but with 95% CI lower bounds dipping below the floors on the two weaker targets, and omitted `log_runtime` despite the brief listing it as a likely candidate. Two changes adopted: (1) `log1p` applied to the six heavy-tailed structural counts (`n_scenes`, `n_unique_characters`, `n_dialogue_lines`, `total_dialogue_chars`, `total_action_chars`, `parse_warning_count`) before z-scoring; (2) `log_runtime` added to the deployable baseline (runtime is leak-free pre-greenlight, page count to minutes is industry convention). Both changes implemented as flags on `BaselineFeatureConfig`; the trainer now writes 28 rows covering the four feature configurations. Original (un-logged, no-runtime) rows preserved in `phase3a_baseline.csv` for the report's before/after comparison. `roi_gt_2` is the only target whose 95% CI fully clears the 0.55 floor post-revision.
+**See also:** `docs/handoffs/phase_3a_handoff.md` for the headline numbers, comparison tables, and resolved-questions audit.
+
 ## 2026-05-02 23:50 — Phase 2: dataset swap audit-trail entry (TMDB 5000 → IMDb-TMDB 1M)
 
 **Phase:** Phase 2 — Data Pipeline (audit entry; the swap itself happened mid-Phase-1)
