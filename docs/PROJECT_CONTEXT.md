@@ -255,6 +255,48 @@ below are the actual measured values; see
 - See `docs/DATA_NOTES.md` for the full column glossary, edge-case
   documentation, and biases-to-remember.
 
+### Phase 3 feature matrix (complete — 2026-05-03)
+- **Consolidated feature matrix: 1,713 films x 131 columns** in
+  `data/processed/features.parquet`. 127 feature columns (the
+  `all_five` union of structural baseline + lexical + sentiment +
+  topic + character_network + embedding) + 3 target columns
+  (`log_roi`, `roi_gt_1`, `roi_gt_2`) + 1 split-assignment column.
+- Per-group feature parquets retained on disk:
+  `features_lexical.parquet` (13 model features),
+  `features_sentiment.parquet` (22), `features_topic.parquet` (22),
+  `features_character_network.parquet` (12),
+  `features_embedding.parquet` (32 PCA components).
+- Headline ablation finding: 2 standalone-null groups (lexical,
+  sentiment), 3 standalone-partial-positive groups (topic on
+  `roi_gt_1`, character_network on `roi_gt_2`, embedding on
+  `log_roi` regression). The Phase 3c combinations sub-phase
+  surfaced that SVM-RBF, the worst-of-four standalone family,
+  becomes the best-of-four on combinations: SVM on `all_five`
+  reaches `roi_gt_2` AUC 0.665 OOF (lift +0.063) and SVM on
+  `topic_plus_cn` reaches `roi_gt_1` AUC 0.639 OOF (lift +0.081,
+  the largest classification lift of the phase). Linear
+  regression on `log_roi` is signal-limited at the corpus's
+  survivorship structure.
+- Auxiliary artifacts on disk: `embeddings_minilm_pooled.parquet`
+  (1,713 x 384, the raw MiniLM cache);
+  `topic_model_artifacts/` (TF-IDF vectorizer + LDA model +
+  train_ids index, fit on training fold only);
+  `embedding_pca.joblib` (32-component PCA, train-fitted).
+- Train/calibration/test split saved at
+  `data/processed/split_assignments.parquet` (1,199 / 257 / 257
+  films, stratified by primary_genre_bucketed and decade_bucket
+  with rare-cell pooling, seed 42, 57 strata, every named stratum
+  with at least one film in each split).
+- See `docs/FEATURE_NOTES.md` for the full feature-column glossary,
+  per-feature handling decisions (especially the wordfreq deviation
+  for lexical, the NRC stop-word policy for sentiment, the LDA
+  K = 20 character-name dominance for topic, the
+  `treat_flagged_as_nan=True` default for character_network), and
+  references to the Phase 3 ablation tables.
+- See `docs/summaries/phase_3_summary.md` for the Phase 3 final
+  summary using the standard Section 7 template, replacing the
+  seven interim handoffs as the canonical Phase 3 record.
+
 ---
 
 ## 6. Methodology Principles
@@ -363,6 +405,12 @@ Format: one entry per decision, newest first
 **Decision:** [One or two lines stating what was decided.]
 **See also:** `docs/summaries/phase_N_summary.txt` for full rationale.
 
+
+## 2026-05-03 22:00 — Phase 3c complete: combinations sub-phase results elevate SVM-RBF and surface non-additive lift pattern
+
+**Phase:** Phase 3c — Combinations sub-phase (closes Phase 3 before Phase 4)
+**Decision:** Four pre-specified combinations (`all_five`, `partial_positives`, `topic_plus_cn`, `semantic_trio`) evaluated against the Phase 3a revised dialogue-only floor under the same 4-family multi-family harness as Phase 3b. The set was locked at proposal time; pre-registration discipline preserved at the combinations level. Two findings shape Phase 4. (1) Pre-registered direction was wrong on 10 of 12 linear-OOF headline bands: standalone group lifts do not compose additively under linear regression; combinations larger than ~60 features hurt linear log_roi RMSE. The mechanism is the same noise-vs-regularization interaction the lexical group's negative lift surfaced, scaling with feature count. (2) SVM-RBF dominates classification under combinations: it goes from worst-of-four standalone to best-of-four on combinations, with the largest classification lift in the entire Phase 3 work being SVM on `topic_plus_cn` `roi_gt_1` AUC at +0.081, and SVM on `all_five` `roi_gt_2` AUC at +0.063 (reaching 0.665 OOF, within the project's forward-expected 0.65-0.72 band). The verdict: `topic_plus_cn` is the parsimonious combination winner on linear (only combination with both classification AUCs lifted positively), `all_five` is the maximum-information matrix Phase 4 should benchmark against, and SVM-RBF is elevated to a serious Phase 4 candidate alongside the originally-planned linear and tree ensembles. The standalone-group "earned its place" criterion is too restrictive given combination evidence; Phase 4 input matrix should be the union of all five Phase 3b groups, with the model search weighting features.
+**See also:** `docs/handoffs/phase_3c_combinations_handoff.md` for the multi-family lift tables, the parsimonious-combination winner, and the explicit Phase 4 implications.
 
 ## 2026-05-03 20:50 — Phase 3b complete: embedding standalone result is partial positive (broadest signal of the phase)
 
@@ -504,7 +552,7 @@ Format: one entry per decision, newest first
 |---|---|---|---|
 | 1 | Data feasibility verification | Complete | `docs/summaries/phase_1_summary.md` |
 | 2 | Data pipeline | Complete | `docs/summaries/phase_2_summary.md` |
-| 3 | Feature extraction | In progress (3a complete; 3b complete: 2 nulls, 3 partial positives; 3c combinations sub-phase next) | `docs/handoffs/phase_3a_handoff.md`, `docs/handoffs/phase_3b_*_handoff.md` (5 handoffs) |
+| 3 | Feature extraction | Complete | `docs/summaries/phase_3_summary.md` |
 | 4 | Layer 1: Core prediction | Not started | — |
 | 5 | Layer 2: Calibration | Not started | — |
 | 6 | Layer 3: Decision | Not started | — |

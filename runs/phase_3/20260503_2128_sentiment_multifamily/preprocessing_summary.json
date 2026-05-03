@@ -1,0 +1,22 @@
+{
+  "arc_archetype_templates": "hand-coded smoothed mathematical shapes (z-normalized)",
+  "histgb_preprocessing": "passthrough (native NaN handling, no scaling)",
+  "include_lexical": false,
+  "include_log_budget": false,
+  "include_log_runtime": true,
+  "include_sentiment": true,
+  "knn_preprocessing": "SimpleImputer(median) + StandardScaler",
+  "linear_imputer": "SimpleImputer(strategy='median')",
+  "linear_scaler": "StandardScaler",
+  "log_transform_structural": true,
+  "nrc_source": "nrclex package (bundled NRC-EmoLex; Mohammad & Turney 2013)",
+  "nrc_source_deviation_note": "Proposal v2 specified canonical NRC EmoLex direct download from saifmohammad.com. The canonical distribution is form-gated (manual form submission required to receive the zip), which blocks an automated hash-checked download into data/external/. The nrclex package ships the same word-emotion mappings under the author's research-use license and was the documented fallback in proposal v2 Section 6.2. Surfaced for planning-conversation review; matches the wordfreq-vs-SUBTLEX-US precedent set in the lexical group.",
+  "rare_cell_threshold": 5,
+  "sentiment_feature_count": 22,
+  "split": "70_15_15_seed_42",
+  "stopword_removal_for_nrc": "nltk english stopwords (~180 function words)",
+  "stratification": "(primary_genre_bucketed, decade_bucket)",
+  "structural_features_count": 7,
+  "svm_preprocessing": "SimpleImputer(median) + StandardScaler",
+  "vader_source": "nltk vader_lexicon (Hutto & Gilbert 2014)"
+}
