@@ -1,0 +1,17 @@
+{
+  "_notes": "Phase 3b ablation row 5 of 5. Embedding features (32 PCA components of per-line MiniLM mean-pool) added on top of revised dialogue-only baseline. Pre-registered linear OOF: log_roi RMSE -0.050..-0.015; roi_gt_2 AUC +0.025..+0.060. PCA cumulative variance explained: 0.739.",
+  "bootstrap_alpha": 0.05,
+  "bootstrap_iter": 1000,
+  "encoder_dim": 384,
+  "encoder_name": "sentence-transformers/all-MiniLM-L6-v2",
+  "model_families": [
+    "linear",
+    "histgb",
+    "knn",
+    "svm"
+  ],
+  "n_cv_folds": 5,
+  "n_pca_components": 32,
+  "pca_random_state": 42,
+  "seed": 42
+}

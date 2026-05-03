@@ -20,5 +20,6 @@ the same place; keep the newest-first ordering.
 | 2026-05-03 19:43 | phase_3 | `runs/phase_3/20260503_1943_sentiment_multifamily/` | `54658d7` | 4-family (linear, histgb, knn, svm) | structural + sentiment | linear OOF RMSE 1.357 / AUC roi_gt_2 0.610; histgb RMSE 1.328 | Phase 3b row 2: sentiment (22 features); 4 families × 2 eval sets |
 | 2026-05-03 20:16 | phase_3 | `runs/phase_3/20260503_2015_topic_multifamily/` | `54658d7` | 4-family (linear, histgb, knn, svm) | structural + topic | linear OOF RMSE 1.354 / AUC roi_gt_2 0.613; histgb RMSE 1.336 | Phase 3b row 3: topic (22 features, K=20 LDA); 4 families × 2 eval sets |
 | 2026-05-03 20:26 | phase_3 | `runs/phase_3/20260503_2025_character_network_multifamily/` | `54658d7` | 4-family (linear, histgb, knn, svm) | structural + character_network | linear OOF RMSE 1.348 / AUC roi_gt_2 0.618; histgb RMSE 1.328 | Phase 3b row 4: character network (12 features); 4 families × 2 eval sets |
+| 2026-05-03 20:48 | phase_3 | `runs/phase_3/20260503_2047_embedding_multifamily/` | `ff0281c` | 4-family (linear, histgb, knn, svm) | structural + embedding | linear OOF RMSE 1.331 / AUC roi_gt_2 0.607; histgb RMSE 1.318; PCA-32 cumvar 0.739 | Phase 3b row 5: embedding (32 PCA of MiniLM pooled); 4 families × 2 eval sets |
 <!-- new rows above this line -->
 | (none yet) | | | | | | | First lexical run will be the first entry |

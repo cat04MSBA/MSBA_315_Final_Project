@@ -364,6 +364,24 @@ Format: one entry per decision, newest first
 **See also:** `docs/summaries/phase_N_summary.txt` for full rationale.
 
 
+## 2026-05-03 20:50 — Phase 3b complete: embedding standalone result is partial positive (broadest signal of the phase)
+
+**Phase:** Phase 3 — Feature Extraction (sub-phase 3b, fifth and final of the standalone groups)
+**Decision:** Embedding features (32 PCA components of mean-pooled per-line MiniLM sentence embeddings) implemented per proposal v1. The multi-family ablation produced a **partial positive** verdict with the broadest across-family signal of any Phase 3b group: every model family improves on `log_roi` RMSE (linear -0.007, histgb -0.009, knn -0.003, svm -0.025), every family lifts `roi_gt_1` AUC, and three of four lift `roi_gt_2` AUC. SVM is strongest (+0.069 on `roi_gt_2` AUC, +0.052 on PR-AUC; +0.056 on `roi_gt_1` AUC). Two features cross the |r| = 0.10 univariate threshold (`embed_pc_01 ↔ log_roi` r = +0.114; `embed_pc_04 ↔ roi_gt_2` r = +0.106), the most univariate-significant of any group. PCA explains 73.9% of variance at K = 32. With this run **Phase 3b is complete**: 2 of 5 groups landed null (lexical, sentiment), 3 of 5 landed partial-positive (topic, character network, embedding). The genre-orthogonality interpretation from the early handoffs is empirically supported. Next is Phase 3c (combinations sub-phase), the principal venue for joint-feature lift evaluation.
+**See also:** `docs/handoffs/phase_3b_embedding_handoff.md`.
+
+## 2026-05-03 20:30 — Phase 3b: character-network standalone result is partial positive (matching the topic shape)
+
+**Phase:** Phase 3 — Feature Extraction (sub-phase 3b, fourth of five groups)
+**Decision:** Character-network features (12 columns: 3 cast structure, 3 density/connectivity, 3 lead dominance, 3 graph topology) implemented per proposal v1. Multi-family ablation produced a **partial positive** verdict: two linear-OOF in-band hits (the first time any group lands two), and `roi_gt_2` AUC lift across all four families (linear +0.016, histgb +0.004, knn +0.022, svm +0.061). `network_lead_role_count ↔ roi_gt_2` is the first feature in any Phase 3b group to exceed the |r| = 0.10 univariate threshold (r = -0.102; films with more "lead" characters trend less net-profitable, consistent with audience-identification theory). The result is qualitatively distinct from topic (which lifted `roi_gt_1` AUC across families): character network lifts `roi_gt_2` AUC across families. Together with topic, the two partial positives demonstrate that genre-orthogonal feature groups (topic, character network) lift the ablation while genre-redundant groups (lexical, sentiment) do not. NaN-fallback for the 24 train-split data-quality-flagged films executed cleanly (all-NaN on the 12 model features, mean imputer handles them at fold-fit time). The 12 features are retained for Phase 3c combinations evaluation; the most informative Phase 3c combination to test is topic + character-network (which target different `roi_gt_*` thresholds with non-overlapping mechanisms).
+**See also:** `docs/handoffs/phase_3b_character_network_handoff.md`.
+
+## 2026-05-03 20:30 — Phase 3b: topic standalone result is partial positive (first non-null lift of the phase)
+
+**Phase:** Phase 3 — Feature Extraction (sub-phase 3b, third of five groups)
+**Decision:** Topic features (22 columns: 20 LDA topic proportions, 1 distribution-concentration entropy, 1 dominant-topic id) implemented per proposal v1; the multi-family ablation produced a **partial positive** verdict, qualitatively different from the lexical and sentiment null results. All four model families lift `roi_gt_1` AUC (linear +0.032, histgb +0.026, knn +0.028, svm +0.052), the first time any Phase 3b group has produced consistent across-family directional movement on a target. PR-AUC on `roi_gt_1` lands in-band at +0.014. Linear `roi_gt_2` AUC lifts +0.012 (just below the predicted +0.015 floor); HistGB and KNN go negative on `roi_gt_2`. Regression target null/wrong-direction on every family. The proposal's central pre-registered hypothesis (`roi_gt_2` AUC +0.015 to +0.040) was wrong on direction-and-magnitude grounds; the surprise positive came on `roi_gt_1` instead, attributable to topic features being more genre-orthogonal on the unprofitable-minority target than on the blockbuster target. No-leakage discipline implemented (CountVectorizer + LDA fit on train fold only) and verified by unit test. The 22 topic features are retained in the matrix for the Phase 3c combinations evaluation.
+**See also:** `docs/handoffs/phase_3b_topic_handoff.md`.
+
 ## 2026-05-03 19:50 — Phase 3b: sentiment standalone result is null; nrclex deviation accepted
 
 **Phase:** Phase 3 — Feature Extraction (sub-phase 3b, second of five groups)
@@ -486,7 +504,7 @@ Format: one entry per decision, newest first
 |---|---|---|---|
 | 1 | Data feasibility verification | Complete | `docs/summaries/phase_1_summary.md` |
 | 2 | Data pipeline | Complete | `docs/summaries/phase_2_summary.md` |
-| 3 | Feature extraction | In progress (3a multi-family floor complete; lexical and sentiment groups complete, both null; topic group next) | `docs/handoffs/phase_3a_handoff.md`, `docs/handoffs/phase_3b_lexical_handoff.md`, `docs/handoffs/phase_3b_sentiment_handoff.md` |
+| 3 | Feature extraction | In progress (3a complete; 3b complete: 2 nulls, 3 partial positives; 3c combinations sub-phase next) | `docs/handoffs/phase_3a_handoff.md`, `docs/handoffs/phase_3b_*_handoff.md` (5 handoffs) |
 | 4 | Layer 1: Core prediction | Not started | — |
 | 5 | Layer 2: Calibration | Not started | — |
 | 6 | Layer 3: Decision | Not started | — |
