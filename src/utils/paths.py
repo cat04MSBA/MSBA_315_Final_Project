@@ -66,6 +66,12 @@ REPORTS_DIR: Path = PROJECT_ROOT / "reports"
 REPORTS_FIGURES_DIR: Path = REPORTS_DIR / "figures"
 REPORTS_TABLES_DIR: Path = REPORTS_DIR / "tables"
 
+# Per-run experiment tracking. ``runs/<phase>/<YYYYMMDD_HHMM>_<name>/`` per
+# run, populated by ``src.experiments.save_run``. The phase subdirectory and
+# the per-run directory are created on demand by ``save_run``; this constant
+# is the parent that holds the ``RUNS.md`` index.
+RUNS_DIR: Path = PROJECT_ROOT / "runs"
+
 
 def ensure_dirs() -> None:
     """Create the standard data/report directories if they don't already exist.
@@ -81,5 +87,6 @@ def ensure_dirs() -> None:
         REPORTS_FIGURES_DIR,
         REPORTS_TABLES_DIR,
         DOCS_SUMMARIES_DIR,
+        RUNS_DIR,
     ):
         directory.mkdir(parents=True, exist_ok=True)

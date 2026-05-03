@@ -1,0 +1,12 @@
+2026-05-03 16:37:58 | INFO    | src.experiments.save_run | Run started: phase=phase_3 name=lexical_first dir=runs/phase_3/20260503_1637_lexical_first
+2026-05-03 16:37:58 | INFO    | __main__ | Starting lexical ablation evaluation
+2026-05-03 16:37:59 | INFO    | src.models.baseline.train | dialogue_only_logged_lexical | log_roi | r2 = 0.0365 [CI 0.0138, 0.0601]
+2026-05-03 16:37:59 | INFO    | src.models.baseline.train | dialogue_only_logged_lexical | log_roi | mae = 0.9545 [CI 0.9020, 1.0093]
+2026-05-03 16:37:59 | INFO    | src.models.baseline.train | dialogue_only_logged_lexical | log_roi | rmse = 1.3497 [CI 1.2315, 1.4846]
+2026-05-03 16:38:00 | INFO    | src.models.baseline.train | dialogue_only_logged_lexical | roi_gt_1 | auc_roc = 0.5653 [CI 0.5268, 0.6054]
+2026-05-03 16:38:00 | INFO    | src.models.baseline.train | dialogue_only_logged_lexical | roi_gt_1 | pr_auc = 0.8439 [CI 0.8188, 0.8742]
+2026-05-03 16:38:02 | INFO    | src.models.baseline.train | dialogue_only_logged_lexical | roi_gt_2 | auc_roc = 0.5998 [CI 0.5703, 0.6332]
+2026-05-03 16:38:02 | INFO    | src.models.baseline.train | dialogue_only_logged_lexical | roi_gt_2 | pr_auc = 0.7288 [CI 0.6981, 0.7639]
+2026-05-03 16:38:02 | INFO    | __main__ | Lexical ablation metrics: {'log_roi_r2': 0.0365, 'log_roi_mae': 0.9545, 'log_roi_rmse': 1.3497, 'roi_gt_1_auc_roc': 0.5653, 'roi_gt_1_pr_auc': 0.8439, 'roi_gt_2_auc_roc': 0.5998, 'roi_gt_2_pr_auc': 0.7288}
+2026-05-03 16:38:02 | INFO    | __main__ | Ablation table written: 7 rows total
+2026-05-03 16:38:02 | INFO    | src.experiments.save_run | Run finished: phase=phase_3 name=lexical_first dir=runs/phase_3/20260503_1637_lexical_first

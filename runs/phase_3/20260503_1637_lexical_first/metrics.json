@@ -1,0 +1,23 @@
+{
+  "log_roi_mae": 0.9545,
+  "log_roi_mae_ci_hi": 1.0093,
+  "log_roi_mae_ci_lo": 0.902,
+  "log_roi_r2": 0.0365,
+  "log_roi_r2_ci_hi": 0.0601,
+  "log_roi_r2_ci_lo": 0.0138,
+  "log_roi_rmse": 1.3497,
+  "log_roi_rmse_ci_hi": 1.4846,
+  "log_roi_rmse_ci_lo": 1.2315,
+  "roi_gt_1_auc_roc": 0.5653,
+  "roi_gt_1_auc_roc_ci_hi": 0.6054,
+  "roi_gt_1_auc_roc_ci_lo": 0.5268,
+  "roi_gt_1_pr_auc": 0.8439,
+  "roi_gt_1_pr_auc_ci_hi": 0.8742,
+  "roi_gt_1_pr_auc_ci_lo": 0.8188,
+  "roi_gt_2_auc_roc": 0.5998,
+  "roi_gt_2_auc_roc_ci_hi": 0.6332,
+  "roi_gt_2_auc_roc_ci_lo": 0.5703,
+  "roi_gt_2_pr_auc": 0.7288,
+  "roi_gt_2_pr_auc_ci_hi": 0.7639,
+  "roi_gt_2_pr_auc_ci_lo": 0.6981
+}

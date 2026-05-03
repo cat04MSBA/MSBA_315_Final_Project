@@ -330,6 +330,15 @@ project_root/
 ├── reports/
 │   ├── figures/                    # plots saved during phases
 │   └── tables/                     # tables saved during phases
+├── runs/                           # per-run experiment artifacts
+│   ├── RUNS.md                     # human-readable index, newest first
+│   └── <phase>/<YYYYMMDD_HHMM>_<name>/
+│       ├── params.json             # hyperparameters
+│       ├── preprocessing_summary.json
+│       ├── features_used.json
+│       ├── metrics.json
+│       ├── run.log                 # full INFO/DEBUG trace per run
+│       └── model.joblib            # gitignored; the rest is tracked
 ├── tests/                          # smoke tests for critical functions
 ├── requirements.txt
 ├── .gitignore
@@ -354,6 +363,12 @@ Format: one entry per decision, newest first
 **Decision:** [One or two lines stating what was decided.]
 **See also:** `docs/summaries/phase_N_summary.txt` for full rationale.
 
+
+## 2026-05-03 17:20 — Phase 3a/3b: baseline expanded from 1 to 4 model families
+
+**Phase:** Phase 3 — Feature Extraction (cross-cutting; affects 3a and 3b)
+**Decision:** The original Phase 3a baseline used a single model family (L2-regularized linear: RidgeCV for regression, LogisticRegressionCV for classification) per the brief's "linear / regularized linear is the obvious default" guidance. The first Phase 3b ablation (lexical group) produced a negative lift on the linear baseline, raising the question of whether the issue was the features themselves or a peculiarity of the linear model family. To disambiguate, the Phase 3a baselines and every subsequent Phase 3b ablation now run across **four model families** with distinct inductive biases: linear (L2), histogram gradient boosting, k-nearest-neighbours, and SVM with RBF kernel. The linear family remains the historical reference for the brief's escalation threshold check; the other three families are reported alongside as a diagnostic. The 4-family run reveals (a) HistGB exceeds linear on the structural baseline alone (R² 0.069 vs 0.052, `roi_gt_2` AUC 0.610 vs 0.602), suggesting Phase 4 should expect tree-based models to outperform linear ones on this corpus; (b) the lexical group's negative lift is consistent across all four families (HistGB drops R² 0.009 and `roi_gt_1` AUC 0.041 with lexical added), strengthening rather than weakening the original "no signal" interpretation. KNN and SVM are weak baselines on this corpus (likely due to the high feature-to-sample ratio); their values are reported for completeness.
+**See also:** `docs/handoffs/phase_3a_handoff.md` for the multi-family floor numbers; `docs/handoffs/phase_3b_lexical_handoff.md` for the lexical verdict.
 
 ## 2026-05-03 14:10 — Phase 3a: baseline feature parameterization revised (log-transforms + log_runtime added)
 
@@ -453,7 +468,7 @@ Format: one entry per decision, newest first
 |---|---|---|---|
 | 1 | Data feasibility verification | Complete | `docs/summaries/phase_1_summary.md` |
 | 2 | Data pipeline | Complete | `docs/summaries/phase_2_summary.md` |
-| 3 | Feature extraction | In progress (3a complete; planning-conversation review pending before 3b) | `docs/handoffs/phase_3a_handoff.md` (interim) |
+| 3 | Feature extraction | In progress (3a multi-family floor complete; lexical group complete with null verdict; sentiment proposal next) | `docs/handoffs/phase_3a_handoff.md`, `docs/handoffs/phase_3b_lexical_handoff.md` |
 | 4 | Layer 1: Core prediction | Not started | — |
 | 5 | Layer 2: Calibration | Not started | — |
 | 6 | Layer 3: Decision | Not started | — |

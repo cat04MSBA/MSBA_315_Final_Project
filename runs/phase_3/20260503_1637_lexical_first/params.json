@@ -1,0 +1,39 @@
+{
+  "_notes": "Phase 3b ablation row 1 of 5. Lexical features (14) added on top of revised dialogue-only baseline. Pre-registered lift: log_roi R^2 +0.010 to +0.025; roi_gt_1 AUC +0.000 to +0.010; roi_gt_2 AUC +0.015 to +0.035.",
+  "bootstrap_alpha": 0.05,
+  "bootstrap_iter": 1000,
+  "classification_C_grid": [
+    0.001,
+    0.0031622776601683794,
+    0.01,
+    0.03162277660168379,
+    0.1,
+    0.31622776601683794,
+    1.0,
+    3.1622776601683795,
+    10.0,
+    31.622776601683793,
+    100.0,
+    316.22776601683796,
+    1000.0
+  ],
+  "classification_model": "LogisticRegressionCV (L2)",
+  "n_cv_folds": 5,
+  "regression_alpha_grid": [
+    0.001,
+    0.0031622776601683794,
+    0.01,
+    0.03162277660168379,
+    0.1,
+    0.31622776601683794,
+    1.0,
+    3.1622776601683795,
+    10.0,
+    31.622776601683793,
+    100.0,
+    316.22776601683796,
+    1000.0
+  ],
+  "regression_model": "RidgeCV",
+  "seed": 42
+}

@@ -370,7 +370,103 @@ After writing the summary, update the Phase Status table in
 
 ---
 
-## 9. Self-Check Before Marking a Phase Complete
+## 9. Experiment Tracking
+
+Active from Phase 3b onwards (introduced when feature-engineering ablation began;
+the original plan had this landing at Phase 4 but the structured ablation in
+Phase 3b is the first real use case).
+
+Every modelling-style experiment runs inside a `save_run` context manager from
+`src.experiments.save_run`. Each run produces a self-contained directory under
+`runs/<phase>/<YYYYMMDD_HHMM>_<name>/` containing six files:
+
+| File | Question it answers |
+|---|---|
+| `params.json` | What were the hyperparameters? |
+| `preprocessing_summary.json` | What pipeline choices were upstream of the model? |
+| `features_used.json` | Which features fed in? |
+| `metrics.json` | How well did it perform? |
+| `model.joblib` | The trained artifact (Phase 4+ only; gitignored). |
+| `run.log` | Full INFO/DEBUG trace of what happened (per-fold scores, hyperparameter search, warnings). |
+
+Splitting metadata across multiple JSON files (rather than one monolithic
+`config.json`) keeps cross-run diffs readable: "what features did the run that
+beat the baseline use?" reduces to `diff features_used.json features_used.json`
+between two runs.
+
+### What `save_run` does
+
+On block entry: creates the run directory, writes `params.json`,
+`preprocessing_summary.json`, and `features_used.json`, and attaches a
+DEBUG-level `FileHandler` to the root logger so every `logger.info` /
+`logger.debug` call inside the block lands in `run.log`. Console output stays
+at the user's currently-configured level (typically INFO); the file captures
+DEBUG and above regardless.
+
+On block exit: detaches the file handler, restores the prior root and
+stdout-handler levels, and marks the handle closed so any subsequent calls to
+`record_metrics` or `save_model` raise rather than silently writing into the
+wrong run.
+
+### Usage
+
+```python
+from src.experiments.save_run import save_run
+
+with save_run(
+    phase="phase_3",
+    name="lexical_first",
+    params={"alpha_grid": [0.1, 1.0, 10.0], "fit_intercept": True},
+    preprocessing={"split": "70_15_15", "log_transform_structural": True},
+    features=["log_n_scenes", "mtld_dialogue", "..."],
+) as run:
+    model, metrics = train_and_evaluate(...)
+    run.record_metrics(metrics)
+    # run.save_model(model)  # Phase 4+; not used in Phase 3b ablations
+    run.append_to_runs_md(
+        model_family="Ridge + LogisticRegression",
+        features_group="structural + lexical",
+        key_metric="R2 0.07, AUC roi_gt_2 0.62",
+        notes="First lexical ablation row",
+    )
+```
+
+### `runs/RUNS.md` index
+
+Single human-readable index at `runs/RUNS.md`, sorted newest first. One row
+per run with date, phase, run folder, git SHA at run time, model family,
+features group, key metric, and free-text notes. New rows are inserted via
+`RunHandle.append_to_runs_md` directly above the marker comment near the top
+of the table; manual rows can be added in the same place.
+
+The git SHA column is the commit at the time of the run. Code at that SHA
+plus the run directory's metadata equals full reproducibility.
+
+### What gets committed and what doesn't
+
+`*.joblib` is globally gitignored, which covers every `runs/**/model.joblib`
+without further action. The four JSON metadata files and `run.log` are
+tracked (an explicit `!runs/**/*.log` override exists in `.gitignore` because
+the global `*.log` rule would otherwise ignore them). Run logs are typically
+small (single-digit KB for Phase 3b ablation runs, larger for Phase 4
+hyperparameter sweeps) and methodology-relevant, so committing them is the
+right default.
+
+### When this convention does not apply
+
+Data-prep phases (Phase 1, Phase 2) produce single canonical artifacts at
+canonical paths (`data/processed/films_joined.parquet`,
+`reports/figures/phase2_*.png`) and do not need per-run isolation. Phase 3a
+(the baseline floor) produced its 28-row results table directly to
+`reports/tables/phase3a_baseline.csv` without `save_run`; that decision was
+correct at the time and the table remains the canonical reference for the
+floor numbers.
+
+Phase 3b ablation runs and all Phase 4+ modelling runs use `save_run`.
+
+---
+
+## 10. Self-Check Before Marking a Phase Complete
 
 Before declaring a phase complete, verify:
 

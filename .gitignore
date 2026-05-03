@@ -1,7 +1,13 @@
-# --- Data (never committed) ---
-data/raw/
-data/interim/
-data/processed/
+# --- Data (contents never committed; keep folder structure + README) ---
+# Ignore everything under data/, then re-allow folder placeholders + README.
+data/**
+!data/README.md
+!data/raw/
+!data/interim/
+!data/processed/
+!data/raw/script_data/
+!data/raw/ratings_data/
+!data/**/.gitkeep
 
 # --- Python ---
 __pycache__/
@@ -52,6 +58,8 @@ Thumbs.db
 # --- Logs ---
 *.log
 logs/
+# Per-run experiment logs are tracked: small, methodology-relevant.
+!runs/**/*.log
 
 # --- Claude Code local state (per-user, per-machine) ---
 .claude/

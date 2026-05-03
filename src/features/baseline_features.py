@@ -29,10 +29,13 @@ can align rows against the split assignments by id rather than position.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
+
+from src.utils import paths
 
 
 # Numeric structural features computed at Phase 2 corpus-build time.
@@ -73,20 +76,22 @@ GENRE_PREFIX: str = "genre_"
 
 @dataclass(frozen=True)
 class BaselineFeatureConfig:
-    """Knobs for the Phase 3a baseline feature matrix.
+    """Knobs for the baseline feature matrix.
 
-    Override via :func:`dataclasses.replace`. The four reference
-    configurations used by Phase 3a are:
+    Override via :func:`dataclasses.replace`. Reference configurations:
 
-    * ``dialogue_only`` (original):
+    * ``dialogue_only`` (Phase 3a original):
       ``include_log_budget=False``, ``log_transform_structural=False``,
       ``include_log_runtime=False``.
-    * ``with_budget`` (original): same as above but
+    * ``with_budget`` (Phase 3a original): same as above but
       ``include_log_budget=True``.
-    * ``dialogue_only_logged`` (revised):
+    * ``dialogue_only_logged`` (Phase 3a revised):
       ``log_transform_structural=True``, ``include_log_runtime=True``.
-    * ``with_budget_logged`` (revised): same as ``dialogue_only_logged``
-      with ``include_log_budget=True``.
+    * ``with_budget_logged`` (Phase 3a revised): same as
+      ``dialogue_only_logged`` with ``include_log_budget=True``.
+    * ``dialogue_only_logged_lexical`` (Phase 3b lexical):
+      ``log_transform_structural=True``, ``include_log_runtime=True``,
+      ``include_lexical=True``.
     """
     structural: tuple[str, ...] = STRUCTURAL_FEATURES
     include_era: bool = True
@@ -100,6 +105,14 @@ class BaselineFeatureConfig:
     # raw ``runtime`` column is on the master parquet, no derived
     # ``log_runtime`` column is stored there).
     include_log_runtime: bool = False
+    # Phase 3b: include the precomputed lexical feature matrix from
+    # ``data/processed/features_lexical.parquet`` (or the path given
+    # by ``lexical_features_path``). The diagnostic-only column
+    # ``_oov_rate_dialogue`` is excluded from the model-input matrix.
+    include_lexical: bool = False
+    lexical_features_path: Path = field(
+        default_factory=lambda: paths.DATA_PROCESSED_DIR / "features_lexical.parquet"
+    )
 
 
 def build_baseline_features(
@@ -159,4 +172,15 @@ def build_baseline_features(
 
     out = pd.concat(pieces, axis=1)
     out.index = pd.Index(df["imdb_id"].values, name="imdb_id")
+
+    if cfg.include_lexical:
+        lex = pd.read_parquet(cfg.lexical_features_path)
+        # Drop the diagnostic-only column from the model-input matrix.
+        diag_cols = [c for c in lex.columns if c.startswith("_")]
+        lex = lex.drop(columns=diag_cols)
+        # Align by imdb_id; films missing from the lexical parquet end
+        # up as all-NaN rows that the modelling pipeline's imputer
+        # handles.
+        out = out.join(lex, how="left")
+
     return out
