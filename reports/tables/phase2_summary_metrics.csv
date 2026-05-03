@@ -13,7 +13,8 @@ roi_median,2.896
 roi_pct_profitable,80.5
 scenes_median,130.0
 scenes_mean,134.8
-unique_characters_median,56.0
+unique_characters_median,51.0
 dialogue_lines_median,880.0
 dialogue_to_total_text_ratio_mean,0.399
-films_with_parse_warnings,680.0
+films_with_parse_warnings,698.0
+films_data_quality_flagged,30.0

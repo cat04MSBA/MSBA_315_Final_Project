@@ -31,12 +31,31 @@ Edge cases (per Phase 2 brief Task 2):
 
 * Malformed XML — returns a degenerate ``ParsedScreenplay`` with empty
   scenes and the error captured in ``parse_warnings``. Does not raise.
+* Wrong root tag (not ``<script>``) — emits a warning to
+  ``parse_warnings`` and continues parsing scene children if any.
+* Character-name normalization (Tier 1.1) — trailing parenthetical
+  variant suffixes are stripped from `<character>` text:
+  ``"TONY (CONT'D)"``, ``"TONY (V.O.)"``, ``"TONY (O.S.)"`` all
+  normalize to ``"TONY"``. If stripping would leave the empty string
+  (rare; e.g. ``"(WAITER)"``), the original is preserved.
+* Implausible character names (Tier 1.2 conservative filter) — strings
+  that contain ``©``/``®``/``™``, start with a 4-digit year, or
+  contain studio-attribution substrings (``STUDIOS``,
+  ``PICTURES INC``, ``PRODUCTIONS LLC``) are rejected as not-real
+  characters. The tag is treated as a flow break: a warning is
+  recorded, ``last_speaker`` is reset, and the next ``<dialogue>``
+  lands on the orphan path (Case 11) rather than being attributed to
+  the implausible name.
+* Unique-character counting (Tier 1.3) — a character only counts in
+  ``n_unique_characters`` if they delivered at least one non-empty,
+  non-whitespace dialogue line. Empty-text placeholders (left in
+  ``dialogue_units`` for traceability when Cases 5-8 fire) do not
+  contribute.
 * ``<parenthetical>`` elements (e.g. ``"(softly)"``, ``"(beat)"``).
-  These are a real, frequent screenplay element the brief didn't
-  document but MovieSum includes; we recognize them silently and use
-  them as "continuation markers" so dialogue that follows a
-  parenthetical without an intervening ``<character>`` is correctly
-  attributed to the same speaker.
+  These are a real, frequent screenplay element; we recognize them
+  silently and use them as "continuation markers" so dialogue that
+  follows a parenthetical without an intervening ``<character>`` is
+  correctly attributed to the same speaker.
 * Dialogue with no preceding ``<character>`` but the same speaker is
   continuing (i.e. a stage_direction or scene_description has not
   intervened) — attributed to the previous speaker, no warning.
@@ -60,6 +79,7 @@ can pick whichever is appropriate.
 
 from __future__ import annotations
 
+import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from typing import Iterable
@@ -67,6 +87,51 @@ from typing import Iterable
 from src.utils.logging import get_logger
 
 logger = get_logger(__name__)
+
+
+# --- Character-name normalization (Tier 1.1) ---------------------------------
+# Trailing parenthetical suffixes mark variants of the same speaker:
+# "TONY (CONT'D)", "TONY (V.O.)", "TONY (O.S.)", "TONY (PRELAP)", etc.
+# We normalize them all to "TONY" so the unique-character count reflects
+# the speaking entities, not the formatting variants.
+_VARIANT_SUFFIX_RE = re.compile(r"\s*\([^)]*\)\s*$")
+
+# --- Implausible-character-name filter (Tier 1.2 conservative) ----------------
+# Strings that match any of these patterns are rejected as not-a-character.
+# The set is deliberately narrow to keep false-positive risk low.
+_IMPLAUSIBLE_NAME_PATTERNS: tuple[re.Pattern, ...] = (
+    re.compile(r"[©®™]"),                # © ® ™
+    re.compile(r"^\d{4}\b"),                            # starts with a 4-digit year
+    re.compile(r"\bSTUDIOS\b", re.IGNORECASE),
+    re.compile(r"\bPICTURES\s+INC\b", re.IGNORECASE),
+    re.compile(r"\bPRODUCTIONS\s+LLC\b", re.IGNORECASE),
+)
+
+
+def _normalize_character_name(raw: str) -> str:
+    """Strip trailing parenthetical variant markers (CONT'D, V.O., etc.).
+
+    If stripping leaves an empty string (the raw name was *only* a
+    parenthetical, as occasionally happens with unnamed characters like
+    ``(WAITER)``), the original is preserved so the subsequent
+    plausibility check has something to evaluate.
+    """
+    if not raw:
+        return raw
+    stripped = _VARIANT_SUFFIX_RE.sub("", raw).strip()
+    return stripped if stripped else raw
+
+
+def _is_plausible_character_name(name: str) -> bool:
+    """Conservative reject filter for `<character>` content that isn't a real name.
+
+    Returns False on copyright/registered/trademark symbols, year-prefixed
+    strings, and well-known studio-attribution substrings. Plain names
+    (regardless of length, casing, or punctuation) pass.
+    """
+    if not name:
+        return False
+    return not any(p.search(name) for p in _IMPLAUSIBLE_NAME_PATTERNS)
 
 
 @dataclass(frozen=True)
@@ -177,14 +242,33 @@ def _parse_one_scene(
             last_speaker = None  # action breaks the dialogue flow
             scene_descriptions.append(text)
         elif tag == "character":
+            # Flush any dangling pending_character first (Case 7 path).
             if pending_character is not None:
-                # Two characters in a row — first one had no dialogue.
                 dialogue_units.append((pending_character, ""))
                 warnings.append(
                     f"scene {scene_number}: character {pending_character!r} "
                     "followed by another <character>"
                 )
-            pending_character = text
+                pending_character = None
+
+            # Tier 1.1: normalize trailing variant suffixes.
+            normalized = _normalize_character_name(text)
+
+            # Tier 1.2 (conservative): reject implausible character names
+            # (copyright headers, year-prefixed strings, studio attributions).
+            # When rejected, treat the tag as a flow break so any subsequent
+            # dialogue lands on the orphan path (Case 11) rather than being
+            # attributed to the implausible "character" or carried over by
+            # last_speaker.
+            if not _is_plausible_character_name(normalized):
+                warnings.append(
+                    f"scene {scene_number}: rejected implausible character name "
+                    f"{text!r}"
+                )
+                last_speaker = None  # force Case 11 for the next <dialogue>
+                continue
+
+            pending_character = normalized
         elif tag == "parenthetical":
             # Standard screenplay element; not a flow break. Don't reset
             # pending_character or last_speaker. Don't store the
@@ -307,8 +391,13 @@ def _summarize(
     total_scene_description_chars = sum(len(s.scene_description) for s in scenes)
     total_action_chars = total_stage_direction_chars + total_scene_description_chars
 
+    # Tier 1.3: a character only counts as "unique" if they delivered at
+    # least one non-empty, non-whitespace dialogue line. Empty-text
+    # placeholders (Cases 5, 6, 7, 8) are excluded from the count even
+    # though they remain in dialogue_units for traceability.
     unique_characters = {
-        name for s in scenes for name, _ in s.dialogue_units if name
+        name for s in scenes for name, text in s.dialogue_units
+        if name and text.strip()
     }
     n_unique_characters = len(unique_characters)
 

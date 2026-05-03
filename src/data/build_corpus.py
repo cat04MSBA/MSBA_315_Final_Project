@@ -100,6 +100,18 @@ class CorpusBuildConfig:
     # collapse into "Other".
     genre_min_count: int = 30
 
+    # --- Data-quality flag (degenerate scene structure) ---
+    # Some MovieSum source XMLs have missing or collapsed scene
+    # boundaries: the entire screenplay is encoded as one or a few
+    # `<scene>` elements containing all the dialogue. Films matching
+    # `n_scenes < data_quality_min_scenes AND total_dialogue_chars >
+    # data_quality_min_dialogue_chars` are flagged via the
+    # `data_quality_flag` boolean column on the master DataFrame.
+    # Phase 3 decides whether to filter, downweight, or include them
+    # as-is.
+    data_quality_min_scenes: int = 10
+    data_quality_min_dialogue_chars: int = 50_000
+
     # --- I/O ---
     # MovieSum dedup CSV (Phase 1 user-filled file). The pipeline reads
     # the ``decision`` column; ``keep`` keeps the row, ``drop`` /
@@ -435,7 +447,46 @@ def attach_screenplay_metrics(
 
 
 # ---------------------------------------------------------------------------
-# Step 5: Validation + save
+# Step 5: Data-quality flag
+# ---------------------------------------------------------------------------
+
+def add_data_quality_flag(
+    df: pd.DataFrame, config: CorpusBuildConfig
+) -> pd.DataFrame:
+    """Mark films whose source XML has degenerate scene structure.
+
+    Some MovieSum source files encode the whole screenplay as one or
+    a small number of ``<scene>`` elements (scene boundaries missing
+    in the source), even though the dialogue volume is consistent
+    with a normal feature-length screenplay. Such films pollute any
+    per-scene analysis and any feature derived from
+    ``n_scenes``. Adds the boolean column ``data_quality_flag``;
+    True means "structurally degenerate, handle with care."
+
+    Phase 3 decides whether to filter, downweight, or include them
+    as-is. The flag is informational; it does not exclude any films
+    from the master corpus.
+    """
+    n_scenes = df["n_scenes"]
+    total_dialogue_chars = df["total_dialogue_chars"]
+    flag = (
+        (n_scenes < config.data_quality_min_scenes)
+        & (total_dialogue_chars > config.data_quality_min_dialogue_chars)
+    )
+    df = df.copy()
+    df["data_quality_flag"] = flag
+    n_flagged = int(flag.sum())
+    logger.info(
+        "Data-quality flag: %d films flagged (n_scenes < %d AND "
+        "total_dialogue_chars > %d)",
+        n_flagged, config.data_quality_min_scenes,
+        config.data_quality_min_dialogue_chars,
+    )
+    return df
+
+
+# ---------------------------------------------------------------------------
+# Step 6: Validation + save
 # ---------------------------------------------------------------------------
 
 def validate_processed(df: pd.DataFrame, config: CorpusBuildConfig) -> None:
@@ -530,9 +581,12 @@ def build_corpus(
 
     # --- 6. Parse screenplays + denormalize metrics.
     parsed = parse_all_screenplays(derived)
-    final_df = attach_screenplay_metrics(derived, parsed)
+    with_metrics = attach_screenplay_metrics(derived, parsed)
 
-    # --- 7. Validate + save.
+    # --- 7. Add data-quality flag for degenerate scene structures.
+    final_df = add_data_quality_flag(with_metrics, config)
+
+    # --- 8. Validate + save.
     validate_processed(final_df, config)
     save_artifacts(final_df, parsed, config.out_dir)
 
@@ -552,6 +606,8 @@ def main() -> tuple[pd.DataFrame, dict[str, ParsedScreenplay]]:
     print(f"  Mean rating:        {df['effective_rating'].mean():.2f}")
     print(f"  Median scenes:      {int(df['n_scenes'].median())}")
     print(f"  Median dialogue lines: {int(df['n_dialogue_lines'].median()):,}")
+    print(f"  Data-quality flagged: {int(df['data_quality_flag'].sum())}  "
+          f"(degenerate scene structure)")
     print(f"  Saved parquet to:   {Path(config_default_out())} / films_joined.parquet")
     return df, parsed
 

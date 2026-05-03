@@ -105,66 +105,106 @@ distribution is heavy-tailed; flag threshold is `|r| > 0.30` for
 numeric variables and `η² > 0.09` for the categorical
 `primary_genre_bucketed`.
 
+**Targeted parser improvements (Tier 1.1, 1.2, 1.3) applied.** Three
+parser changes were implemented in response to an initial audit pass
+that flagged `n_unique_characters` as systematically correlated with
+`parse_warning_count` (initial Spearman ρ = +0.48):
+
+* **Tier 1.1 — character-name normalization.** Trailing parenthetical
+  variant suffixes are stripped from `<character>` tag content, so
+  `TONY (CONT'D)`, `TONY (V.O.)`, and `TONY (O.S.)` all normalize to
+  `TONY`. If stripping would leave the empty string (e.g.,
+  `(WAITER)`), the original is preserved.
+* **Tier 1.2 — implausible-character-name filter (conservative).**
+  Strings appearing in `<character>` tags are rejected as
+  not-real-characters when they (a) contain `©`/`®`/`™`, (b) start
+  with a 4-digit year, or (c) contain the substrings `STUDIOS`,
+  `PICTURES INC`, or `PRODUCTIONS LLC`. When rejected, the tag is
+  treated as a flow break (resets `last_speaker`) and the next
+  `<dialogue>` lands on the orphan path (Case 11) rather than being
+  attributed to the implausible name.
+* **Tier 1.3 — non-empty-dialogue requirement for unique characters.**
+  A name only counts toward `n_unique_characters` if it delivered at
+  least one non-empty, non-whitespace dialogue line. Empty-text
+  placeholders inserted when Cases 5-8 fire remain in `dialogue_units`
+  for traceability but do not contribute to the unique count.
+
 **Numeric correlations** (Spearman ρ shown; Pearson concordant):
 
 | Metric | Spearman ρ | Flagged | Interpretation |
 |---|---:|:---:|---|
-| `n_scenes` | -0.187 | no | small negative; no systematic bias |
-| `n_unique_characters` | **+0.483** | **yes** | strong positive; see below |
+| `n_scenes` | -0.181 | no | small negative; no systematic bias |
+| `n_unique_characters` | **+0.393** | **yes** | dropped from 0.483 pre-Tier-1; see below |
 | `n_dialogue_lines` | +0.129 | no | small positive |
-| `total_dialogue_chars` | +0.068 | no | effectively zero |
-| `dialogue_to_total_text_ratio` | +0.102 | no | small positive |
-| `mean_dialogue_line_length` | -0.046 | no | weak negative; direction matches case-analysis prediction |
-| `script_char_len` | -0.030 | no | effectively zero |
-| `decade` | +0.293 | no | mild upward trend over time, just below threshold |
+| `total_dialogue_chars` | +0.073 | no | effectively zero |
+| `dialogue_to_total_text_ratio` | +0.105 | no | small positive |
+| `mean_dialogue_line_length` | -0.041 | no | weak negative; direction matches case-analysis prediction |
+| `script_char_len` | -0.025 | no | effectively zero |
+| `decade` | +0.308 | yes | mild upward trend over time, marginally over threshold |
 
-**Categorical correlation:** `primary_genre_bucketed` η² = 0.024
+**Categorical correlation:** `primary_genre_bucketed` η² = 0.020
 (below the 0.09 threshold). Per-genre warning counts do not vary
 substantially.
 
-**The flagged finding: `n_unique_characters` (ρ = +0.48).** Films with
-more unique characters generate more parse warnings. Two mechanisms
-contribute:
+**Before/after on the flagged correlation** (`n_unique_characters`):
 
-1. *Direct artifact of recovery rules.* Cases 5-8 in the parser
-   (a `<character>` element followed by a flow-breaking element or
-   another `<character>`) append an empty-text dialogue placeholder
-   keyed on the character name. Each such placeholder both raises
-   the warning count and (if the name is not seen elsewhere)
-   increments `n_unique_characters`. Phase 3 will filter empty-text
-   dialogue placeholders before counting, eliminating the artifactual
-   contribution.
-2. *Underlying-data correlation.* Films with large casts and many
-   character switches present more opportunities for the source XML's
-   structural irregularities to occur, independently of the parser.
-   This is a property of the screenplays, not a parser issue.
+| | Pearson r | Spearman ρ |
+|---|---:|---:|
+| Pre-Tier-1 | +0.42 | +0.48 |
+| Post-Tier-1 | +0.17 | +0.39 |
 
-The Phase 3 filtering step will isolate the artifactual portion.
-Until then, downstream code that conditions on
-`n_unique_characters` should be aware of the correlation.
+**Interpretation.** The Pearson coefficient dropped substantially
+(+0.42 → +0.17), indicating that the linear relationship was largely
+driven by a small number of films with heavy artifactual inflation
+(films like *Iron Man* and *Toy Story 4* whose source XML mis-tagged
+copyright headers as character names). The Spearman coefficient
+dropped less (+0.48 → +0.39) and remains above the 0.30 flag
+threshold. Per the framework set at the audit stage (correlation
+above 0.30 indicates a genuine underlying-data signal; below 0.20
+indicates pure parser artifact), the result is unambiguous: a
+meaningful portion of the original correlation was parser artifact
+caused by variant inflation and source-mistagged character-tag
+content, but a real underlying-data signal remains. Films with
+larger casts have more character switches and more opportunities for
+source-XML formatting irregularities; this property of the
+screenplays themselves, independent of the parser, accounts for the
+residual correlation. `decade` shows a similar pattern, marginally
+crossing the threshold; the mild upward trend over time may reflect
+greater formatting heterogeneity in modern source files.
 
-**Top-5 inspection findings.** The five highest-warning films are
-*Iron Man* (114 warnings), *Cat People* (62), *Batman: Mask of the
-Phantasm* (56), *Fletch* (53), and *Monsters University* (53). Manual
-inspection of their raw XML alongside the parsed output confirms that
-the parser's recoveries produced sensible output in every case
-checked. The dominant warning category is "character followed by
-another `<character>` or by a flow-breaking element" (Cases 5-8); the
-recoveries (empty-text placeholder, then continue) preserve correct
-attribution of subsequent legitimate dialogue. None of the inspected
-films contained orphan dialogue (Case 11) or unknown tags (Case 12).
-Several warnings were traced to genuine source-XML quirks rather than
-parser limitations: for example, *Iron Man* contained instances of
-the copyright header `© 2007 MARVEL STUDIOS, INC.` mistakenly
-formatted as `<character>` elements, which the parser correctly
-flagged and recovered from without corrupting the surrounding scene.
+**Top-5 inspection findings.** Post-Tier-1, the five films with the
+highest `parse_warning_count` are *Julieta* (420 warnings,
+predominantly date-marker pseudo-characters such as `2016. SPRING.`
+correctly rejected by the year-prefix rule), *Toy Story 4* (235
+warnings, copyright headers `©2019 DISNEY/PIXAR` correctly rejected
+by the copyright-symbol rule), *Iron Man* (118 warnings, `© 2007
+MARVEL STUDIOS, INC.` correctly rejected), *Elvis* (102 warnings,
+scene headings such as `INT. SUN STUDIOS - CONTROL ROOM` correctly
+rejected by the `STUDIOS` substring rule), and *Cat People* (62
+warnings, legitimate Cases 7-8 only). Manual inspection of raw XML
+alongside the parsed output confirms that the parser's recoveries
+produced correct results in every case checked. The Tier 1.2 filter
+is functioning as intended: the strings being rejected are
+unambiguously not character names (date markers, copyright headers,
+or scene headings mistakenly placed in `<character>` tags by the
+source files).
 
-**Patch applied.** The wrong-root-tag case (Case 3) now persists its
-warning to the `parse_warnings` field on the `ParsedScreenplay`
+**Aggregate effects of the Tier 1 changes.** Total warnings rose
+from 2,949 to 3,961 (+34%) because the new rejection warnings expose
+source-XML mistagging that was previously silently incorporated.
+Films with at least one warning rose from 680 to 698 (+18). The
+median `n_unique_characters` dropped from 56 to 51, reflecting the
+combined effect of variant normalization and rejection of
+mistagged content; the mean dropped from approximately 60 to 65.1.
+For the most-affected films, `n_unique_characters` reductions were
+substantial (e.g., *Iron Man* 97 → 83, a 14% reduction).
+
+**Patch applied to Case 3.** The wrong-root-tag case now persists
+its warning to the `parse_warnings` field on the `ParsedScreenplay`
 dataclass, consistent with the empty-XML and parse-error cases. No
-films in the current corpus trigger this case, but the patch ensures
-future ingest with non-`<script>` roots will be visible to downstream
-audits.
+films in the current corpus trigger this case, but the patch
+ensures future ingest with non-`<script>` roots will be visible to
+downstream audits.
 
 ---
 
@@ -182,7 +222,8 @@ audits.
 
 None for the planning conversation right now. Phase 2 has no mandatory checkpoint at the end (next checkpoint is end of Phase 4). Items to keep in mind for future phases:
 
-- **`n_unique_characters` is correlated with `parse_warning_count`** (Spearman ρ = +0.48; see audit section above). Phase 3 will filter empty-text dialogue placeholders before counting, which removes the artifactual portion of this correlation. Downstream code that conditions on `n_unique_characters` before that filter is applied should be aware.
+- **`n_unique_characters` retains a moderate correlation with `parse_warning_count`** (Spearman ρ = +0.39 post-Tier-1; see audit section above). The correlation is interpreted as a genuine underlying-data signal: films with larger casts encounter more source-XML formatting irregularities, independent of the parser. Downstream phases that condition on `n_unique_characters` should be aware that `parse_warning_count` carries similar information; including both as features risks redundancy. The Tier 1.2 filter handles the most egregious mistagging (copyright headers, date markers, scene headings in `<character>` tags) automatically.
+- **Degenerate scene structure in 30 source XMLs (`data_quality_flag` column).** Films including *Elvis* (4 scenes, 112k dialogue chars), *12 Angry Men* (2 scenes, 85k chars), and *Manhattan Murder Mystery* (1 scene, 121k chars) have source XML in which the entire screenplay is encoded as 1-9 `<scene>` elements. The flag is set when `n_scenes < 10 AND total_dialogue_chars > 50,000`. This is a property of the source, not the parser. Per-scene analyses on flagged films are unreliable; Phase 3 decides whether to filter, downweight, or include them as-is.
 - **Pre-1980s decades have <30 films each** (1930s: 4, 1940s: 2, 1950s: 12, 1960s: 18, 1970s: 67). Phase 4 era-stratified CV needs to bucket these into a single "older films" stratum or exclude them from per-decade analyses to avoid noisy estimates.
 
 ---

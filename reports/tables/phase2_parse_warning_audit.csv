@@ -1,18 +1,18 @@
 variable,test,statistic,p_value,flagged,notes
-n_scenes,pearson_r,-0.0901,0.000189,False,n=1713
-n_scenes,spearman_rho,-0.1872,0.0,False,n=1713
-n_unique_characters,pearson_r,0.4153,0.0,True,n=1713
-n_unique_characters,spearman_rho,0.4828,0.0,True,n=1713
-n_dialogue_lines,pearson_r,0.1101,5e-06,False,n=1713
-n_dialogue_lines,spearman_rho,0.1293,0.0,False,n=1713
-total_dialogue_chars,pearson_r,0.0387,0.109417,False,n=1713
-total_dialogue_chars,spearman_rho,0.0684,0.004611,False,n=1713
-dialogue_to_total_text_ratio,pearson_r,0.0582,0.015966,False,n=1713
-dialogue_to_total_text_ratio,spearman_rho,0.1015,2.6e-05,False,n=1713
-mean_dialogue_line_length,pearson_r,-0.0483,0.045572,False,n=1713
-mean_dialogue_line_length,spearman_rho,-0.0457,0.058365,False,n=1713
-script_char_len,pearson_r,0.0183,0.449062,False,n=1713
-script_char_len,spearman_rho,-0.0304,0.208707,False,n=1713
-decade,pearson_r,0.0261,0.279898,False,n=1713
-decade,spearman_rho,0.2933,0.0,False,n=1713
-primary_genre_bucketed,eta_squared,0.0242,0.000437,False,"F=2.63, n_groups=17"
+n_scenes,pearson_r,-0.0578,0.01676,False,n=1713
+n_scenes,spearman_rho,-0.1805,0.0,False,n=1713
+n_unique_characters,pearson_r,0.1704,0.0,False,n=1713
+n_unique_characters,spearman_rho,0.3929,0.0,True,n=1713
+n_dialogue_lines,pearson_r,0.0628,0.009347,False,n=1713
+n_dialogue_lines,spearman_rho,0.1285,0.0,False,n=1713
+total_dialogue_chars,pearson_r,0.0655,0.006702,False,n=1713
+total_dialogue_chars,spearman_rho,0.0732,0.002436,False,n=1713
+dialogue_to_total_text_ratio,pearson_r,0.0602,0.012675,False,n=1713
+dialogue_to_total_text_ratio,spearman_rho,0.1048,1.4e-05,False,n=1713
+mean_dialogue_line_length,pearson_r,0.0254,0.293984,False,n=1713
+mean_dialogue_line_length,spearman_rho,-0.0411,0.089212,False,n=1713
+script_char_len,pearson_r,0.0178,0.460879,False,n=1713
+script_char_len,spearman_rho,-0.0246,0.308642,False,n=1713
+decade,pearson_r,0.0468,0.052676,False,n=1713
+decade,spearman_rho,0.3076,0.0,True,n=1713
+primary_genre_bucketed,eta_squared,0.0202,0.004244,False,"F=2.19, n_groups=17"

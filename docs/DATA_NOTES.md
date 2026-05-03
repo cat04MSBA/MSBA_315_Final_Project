@@ -102,7 +102,7 @@ the report's limitations section.
 | Column | Type | Definition |
 |---|---|---|
 | `n_scenes` | int | Number of `<scene>` elements |
-| `n_unique_characters` | int | Distinct character names across all scenes |
+| `n_unique_characters` | int | Distinct character names that delivered ≥1 non-empty dialogue line; trailing parenthetical variants normalized (`TONY (CONT'D)` → `TONY`) |
 | `n_dialogue_lines` | int | Total `(character, dialogue)` pairs |
 | `total_dialogue_chars` | int | Sum of dialogue text length |
 | `total_stage_direction_chars` | int | Sum of `<stage_direction>` text (usually slugline only) |
@@ -111,6 +111,7 @@ the report's limitations section.
 | `dialogue_to_action_ratio` | float | `dialogue / (dialogue + stage_direction)`. Tends to ~0.99; brief-literal formula. |
 | `dialogue_to_total_text_ratio` | float | `dialogue / (dialogue + total_action)`. More informative; mean ~0.40. |
 | `parse_warning_count` | int | Number of warnings raised while parsing this screenplay (most are minor: dangling `<character>` tags, unexpected sub-tags) |
+| `data_quality_flag` | bool | True for films with degenerate scene structure: `n_scenes < 10 AND total_dialogue_chars > 50,000`. 30 films flagged in this corpus, e.g. *Elvis* (4 scenes, 112k dialogue chars), *12 Angry Men* (2 scenes, 85k chars). The flag indicates source-XML scene boundaries are missing or collapsed; per-scene analyses on these films are unreliable. Phase 3 decides whether to filter, downweight, or include them. |
 
 ---
 
@@ -128,6 +129,13 @@ the report's limitations section.
   at `reports/tables/phase1_moviesum_duplicates_review.csv`. The
   pipeline accepts `keep`/`drop`/`remove`/`delete`/`discard` synonyms;
   unrecognized or contradictory entries raise loudly.
+- **Degenerate scene structure in some MovieSum source XMLs (30
+  films flagged).** Films like *Elvis*, *12 Angry Men*, *The
+  Princess Bride*, and *Manhattan Murder Mystery* have source XMLs
+  in which the entire screenplay is encoded as 1-9 `<scene>`
+  elements containing the full dialogue volume. This is a property
+  of the source data, not the parser. The `data_quality_flag`
+  boolean column marks them; Phase 3 decides handling.
 - **Ratings dataset duplicates on `imdb_id` (alternate cuts, regional
   releases).** Deduped by keeping the row with higher `vote_count`
   (`dedupe_ratings()` in `src.data.join_corpus`).

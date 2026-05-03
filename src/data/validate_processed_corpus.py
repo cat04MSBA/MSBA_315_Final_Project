@@ -92,6 +92,13 @@ def hard_asserts(df: pd.DataFrame) -> None:
     for ratio_col in ("dialogue_to_action_ratio", "dialogue_to_total_text_ratio"):
         assert df[ratio_col].between(0, 1).all(), f"{ratio_col} outside [0, 1]"
 
+    # Data-quality flag: present and boolean. Informational column,
+    # so we don't assert anything about its values.
+    assert "data_quality_flag" in df.columns, "data_quality_flag column missing"
+    assert df["data_quality_flag"].dtype == bool, (
+        "data_quality_flag is not boolean dtype"
+    )
+
     logger.info("All hard assertions passed (%d films, %d columns)",
                 len(df), len(df.columns))
 
@@ -240,6 +247,8 @@ def summary_metrics_table(df: pd.DataFrame) -> pd.DataFrame:
         ("dialogue_lines_median", int(df["n_dialogue_lines"].median())),
         ("dialogue_to_total_text_ratio_mean", round(float(df["dialogue_to_total_text_ratio"].mean()), 3)),
         ("films_with_parse_warnings", int((df["parse_warning_count"] > 0).sum())),
+        ("films_data_quality_flagged",
+         int(df["data_quality_flag"].sum()) if "data_quality_flag" in df.columns else 0),
     ]
     return pd.DataFrame(rows, columns=["metric", "value"])
 
