@@ -1804,9 +1804,269 @@ CELLS = [
     """),
 
     # ============================================================
-    # 14. Outputs and what comes next
+    # 14. Phase 3c: combinations sub-phase
     # ============================================================
-    md("---\n\n## 14. Outputs and next steps"),
+    md("---\n\n## 14. Phase 3c: combinations sub-phase"),
+    md("""
+        ### Why combinations need their own evaluation
+
+        Part B answered the question of what each feature group
+        contributes when added alone on top of the structural
+        baseline. That question is the right one for honest
+        bookkeeping: it produces a clean ablation table where each
+        row attributes a lift to a single group. It is the wrong
+        question, however, for predicting how the groups will
+        perform when used together as Phase 4's input matrix.
+
+        Two specific concerns motivated a separate combinations
+        sub-phase. First, the lexical and sentiment groups landed
+        null on a baseline that already encodes genre, era, and
+        structural counts; their information may overlap heavily
+        with what the baseline absorbs in standalone evaluation
+        but combine usefully with other groups. Second, the three
+        partial-positive groups each lift a different metric
+        family (topic on `roi_gt_1` AUC, character network on
+        `roi_gt_2` AUC, embedding on `log_roi` RMSE), and whether
+        their lifts compose additively, redundantly, or
+        interactively cannot be inferred from the standalone
+        rows.
+
+        The combinations sub-phase pre-specifies four feature-
+        group combinations before any is measured. Locking the
+        set is the multiple-comparisons firewall the methodology
+        relies on: a researcher who tests every possible subset
+        of five groups (thirty-one combinations) and reports the
+        best can produce in-band hits by chance. Pre-registering
+        a small set of mechanism-driven combinations preserves
+        the pre-registration discipline that the Part B group
+        proposals already established.
+
+        ### The four combinations
+
+        Each combination tests a specific hypothesis about how
+        the Part B feature groups compose.
+
+        * **`all_five`** joins every Part B group onto the
+          structural baseline (130 columns total). This is the
+          maximum-information matrix and serves as the upper
+          bound: if signals are mostly orthogonal, this
+          combination should produce the largest lift. If they
+          are mostly redundant, lifts should resemble the best
+          single group's standalone performance.
+        * **`partial_positives`** drops the two null groups and
+          keeps topic plus character network plus embedding (92
+          columns). This combination directly tests whether the
+          nulls were noise-additive (in which case dropping them
+          should match or beat `all_five`) or whether they
+          carried small interaction signal that the standalone
+          ablation could not surface.
+        * **`topic_plus_cn`** is the smallest combination tested
+          (60 columns), pairing the two groups whose standalone
+          lifts target different classification thresholds. The
+          hypothesis is that topic's standalone `roi_gt_1` lift
+          and character network's standalone `roi_gt_2` lift
+          carry forward roughly additively, producing a single
+          combination that lifts both classification targets.
+        * **`semantic_trio`** combines the three groups that
+          encode dialogue meaning at different abstraction
+          levels: sentiment (per-utterance valence), topic
+          (document-level distribution), and embedding
+          (distributed vector representation). This tests whether
+          their semantic signal stacks additively or whether the
+          three groups are sharing information that picking any
+          one would also capture.
+
+        Pre-registered lift bands on the linear family's out-of-
+        fold numbers were tighter than the Part B standalone
+        bands because the standalone results provide a strong
+        prior on each component's contribution. The proposal
+        predicted RMSE reductions of 0.025 to 0.005 on `log_roi`,
+        AUC lifts of 0.020 to 0.040 on `roi_gt_1`, and AUC lifts
+        of 0.010 to 0.030 on `roi_gt_2` for `all_five`, with the
+        other three combinations specified analogously.
+
+        ### What the data showed
+    """),
+    code("""
+        combos = pd.read_csv(paths.REPORTS_TABLES_DIR / "phase3c_combinations.csv")
+
+        headline = combos[
+            (combos["eval_set"] == "oof")
+            & (combos["model_family"] == "linear")
+            & (
+                ((combos["target"] == "log_roi") & (combos["metric"] == "rmse"))
+                | ((combos["target"].isin(["roi_gt_1", "roi_gt_2"])) & (combos["metric"] == "auc_roc"))
+            )
+        ].copy()
+        headline["lift"] = headline["lift"].round(3)
+        headline.pivot_table(
+            index="feature_group",
+            columns=["target", "metric"],
+            values="lift",
+        )
+    """),
+    md("""
+        Two of twelve pre-registered linear-OOF bands hit. The
+        regression target moved the wrong direction on every
+        combination, including the three combinations that
+        contain embedding (whose standalone result moved RMSE
+        the right direction at -0.007). The classification lifts
+        are mixed: `topic_plus_cn` is the only combination whose
+        linear OOF AUC lifts both targets positively, with
+        `roi_gt_2` AUC lift falling inside the predicted band.
+        `all_five` and `partial_positives` each lift one
+        classification target and lose the other; `semantic_trio`
+        is roughly flat or negative across the board.
+
+        The linear-family view is one part of the story. The
+        substantive finding lives in the multi-family pattern.
+
+        ### The multi-family pattern
+    """),
+    code("""
+        # SVM-RBF lift on roi_gt_2 AUC across the four combinations,
+        # versus its standalone Phase 3b floor (linear's OOF floor
+        # on the same target was 0.602 from Phase 3a).
+        svm_view = combos[
+            (combos["eval_set"] == "oof")
+            & (combos["model_family"] == "svm")
+            & (combos["target"].isin(["roi_gt_1", "roi_gt_2"]))
+            & (combos["metric"] == "auc_roc")
+        ].copy()
+        svm_view["lift"] = svm_view["lift"].round(3)
+        svm_view.pivot_table(
+            index="feature_group",
+            columns="target",
+            values="lift",
+        )
+    """),
+    md("""
+        SVM-RBF dominates classification under combinations. The
+        SVM column shows positive lift between 0.04 and 0.08 on
+        every combination, on both classification targets. The
+        single largest classification lift in all of Phase 3 is
+        the SVM lift on `topic_plus_cn` `roi_gt_1` at +0.081, and
+        on `all_five` `roi_gt_2` at +0.063. SVM standalone in
+        Phase 3b was the worst-floor family on both targets; the
+        kernel-induced similarity in the augmented feature space
+        finds non-linear interactions that the other three
+        families cannot extract.
+
+        Gradient boosting goes the other way. Adding sixty to one
+        hundred and thirty features to a HistGB model on n equals
+        1,199 with the conservative defaults from Phase 3a
+        (`max_depth = 4`, `learning_rate = 0.05`) produces shallow
+        trees that fail to find the genuine signal under the
+        noise. The train-versus-OOF gap that already reached 0.20
+        AUC on the Phase 3a floor widens to roughly 0.27 on
+        `all_five`. Phase 4 hyperparameter search needs to explore
+        substantially more conservative HistGB regularization
+        (`max_depth in {2, 3}`, `min_samples_leaf` of 20 or
+        higher, `learning_rate` of 0.02 or 0.01) to recover the
+        standalone-group performance.
+
+        Linear regression is broken by every combination. Each of
+        the four combinations pushes linear `log_roi` RMSE the
+        wrong direction relative to the Phase 3a floor. The
+        mechanism is the same noise-versus-regularization
+        interaction the lexical group's negative standalone lift
+        surfaced, scaling with feature count: zero-signal or
+        near-zero-signal columns add noise that L2 regularization
+        cannot fully absorb. Embedding's standalone -0.007 RMSE
+        benefit is lost the moment any other group is added.
+
+        ### The two combinations worth carrying forward
+
+        Of the four combinations, `topic_plus_cn` is the most
+        informative result for the report's narrative. It is the
+        only combination whose linear OOF AUC lifts both
+        classification targets, its `roi_gt_2` AUC lift falls in
+        the pre-registered band, it has the smallest feature
+        count of any combination (60 columns), and it produces
+        the single largest classification lift in the phase via
+        SVM-RBF on `roi_gt_1` (+0.081). The combination tests the
+        cleanest pair-effect hypothesis from Part B and lands on
+        the right side of it: topic's classification signal and
+        character-network's classification signal compose
+        additively rather than redundantly when the two are
+        joined.
+
+        `all_five` is worth carrying forward as the maximum-
+        information matrix. It produces the strongest SVM lift
+        on `roi_gt_2` AUC (+0.063, reaching 0.665 OOF, which is
+        well into the project's forward-expected band of 0.65 to
+        0.72). It is the only combination whose feature space
+        gives SVM enough representational capacity to reach that
+        target. Phase 4 should benchmark both `topic_plus_cn` and
+        `all_five` to determine whether SVM's gain on the larger
+        matrix justifies the feature-count cost.
+
+        The two combinations not worth carrying forward are
+        `partial_positives` (which matches `all_five` on linear
+        classification but loses on regression and is dominated
+        by `all_five` on SVM classification) and `semantic_trio`
+        (which underperforms across the board, suggesting
+        sentiment's standalone null carries forward and embedding's
+        regression signal does not survive the combination).
+
+        ### What this changes about the Phase 4 input matrix
+
+        The standalone-group "earned its place" criterion that
+        Part B used to decide which features carry forward is too
+        restrictive given the combinations evidence. Lexical and
+        sentiment landed null standalone, but the SVM lift on
+        `all_five` is larger than the SVM lift on
+        `partial_positives` (which excludes them), and the only
+        positive HistGB classification result of any combination
+        comes from `topic_plus_cn` (which includes neither).
+        Letting Phase 4's model search weight the full feature
+        matrix is more defensible than dropping the standalone-
+        null groups by hand.
+
+        Phase 4's input matrix should therefore be `all_five`
+        (the union of all five Part B feature groups joined onto
+        the structural baseline). The consolidated matrix is
+        saved as `data/processed/features.parquet` (1,713 by 131
+        columns, including the three target columns and the
+        split-assignment column). A sensitivity-analysis run on
+        `topic_plus_cn` should accompany the main `all_five`
+        benchmark so the report can make the parsimonious-
+        combination comparison honestly.
+
+        ### Why the pre-registration was wrong
+
+        The proposal's mental model treated combinations as
+        roughly linear sums of standalone lifts. Standalone topic
+        lifts `roi_gt_1` AUC by +0.032; standalone character
+        network lifts it by +0.013; the proposal predicted their
+        sum (~+0.045) for the joint matrix. Actual joint lift on
+        linear: +0.021. Standalone embedding lifts `log_roi`
+        RMSE by -0.007; the proposal predicted any combination
+        containing embedding would carry that lift forward.
+        Actual: positive (worse) RMSE on every combination.
+
+        The lesson, surfaced explicitly because it is a finding
+        not a methodology error: standalone lifts on a regularized
+        linear baseline systematically over-predict combination
+        lift on the same baseline because feature-count noise
+        scales with the size of the augmented matrix while the
+        signal does not. Standalone lifts on SVM-RBF
+        systematically under-predict combination lift because the
+        kernel benefits from augmented feature spaces that the
+        standalone evaluation never gives it. The "linear is the
+        historical reference" framing under-credits SVM's ability
+        to find non-linear similarity in larger spaces.
+
+        This is the strongest single argument for going into
+        Phase 4 with the maximum-information matrix and letting
+        the model selection pick what works, rather than
+        over-trusting the standalone-ablation criterion.
+    """),
+
+    # ============================================================
+    # 15. Outputs and what comes next
+    # ============================================================
+    md("---\n\n## 15. Outputs and next steps"),
     md("""
         ### Files produced across Phase 3
 
@@ -1815,12 +2075,18 @@ CELLS = [
           stratification cell, and the assigned split. The
           authoritative split definition used by every downstream
           phase.
+        * `data/processed/features.parquet`. The consolidated
+          1,713-by-131 feature matrix used as Phase 4 input. One
+          hundred and twenty-seven feature columns covering the
+          structural baseline plus all five Part B groups, plus
+          the three target columns and the split-assignment
+          column.
         * `data/processed/features_lexical.parquet`,
           `features_sentiment.parquet`, `features_topic.parquet`,
           `features_character_network.parquet`,
           `features_embedding.parquet`. The five Part B feature
-          matrices, one row per film, kept on disk for the
-          modelling phase to re-evaluate under any model family.
+          matrices, kept on disk for re-evaluation under any
+          model family without recomputing.
         * `data/processed/topic_model_artifacts/`. The fitted
           vectorizer, the fitted LDA model, and the training-fold
           IMDb-ID list. Re-loadable directly so the modelling
@@ -1837,75 +2103,90 @@ CELLS = [
         * `reports/tables/phase3a_baseline.csv`. Headline metrics
           for both feature configurations under all four model
           families, with both the original and the log-transformed
-          parameterizations preserved. One hundred twelve rows.
+          parameterizations preserved.
         * `reports/tables/phase3_ablation.csv`. The Part B
-          ablation table. Four hundred eighty rows covering all
-          five groups (lexical, sentiment, topic, character
-          network, embedding), four model families, two evaluation
-          sets, three targets, and seven metric rows per group.
-        * `reports/tables/phase3_topic_labels.csv`. Per-topic top-
-          ten words plus an empty `human_label` column for the
-          report.
-        * `reports/figures/phase3_target_distributions.png`.
-          Visual diagnostics of the three prediction targets.
-        * `reports/figures/phase3_log_transform_effect.png`.
-          Before-and-after histograms for three representative
-          structural counts.
+          standalone-group ablation table. Four hundred eighty
+          rows covering all five groups, four model families,
+          two evaluation sets, three targets, and seven metric
+          rows per group.
+        * `reports/tables/phase3c_combinations.csv`. The
+          combinations sub-phase ablation table. Three hundred
+          eighty-four rows covering the four pre-specified
+          combinations under the same harness.
+        * `reports/tables/phase3_topic_labels.csv`. Per-topic
+          top-ten words plus an empty `human_label` column for
+          the report.
+        * `reports/figures/phase3_target_distributions.png` and
+          `phase3_log_transform_effect.png`. Diagnostic plots.
 
-        ### Summary of Part B results
+        ### Summary of Phase 3 results
 
-        Five standalone feature groups have been evaluated
-        against the Phase 3a revised dialogue-only baseline,
-        across the same four model families, using the same
-        out-of-fold cross-validation discipline. Two of the five
-        landed null (lexical, sentiment) and three landed
-        partial-positive (topic, character network, embedding).
+        Phase 3 evaluated five standalone feature groups in Part B
+        and four pre-specified combinations in the sub-phase that
+        followed. Two of the five Part B groups landed null
+        (lexical, sentiment) and three landed partial positive
+        (topic, character network, embedding). Two of the four
+        Phase 3c combinations are worth carrying forward
+        (`topic_plus_cn` as the parsimonious-combination winner;
+        `all_five` as the maximum-information reference).
 
-        The shape of the result is consistent across the three
-        partial positives: lift comes from multivariate feature
-        interactions rather than single-feature univariate
-        correlations, and it varies more by feature group than
-        by model family. The two groups that landed null share
-        a common mechanism: their information is heavily
-        absorbed by the genre dummies and structural counts in
-        the baseline, so the marginal residual they can extract
-        is too thin for any of the four families to surface. The
-        three partial-positive groups are each genre-orthogonal
-        in a different way: topic captures within-genre subject
-        matter, character network captures cast structure, and
-        embedding captures style-and-content information that
-        partly overlaps with genre but also extends beyond it.
+        Three findings shape the methodological narrative for the
+        report. First, genre orthogonality is empirically the
+        right framing for what distinguishes useful feature groups
+        from null ones on this corpus: the two groups whose
+        information overlaps most with the genre dummies and
+        structural counts in the baseline (lexical, sentiment)
+        could not surface lift in any of the four model families
+        used as comparators. The three groups whose mechanisms are
+        more orthogonal to genre (topic via within-genre subject
+        matter, character network via cast structure, embedding
+        via pre-trained content and style) each lifted a different
+        prediction target.
 
-        Each partial-positive group lifts a different metric
-        family. Topic lifts `roi_gt_1` AUC across all four
-        families. Character network lifts `roi_gt_2` AUC across
-        all four families and produces the first feature in any
-        Part B group with a univariate target correlation
-        exceeding |r| > 0.10. Embedding lifts `log_roi` RMSE
-        across all four families and produces the strongest
-        single-feature univariate signal in the phase. The
-        complementarity is meaningful: the three partial-positive
-        groups each address a different prediction target, which
-        is the configuration the next sub-phase is designed to
-        exploit.
+        Second, standalone ablation lifts on a regularized linear
+        baseline do not compose linearly under combinations,
+        especially on the regression target. Linear log_roi RMSE
+        gets worse on every combination evaluated, including
+        combinations containing embedding (whose standalone result
+        moved RMSE the right direction). The mechanism is feature-
+        count-driven noise that L2 regularization cannot fully
+        absorb on n equals 1,199.
 
-        ### What comes next
+        Third, SVM-RBF emerges as a serious Phase 4 candidate on
+        classification targets. SVM was the worst-floor family on
+        the Phase 3a baseline; on combinations it produces the
+        largest classification lifts in the entire Phase 3 work
+        (+0.081 on `roi_gt_1` AUC for `topic_plus_cn`, +0.063 on
+        `roi_gt_2` AUC for `all_five`, reaching 0.665 OOF on the
+        latter, well into the project's forward-expected band).
+        The kernel benefits from augmented feature spaces that
+        standalone evaluation never gave it.
 
-        Phase 3c (combinations sub-phase) evaluates a small set
-        of pre-specified joint feature configurations against
-        the same Phase 3a floor. The combinations are pre-
-        specified before any are measured, preserving the
-        pre-registration discipline at the combinations level
-        too. The natural pre-specifications based on the Part B
-        results are: all five groups together; the three partial-
-        positives combined (topic plus character network plus
-        embedding); and topic plus character network alone (which
-        target different binary thresholds with non-overlapping
-        mechanisms). After Phase 3c lands, the modelling phase
-        selects the strongest feature combination, runs a full
-        benchmark of candidate models with hyperparameter tuning,
-        wraps the chosen model with a calibration layer, and
-        connects it to the asymmetric-cost decision rule.
+        ### Phase 4 begins on the consolidated feature matrix
+
+        Phase 4 trains the candidate Layer 1 prediction models on
+        `data/processed/features.parquet`, the union of features
+        produced across Phase 3. The model benchmark should
+        include linear, gradient boosting, k-nearest-neighbours,
+        and SVM-RBF as the four primary candidates, with SVM-RBF
+        elevated from "completeness diagnostic" in Phase 3 to
+        "serious candidate" in Phase 4 on the strength of the
+        combinations evidence. Hyperparameter searches should be
+        broad: HistGB needs aggressive regularization
+        (`max_depth in {2, 3}`, `min_samples_leaf` of 20 or
+        higher), SVM-RBF needs a real grid over C and gamma, and
+        linear regression's regularization strength should be
+        tuned across a wider alpha grid than the Phase 3 baseline
+        used.
+
+        After Phase 4 selects a primary model, Phase 5 wraps it
+        with the calibration layer, Phase 6 attaches the
+        asymmetric-cost decision rule, Phase 7 adds the SHAP
+        explanation layer, and Phases 8 and 9 integrate and
+        report. The held-out fifteen-percent calibration set and
+        fifteen-percent test set established in Section 2 remain
+        untouched through Phase 4; they are the ground truth that
+        Phases 5 and 8 evaluate against.
     """),
 ]
 
