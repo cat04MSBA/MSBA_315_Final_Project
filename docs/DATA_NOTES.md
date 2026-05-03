@@ -188,4 +188,4 @@ feature extraction reads both).
 - **Phase 2 figures and tables:** `reports/figures/phase2_*.png`,
   `reports/tables/phase2_*.csv`.
 - **Strategic-decisions audit trail:** `docs/PROJECT_CONTEXT.md`
-  Section 8 (decisions log) and `docs/PLANNING_HANDOFF.md`.
+  Section 8 (decisions log) and `docs/handoffs/PHASE_2_PLANNING_HANDOFF.md`.

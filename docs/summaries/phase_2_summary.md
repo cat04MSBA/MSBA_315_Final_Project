@@ -24,7 +24,7 @@
 5. **Discovered a tag the brief did not document:** `<parenthetical>`. It appears in MovieSum between `<character>` and `<dialogue>` (delivery instruction like `(softly)`) or between two `<dialogue>` elements from the same speaker (continuation marker like `(beat)`). Recognized as a valid screenplay element; not stored in the dialogue-units tuples (the brief specified 2-tuples).
 6. **Built the master pipeline orchestrator** (`src/data/build_corpus.py`). One entry-point script that loads ratings, dedupes ratings, loads MovieSum, applies the user-filled dedup CSV, joins on `imdb_id`, applies corpus filters, computes derived columns, parses every screenplay, attaches structural metrics to the master DataFrame, validates, and saves both artifacts. All preprocessing knobs are exposed via `CorpusBuildConfig` (frozen dataclass).
 7. **Caught and escalated the pre-1995 count discrepancy.** First build with the 1,995 cutoff produced 1,315 films, below the brief's 1,400 floor. Investigated, found 398 films pre-1995 (vs. claimed ~50). Escalated to the user with three options. User chose to drop the cutoff. Re-ran build → 1,713 films, year range 1932-2023, all hard assertions pass.
-8. **Logged the cutoff reversal** in three places: a new dated entry in `PROJECT_CONTEXT.md` Section 8 (with cross-reference to the original entry, which gained a "REVERSED" annotation), strikethrough corrections in `phase_1_summary.md`, and an updated entry in `PLANNING_HANDOFF.md`.
+8. **Logged the cutoff reversal** in three places: a new dated entry in `PROJECT_CONTEXT.md` Section 8 (with cross-reference to the original entry, which gained a "REVERSED" annotation), strikethrough corrections in `phase_1_summary.md`, and an updated entry in `handoffs/PHASE_2_PLANNING_HANDOFF.md`.
 9. **Built the validator** (`src/data/validate_processed_corpus.py`). Hard-asserts every invariant the master Parquet must satisfy (no nulls in critical columns, year range, log values finite and positive, ratios in [0,1], every film has at least one parsed scene). Also generates Phase 2 versions of the diagnostic plots and three Phase 2 summary tables.
 10. **Wrote `docs/DATA_NOTES.md`** as a standing reference: corpus headlines, known biases, full column glossary, edge cases, file locations, where to look for more.
 11. **Updated `PROJECT_CONTEXT.md`** Sections 5 (Data Summary — added Phase 2 processed corpus block), 8 (decisions log — three new entries: pre-1995 reversal, dataset-swap audit-trail, and the existing pre-1995 entry annotated), and 9 (Phase Status — Phase 2 marked complete).
@@ -260,7 +260,7 @@ None for the planning conversation right now. Phase 2 has no mandatory checkpoin
 - `docs/PROJECT_CONTEXT.md` Sections 5, 8, 9 updated
 - `docs/CLAUDE_CODE_GUIDELINES.md` Section 7 (template) updated to add Strategic decisions section
 - `docs/summaries/phase_1_summary.md` corrected (pre-1995 count error)
-- `docs/PLANNING_HANDOFF.md` updated to reflect the reversal
+- `docs/handoffs/PHASE_2_PLANNING_HANDOFF.md` updated to reflect the reversal
 
 ---
 

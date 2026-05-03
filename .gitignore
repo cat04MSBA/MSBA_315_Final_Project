@@ -52,3 +52,6 @@ Thumbs.db
 # --- Logs ---
 *.log
 logs/
+
+# --- Claude Code local state (per-user, per-machine) ---
+.claude/

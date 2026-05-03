@@ -359,7 +359,7 @@ Format: one entry per decision, newest first
 
 **Phase:** Phase 2 — Data Pipeline (audit entry; the swap itself happened mid-Phase-1)
 **Decision:** Phase 1 began with TMDB 5000 (~4,800 films, hard 2016 cutoff) as the planned ratings source. After the MovieSum × TMDB 5000 join capped at 1,019 four-signal films (in the brief's "document as a limitation" band), the user swapped the ratings source to the **IMDb-TMDB Movie Metadata Big Dataset (1M)** (~1.07M films, native `imdb_id` + `id` columns, year coverage through 2023). Phase 1 working corpus jumped from 1,019 to 1,713 films (+68%); year coverage extended from 2016 to 2023; gross-profitable rate dropped from 86% to 80%, slightly less survivor-biased. The swap was applied retroactively to the foundation docs (Section 4 data sources, Section 5 data summary, Phase 1 brief and summary) so they read as if the new dataset was always the choice. This entry exists in the decisions log to preserve the audit trail per Phase 2 brief Task 6.
-**See also:** `docs/PLANNING_HANDOFF.md` for the full numbers and rationale, `docs/summaries/phase_1_summary.md` for what Phase 1 actually produced.
+**See also:** `docs/handoffs/PHASE_2_PLANNING_HANDOFF.md` for the full numbers and rationale, `docs/summaries/phase_1_summary.md` for what Phase 1 actually produced.
 
 ## 2026-05-02 23:35 — Phase 2: pre-1995 cutoff REVERSED
 
@@ -447,7 +447,7 @@ Format: one entry per decision, newest first
 |---|---|---|---|
 | 1 | Data feasibility verification | Complete | `docs/summaries/phase_1_summary.md` |
 | 2 | Data pipeline | Complete | `docs/summaries/phase_2_summary.md` |
-| 3 | Feature extraction | Not started | — |
+| 3 | Feature extraction | In progress (3a complete; planning-conversation review pending before 3b) | `docs/handoffs/phase_3a_handoff.md` (interim) |
 | 4 | Layer 1: Core prediction | Not started | — |
 | 5 | Layer 2: Calibration | Not started | — |
 | 6 | Layer 3: Decision | Not started | — |

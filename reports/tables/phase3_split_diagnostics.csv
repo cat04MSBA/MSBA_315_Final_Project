@@ -1,0 +1,58 @@
+stratum,train,cal,test,total
+Drama|2010s_2020s,141,30,30,201
+Comedy|2010s_2020s,79,17,17,113
+Drama|2000s,67,15,15,97
+Action|2010s_2020s,61,13,13,87
+Drama|1990s,54,12,12,78
+Comedy|2000s,53,12,11,76
+Action|2000s,48,10,10,68
+Comedy|1990s,47,10,10,67
+Action|1990s,44,9,10,63
+Horror|2010s_2020s,30,7,7,44
+Adventure|2000s,30,7,6,43
+Comedy|1980s,28,6,6,40
+rare|rare,26,6,6,38
+Horror|2000s,25,5,5,35
+Thriller|2010s_2020s,23,5,5,33
+Drama|pre_1980s,21,5,5,31
+Crime|2000s,21,4,4,29
+Crime|2010s_2020s,20,4,4,28
+Animation|2010s_2020s,20,4,4,28
+Adventure|2010s_2020s,19,4,4,27
+Horror|1990s,19,4,4,27
+Horror|1980s,19,4,4,27
+Crime|1990s,18,4,4,26
+Thriller|2000s,17,4,4,25
+Drama|1980s,16,4,4,24
+Adventure|1990s,15,3,3,21
+Adventure|1980s,15,3,3,21
+Science Fiction|2010s_2020s,14,3,3,20
+Romance|2010s_2020s,12,3,3,18
+Fantasy|2010s_2020s,12,2,3,17
+Science Fiction|1990s,11,3,2,16
+Action|1980s,12,2,2,16
+Comedy|pre_1980s,12,2,2,16
+Horror|pre_1980s,10,2,2,14
+Thriller|1990s,10,2,2,14
+Science Fiction|2000s,9,2,2,13
+Fantasy|1990s,8,2,2,12
+Romance|1990s,8,2,2,12
+Science Fiction|1980s,7,2,2,11
+Fantasy|2000s,7,2,2,11
+Mystery|2010s_2020s,7,1,2,10
+Crime|1980s,7,1,1,9
+Crime|pre_1980s,7,1,1,9
+Animation|2000s,7,1,1,9
+Adventure|pre_1980s,7,1,1,9
+Mystery|1990s,6,1,1,8
+Family|2010s_2020s,6,1,1,8
+Thriller|pre_1980s,5,1,1,7
+War|2010s_2020s,5,1,1,7
+Romance|2000s,5,1,1,7
+Music|2010s_2020s,5,1,1,7
+Fantasy|1980s,5,1,1,7
+Family|1990s,5,1,1,7
+Science Fiction|pre_1980s,4,1,1,6
+History|2010s_2020s,4,1,1,6
+Animation|1990s,3,1,1,5
+Action|pre_1980s,3,1,1,5
