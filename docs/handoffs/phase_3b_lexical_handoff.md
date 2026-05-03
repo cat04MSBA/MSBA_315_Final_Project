@@ -1,14 +1,15 @@
 # Phase 3b: Lexical group handoff
 
 **Status:** Lexical features implemented and evaluated across four
-model families. Verdict is conclusive: the features do not carry
-extractable predictive signal on this corpus. Across linear, HistGB,
-KNN, and SVM-RBF, no family shows positive lift on the headline
-targets that exceeds the within-CI-noise band, and three of four
-show worse performance with lexical features added. Awaiting
-direction on (a) appending the official ablation row, (b) dropping
-the redundant `rare_word_proportion`, and (c) starting the sentiment
-proposal.
+model families. Group signed off by the planning conversation
+2026-05-03 with three resolutions and one methodology addition (see
+Sections 8 and 9 below). Negative-lift row is appended to
+`phase3_ablation.csv` as the honest finding; both
+`mean_log_frequency` and `rare_word_proportion` are kept in the
+matrix for Phase 4 optionality; the wordfreq deviation is accepted
+and will be documented in `FEATURE_NOTES.md` at end of Task 4. Phase
+3c combinations sub-phase is added to the methodology to address
+the genre-residual-signal concern this group surfaced.
 **Date:** 2026-05-03
 
 This handoff matches the structure of `phase_3a_handoff.md`.
@@ -112,49 +113,80 @@ will each get their own handoff in this folder when they land.
 
 ---
 
-## 4. Headline numbers (lexical added on top of the revised dialogue-only floor, all 4 families)
+## 4. Headline numbers (lexical added on top of the revised dialogue-only floor, 4 families × 2 eval sets)
 
-Bootstrap 95% CIs in brackets. Full table at
-`reports/tables/phase3_ablation.csv` (28 rows: 4 families × 7
-metric rows per group).
+Full table at `reports/tables/phase3_ablation.csv` (96 rows: 4
+families × 2 evaluation sets × 3 targets × {4 regression metrics or
+4 classification metrics}). Reporting now uses the updated metric
+vocabulary: regression uses MSE, RMSE, MAE, CVRMSE (R-squared
+removed); classification uses AUC-ROC, PR-AUC, F1, log-loss. Both
+in-sample (train) and out-of-fold (OOF) numbers are reported per
+family per metric. The pre-registered lift bands apply to the
+linear family's OOF numbers only (the historical reference).
 
-### 4.1 Floor versus lexical-augmented, per family
+### 4.1 OOF lift per family (lower-is-better metrics: negative lift means improvement)
 
 | Family | Metric | Floor | With lexical | Lift |
 |---|---|---:|---:|---:|
-| linear | log_roi R² | 0.052 [0.026, 0.080] | **0.037** [0.014, 0.060] | **−0.016** |
-| linear | log_roi MAE | 0.948 | 0.955 | +0.007 (worse) |
-| linear | roi_gt_1 AUC | 0.558 | 0.565 | +0.007 |
-| linear | roi_gt_2 AUC | 0.602 | 0.600 | −0.002 |
-| histgb | log_roi R² | 0.069 [0.033, 0.102] | **0.060** [0.026, 0.090] | **−0.009** |
-| histgb | log_roi MAE | 0.943 | 0.943 | 0.000 |
-| histgb | roi_gt_1 AUC | 0.552 | **0.511** | **−0.041** |
-| histgb | roi_gt_2 AUC | 0.610 | **0.586** | **−0.024** |
-| knn | log_roi R² | 0.016 | **−0.006** | **−0.022** |
-| knn | log_roi MAE | 0.972 | 0.979 | +0.007 (worse) |
-| knn | roi_gt_1 AUC | 0.527 | **0.494** | **−0.033** |
-| knn | roi_gt_2 AUC | 0.578 | 0.548 | −0.030 |
-| svm | log_roi R² | 0.026 | 0.034 | +0.008 |
-| svm | log_roi MAE | 0.954 | 0.947 | −0.007 (better) |
-| svm | roi_gt_1 AUC | 0.504 | 0.519 | +0.015 |
-| svm | roi_gt_2 AUC | 0.534 | 0.565 | +0.031 |
+| linear | log_roi RMSE (lower) | 1.339 | 1.350 | **+0.011** (worse) |
+| linear | log_roi MAE (lower) | 0.948 | 0.955 | +0.006 (worse) |
+| linear | log_roi CVRMSE (lower) | 0.993 | 1.002 | +0.008 (worse) |
+| linear | roi_gt_1 AUC (higher) | 0.558 | 0.565 | +0.007 |
+| linear | roi_gt_1 F1 (higher) | 0.893 | 0.892 | -0.002 |
+| linear | roi_gt_1 log-loss (lower) | 0.493 | 0.514 | +0.021 (worse) |
+| linear | roi_gt_2 AUC (higher) | 0.602 | 0.600 | -0.002 |
+| linear | roi_gt_2 PR-AUC (higher) | 0.739 | 0.729 | -0.010 |
+| linear | roi_gt_2 log-loss (lower) | 0.635 | 0.638 | +0.003 (worse) |
+| histgb | log_roi RMSE (lower) | 1.327 | 1.333 | **+0.006** (worse) |
+| histgb | log_roi MAE (lower) | 0.943 | 0.943 | 0.000 |
+| histgb | roi_gt_1 AUC (higher) | 0.552 | **0.511** | **-0.041** (worse) |
+| histgb | roi_gt_1 PR-AUC (higher) | 0.843 | 0.816 | -0.026 (worse) |
+| histgb | roi_gt_2 AUC (higher) | 0.610 | **0.586** | **-0.024** (worse) |
+| histgb | roi_gt_2 PR-AUC (higher) | 0.731 | 0.709 | -0.022 (worse) |
+| knn | log_roi RMSE (lower) | 1.364 | 1.379 | +0.015 (worse) |
+| knn | roi_gt_1 AUC (higher) | 0.527 | **0.494** | **-0.032** (worse) |
+| knn | roi_gt_2 AUC (higher) | 0.578 | 0.548 | -0.030 (worse) |
+| svm | log_roi RMSE (lower) | 1.357 | 1.351 | -0.006 (better) |
+| svm | roi_gt_1 AUC (higher) | 0.504 | 0.519 | +0.014 |
+| svm | roi_gt_2 AUC (higher) | 0.534 | 0.565 | +0.031 |
 
-Bold values mark moves of 0.005 or more in the worse direction (or
-0.005-or-more wrong-direction lift relative to the predicted band).
+Bold marks moves of 0.005 or more in the worse direction.
 
 ### 4.2 Pre-registered linear-family lift (proposal v2 Section 3)
 
-| Target | Metric | Predicted band | Linear actual | In band? |
-|---|---|---|---:|:---:|
-| log_roi | R² | +0.010 to +0.025 | −0.016 | No |
-| roi_gt_1 | AUC-ROC | 0.000 to +0.010 | +0.007 | Yes |
-| roi_gt_2 | AUC-ROC | +0.015 to +0.035 | −0.002 | No |
+Pre-registration originally used R-squared on the regression
+target. With R-squared removed from the metric set, the original
+band (+0.010 to +0.025 R²) translates to RMSE on the same floor as
+roughly -0.020 to -0.010 (lower is better for RMSE). The
+classification AUC bands carry over directly.
 
-The pre-registered direction was wrong on two of the three headline
-predictions. Only `roi_gt_1` moved positively, and that target is
+| Target | Metric | Predicted band (linear OOF) | Actual | In band? |
+|---|---|---|---:|:---:|
+| log_roi | RMSE | -0.020 to -0.010 (lower is better) | +0.011 (worse) | No |
+| roi_gt_1 | AUC-ROC | 0.000 to +0.010 | +0.007 | Yes |
+| roi_gt_2 | AUC-ROC | +0.015 to +0.035 | -0.002 | No |
+
+Pre-registered direction was wrong on two of the three headline
+predictions. Only `roi_gt_1` moved positively, and that target was
 the one the proposal expected to lift the least.
 
-### 4.3 Verdict
+### 4.3 Train-versus-OOF gap with lexical added (linear and histgb families)
+
+Reporting both eval sets surfaces an overfit-gap signal that the
+OOF-only view of v1 hid. Numbers below are RMSE on `log_roi`.
+
+| Family | Train (in-sample) | OOF | Train-OOF gap |
+|---|---:|---:|---:|
+| linear | 1.300 | 1.350 | -0.050 |
+| histgb | 1.221 | 1.333 | -0.112 |
+
+HistGB's train-OOF gap is twice as wide as linear's, consistent
+with HistGB over-fitting more aggressively on the
+lexical-augmented matrix. Adding the lexical features did not
+narrow the gap on either family; the new features are absorbed
+into the train fit without translating into OOF improvement.
+
+### 4.4 Verdict
 
 The multi-family picture is **conclusive in a way the linear-only
 result was not**. Reading across the 4 families:
@@ -230,7 +262,31 @@ sampling noise for n = 1,199. The next strongest in absolute value
 is `first_to_second_pronoun_ratio ↔ log_roi` at r = +0.072. Every
 other feature-target pair has \|r\| ≤ 0.06.
 
-**The mechanism, family by family.**
+**The most likely mechanism is not "lexical features have no
+information" but "lexical features carry information that genre,
+era, and structural counts already absorb."** Action films
+systematically have shorter dialogue and lower Flesch-Kincaid
+scores; dramas have more sophisticated vocabulary; period pieces use
+longer words. Genre and era explain most of that variation before
+the lexical features get a chance to contribute. With the structural
+baseline already including thirteen genre dummies and a release-year
+column, the marginal residual variance lexical can explain is small
+enough that, at this corpus size and with these four model families,
+none of them can reliably extract it without hurting itself in the
+process. The features are competing for residual signal after the
+strongest confounds have already been controlled.
+
+This framing matters because it generates a testable prediction:
+features that carry information orthogonal to genre (for example
+graph-structural features of the character network, or
+sentiment-trajectory shape that does not vary as cleanly with
+genre) should fare better. It also motivates the Phase 3c
+combinations sub-phase that will follow Phase 3b: groups whose
+standalone-against-baseline signal looks weak may carry meaningful
+lift when combined with other groups that capture different
+aspects of the residual.
+
+**Family-specific mechanisms (secondary).**
 
 * **Linear:** adding 13 features with no detectable univariate
   signal to a small-corpus L2-regularized linear model produces a
@@ -312,46 +368,102 @@ label, the features group, key metric summary, and notes.
 
 ---
 
-## 8. Open questions for the planning conversation
+## 8. Resolved questions
 
-1. **Treatment of the lexical group's official ablation row.**
-   Recommendation: **append the negative-lift row to
-   `phase3_ablation.csv` as the honest finding** (already done; can
-   be flagged as "null result" in the report's narrative). The
-   feature matrix stays on disk so Phase 4's full model benchmark can
-   re-evaluate lexical features in any model family it tests.
-2. **Drop `rare_word_proportion`?** Recommendation: yes, given the
-   r = −0.939 redundancy with `mean_log_frequency`. The drop is a
-   one-line edit to `LEXICAL_FEATURE_COLUMNS` in
-   `src/features/lexical.py` plus a re-run of `compute_lexical_features`.
-   Does not affect the negative-lift verdict (neither feature has
+The four open questions raised at v1 of this handoff have all been
+resolved by the planning conversation 2026-05-03. Outcomes recorded
+here for the audit trail.
+
+1. **Treatment of the lexical group's official ablation row:
+   APPEND.** The negative-lift row goes into
+   `phase3_ablation.csv` as the honest finding. The Phase 3
+   narrative will lead with it as a methodology demonstration:
+   we proposed, pre-registered, measured, and surfaced a
+   direction-wrong prediction honestly. That is a stronger story
+   for the report than a result that happened to confirm
+   expectations. Already done; the row is in
+   `reports/tables/phase3_ablation.csv`.
+
+2. **Drop `rare_word_proportion`? KEEP.** The r = −0.939 with
+   `mean_log_frequency` clears the \|r\| > 0.9 review threshold
+   but only just, and the two features measure conceptually
+   different things even when they correlate strongly on this
+   corpus (mean Zipf vs the bottom-quartile share). Dropping
+   based on a single-corpus correlation closes off information
+   for Phase 4 model families that might handle the redundancy
+   differently than these four did. The decision is to preserve
+   optionality. Does not affect the verdict (neither feature has
    univariate signal).
-3. **wordfreq vs SUBTLEX-US deviation.** Given that the negative
-   lift is consistent across all four families and across all 13
-   features (none has univariate signal), the choice of frequency
-   source is unlikely to be the cause. The deviation is documented
-   in the run's preprocessing metadata for full traceability. If
-   strict SUBTLEX-US is preferred for the report, the backend can
-   be swapped and the features recomputed; expectation is the
-   verdict does not change.
-4. **Proceed to sentiment proposal?** The lexical verdict is
-   conclusive enough that I do not need additional input on lexical
-   itself. The sentiment proposal can begin once the planning
-   conversation signs off on the three items above.
 
----
+3. **wordfreq vs SUBTLEX-US deviation: ACCEPTED.** The reasoning
+   is correct: if every one of the 13 features (frequency-based
+   and the eight non-frequency features) shows no univariate
+   signal, the frequency-source choice cannot be the cause. The
+   mechanism wordfreq preserves (subtitle-domain frequencies via
+   OpenSubtitles inclusion) is what the proposal selected
+   SUBTLEX-US for. Renaming the features without the `_subtlex`
+   suffix was the right call: names are honest about the source.
+   Document the deviation in `FEATURE_NOTES.md` when Task 4
+   lands. No re-run.
 
-## 9. Recommended next step
+4. **Proceed to sentiment proposal: YES**, after Phase 3c
+   methodology addition is documented in the decisions log.
 
-Sign off on:
+## 9. New methodology: Phase 3c combinations sub-phase
 
-* Appending the negative-lift row as the lexical group's verdict.
-* Dropping `rare_word_proportion` from the lexical feature matrix.
-* Documenting the wordfreq deviation in `FEATURE_NOTES.md` when that
-  document lands at end of Task 4.
+The lexical null result raised a real concern about the incremental
+ablation methodology. Specifically, a feature group can look dead in
+isolation against a baseline that already includes genre, era, and
+structural counts but contribute meaningfully in combination with
+other groups, because multivariate redundancy with genre absorbs
+more variance than pairwise correlation checks reveal. The current
+ablation structure systematically under-credits any group whose
+signal partially overlaps with genre, which is roughly all of them.
 
-Then start the sentiment proposal at
-`docs/proposals/phase3_sentiment_proposal.md`. Sentiment shares
-NLTK preprocessing with lexical (sentence and word tokenization)
-and can reuse the cached lexical pipeline scaffolding, so the
-implementation cost is lower than the lexical group's was.
+**Phase 3c addresses this without abandoning the incremental
+ablation.** Phase 3b proceeds as planned: sentiment, topic,
+character network, embeddings in that order, each with its
+standalone-lift row in `phase3_ablation.csv` and its pre-registered
+prediction. The clean ablation table the report needs gets built.
+
+After all five Phase 3b groups are computed, Phase 3c runs a small
+set of pre-specified combinations against the floor. The combinations
+get pre-specified before any of them is measured, so the
+pre-registration discipline is preserved at the combinations level
+too.
+
+**Combinations to pre-specify** (write into the Phase 3c proposal
+before measuring any of them):
+
+* **All five groups together.** The maximum-information matrix.
+* **Structural-leaning combination:** lexical + character network
+  on top of the structural baseline. Hypothesis: these two carry
+  information less redundant with genre than the semantic groups.
+* **Semantic combination:** sentiment + topic + embeddings.
+  Hypothesis: these may share information with each other, so
+  testing them jointly tells us whether the semantic signal is
+  over-counted by adding all three.
+* **Any pair flagged during Phase 3b as worth testing jointly,**
+  for example, if sentiment shows a small lift and topic shows a
+  small lift, the pair gets pre-specified as a combination before
+  either's standalone result is finalized.
+
+Three to five combinations total. **The set is not expanded after
+seeing results.** That is the multiple-comparisons trap this
+structure is designed to avoid.
+
+**Phase 3c output:** one additional table at
+`reports/tables/phase3c_combinations.csv` and a short narrative
+section in the Phase 3 summary. Phase 4 model selection then reads
+from the union of features that earned their place, either
+standalone in 3b or in combination in 3c, and lets the
+gradient-boosted models handle redundancy at training time.
+
+## 10. Next step
+
+Start the sentiment proposal at
+`docs/proposals/phase3_sentiment_proposal.md`. The substantive
+design question for this group is the pooling choice
+(whole-screenplay versus scene-windowed versus arc-clustered
+versus mixed). Sentiment shares NLTK preprocessing with lexical
+and can reuse the cached lexical pipeline scaffolding.

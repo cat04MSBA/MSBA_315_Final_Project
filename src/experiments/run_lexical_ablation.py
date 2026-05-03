@@ -34,6 +34,7 @@ if __name__ == "__main__" and __package__ is None:
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from src.experiments.save_run import save_run
@@ -47,21 +48,29 @@ logger = get_logger(__name__)
 
 
 def _load_phase_3a_floor() -> pd.DataFrame:
-    """Load the Phase 3a revised dialogue-only floor for all families.
+    """Load the Phase 3a revised dialogue-only floor for all families and eval sets.
 
-    Returns a DataFrame indexed by (model_family, target, metric) with a
-    single ``floor`` column. Used to compute family-specific lift.
+    Returns a DataFrame indexed by (model_family, eval_set, target,
+    metric) with a single ``floor`` column. Used to compute
+    family-specific and eval-set-specific lift.
     """
     table = pd.read_csv(paths.REPORTS_TABLES_DIR / "phase3a_baseline.csv")
     floor = table[table["feature_set"] == "dialogue_only_logged"][
-        ["model_family", "target", "metric", "value"]
+        ["model_family", "eval_set", "target", "metric", "value"]
     ].rename(columns={"value": "floor"})
-    return floor.set_index(["model_family", "target", "metric"])
+    return floor.set_index(["model_family", "eval_set", "target", "metric"])
 
 
-# Pre-registered lift bands from proposal v2 Section 3.
+# Pre-registered lift bands from proposal v2 Section 3. The original
+# pre-registration was made in R² for the regression target; with R²
+# removed from the metric set, the regression band is translated to
+# RMSE on the linear family's OOF-evaluation floor (the historical
+# reference). The translation: R² lift band of +0.010 to +0.025 on a
+# floor of R² = 0.052 with var(log_roi) ~ 1.8 corresponds to RMSE
+# lift band of approximately -0.020 to -0.010 (lower is better for
+# RMSE). Classification AUC bands are unchanged.
 LEXICAL_PREDICTED_LIFT: dict[tuple[str, str], tuple[float, float]] = {
-    ("log_roi", "r2"): (0.010, 0.025),
+    ("log_roi", "rmse"): (-0.020, -0.010),
     ("roi_gt_1", "auc_roc"): (0.000, 0.010),
     ("roi_gt_2", "auc_roc"): (0.015, 0.035),
 }
@@ -173,34 +182,40 @@ def main() -> None:
         ablation_df.to_csv(ablation_path, index=False)
         logger.info("Ablation table written: %d rows total", len(ablation_df))
 
-        # Compute headline-row labels for RUNS.md from the linear family.
-        linear_log_roi_r2 = next(
+        # Compute headline-row labels for RUNS.md from the linear family,
+        # OOF eval set (the historical reference for the proposal's lift
+        # predictions). RMSE on log_roi and AUC-ROC on roi_gt_2 are the
+        # report-facing summary numbers.
+        linear_log_roi_rmse = next(
             r for r in rows
             if r["model_family"] == "linear"
+            and r["eval_set"] == "oof"
             and r["target"] == LOG_ROI_COL
-            and r["metric"] == "r2"
+            and r["metric"] == "rmse"
         )
         linear_roi_gt_2_auc = next(
             r for r in rows
             if r["model_family"] == "linear"
+            and r["eval_set"] == "oof"
             and r["target"] == "roi_gt_2"
             and r["metric"] == "auc_roc"
         )
-        histgb_log_roi_r2 = next(
+        histgb_log_roi_rmse = next(
             r for r in rows
             if r["model_family"] == "histgb"
+            and r["eval_set"] == "oof"
             and r["target"] == LOG_ROI_COL
-            and r["metric"] == "r2"
+            and r["metric"] == "rmse"
         )
         run.append_to_runs_md(
             model_family="4-family (linear, histgb, knn, svm)",
             features_group="structural + lexical",
             key_metric=(
-                f"linear R2 {linear_log_roi_r2['value']:.3f} / "
+                f"linear OOF RMSE {linear_log_roi_rmse['value']:.3f} / "
                 f"AUC roi_gt_2 {linear_roi_gt_2_auc['value']:.3f}; "
-                f"histgb R2 {histgb_log_roi_r2['value']:.3f}"
+                f"histgb RMSE {histgb_log_roi_rmse['value']:.3f}"
             ),
-            notes="Phase 3b row 1: lexical (14 features); 4 families for diagnostic disambiguation",
+            notes="Phase 3b row 1: lexical (14 features); 4 families × 2 eval sets",
         )
 
 
@@ -218,34 +233,42 @@ def _build_ablation_rows(metric_rows: list[dict], floor: pd.DataFrame) -> list[d
     """
     out: list[dict] = []
     for r in metric_rows:
-        key = (r["model_family"], r["target"], r["metric"])
+        key = (r["model_family"], r["eval_set"], r["target"], r["metric"])
         if key not in floor.index:
             continue
         floor_value = float(floor.loc[key, "floor"])
         actual = float(r["value"])
-        lift = actual - floor_value
+        # NaN floor (e.g., log_loss for SVM) propagates as NaN lift.
+        if np.isnan(floor_value) or np.isnan(actual):
+            lift = float("nan")
+        else:
+            lift = actual - floor_value
         predicted = LEXICAL_PREDICTED_LIFT.get((r["target"], r["metric"]))
         in_band: bool | None
-        if predicted is None:
+        if predicted is None or np.isnan(lift):
             in_band = None
-        elif r["model_family"] == "linear":
+        elif r["model_family"] == "linear" and r["eval_set"] == "oof":
+            # Pre-registered bands apply only to the linear family's
+            # OOF (validation) numbers, the historical reference for
+            # the proposal's lift predictions.
             in_band = predicted[0] <= lift <= predicted[1]
         else:
             in_band = None
         out.append({
             "feature_group": "lexical",
             "model_family": r["model_family"],
+            "eval_set": r["eval_set"],
             "target": r["target"],
             "metric": r["metric"],
             "task": r["task"],
-            "phase_3a_floor": round(floor_value, 4),
-            "phase_3b_actual": round(actual, 4),
-            "lift": round(lift, 4),
+            "phase_3a_floor": round(floor_value, 4) if not np.isnan(floor_value) else None,
+            "phase_3b_actual": round(actual, 4) if not np.isnan(actual) else None,
+            "lift": round(lift, 4) if not np.isnan(lift) else None,
             "predicted_lift_low": predicted[0] if predicted else None,
             "predicted_lift_high": predicted[1] if predicted else None,
             "in_predicted_band": in_band,
-            "ci_lo": round(float(r["ci_lo"]), 4),
-            "ci_hi": round(float(r["ci_hi"]), 4),
+            "ci_lo": round(float(r["ci_lo"]), 4) if not np.isnan(r.get("ci_lo", float("nan"))) else None,
+            "ci_hi": round(float(r["ci_hi"]), 4) if not np.isnan(r.get("ci_hi", float("nan"))) else None,
         })
     return out
 

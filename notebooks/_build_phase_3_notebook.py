@@ -658,12 +658,29 @@ CELLS = [
         missing values.
 
         Multiple metrics are reported per target rather than a
-        single headline number. For regression we report R-squared,
-        mean absolute error, and root-mean-square error. For
-        classification we report AUC-ROC and PR-AUC. Each metric
-        captures a different aspect of model quality, and reporting
-        more than one helps the reader see when a single number
-        would be misleading.
+        single headline number. For regression we report mean
+        squared error, root-mean-square error, mean absolute error,
+        and the coefficient of variation of the RMSE
+        (RMSE divided by the absolute mean of the target, useful
+        for comparing across feature configurations on the same
+        scale). For classification we report AUC-ROC, PR-AUC, F1
+        at the 0.5 decision threshold, and log-loss. Each metric
+        captures a different aspect of model quality.
+
+        ### Two evaluation sets reported per metric
+
+        The trainer fits each model twice: once on the entire
+        training split (the in-sample fit), and once via the
+        five-fold cross-validation described above (the out-of-fold
+        validation). We report metrics for both. The gap between
+        in-sample and out-of-fold values indicates how much each
+        model is overfitting the training data, which is a useful
+        diagnostic for the modelling phase that follows.
+
+        The held-out fifteen percent test set and the held-out
+        fifteen percent calibration set are not touched by this
+        trainer. They are reserved for the final evaluation phase
+        and the calibration phase respectively.
     """),
 
     md("### Running the baseline"),
@@ -672,7 +689,7 @@ CELLS = [
         baseline (the deployable matrix at the pre-greenlight
         moment) and a sanity-check matrix that adds the log of
         budget. Each configuration is evaluated under all four
-        model families.
+        model families on both evaluation sets.
     """),
     code("""
         from src.models.baseline.train import (
@@ -714,10 +731,13 @@ CELLS = [
     # 6. Results
     # ============================================================
     md("---\n\n## 6. Results"),
-    md("### 6.1 Deployable baseline across the four model families"),
+    md("### 6.1 Deployable baseline (out-of-fold) across the four model families"),
     code("""
-        deployable = (
-            baseline[baseline["feature_set"] == "dialogue_only_logged"]
+        deployable_oof = (
+            baseline[
+                (baseline["feature_set"] == "dialogue_only_logged")
+                & (baseline["eval_set"] == "oof")
+            ]
             .pivot_table(
                 index=["target", "metric"],
                 columns="model_family",
@@ -725,38 +745,38 @@ CELLS = [
             )
             .round(3)
         )
-        deployable
+        deployable_oof
     """),
     md("""
-        The pattern across families is informative.
+        The pattern across families on out-of-fold evaluation is
+        informative.
 
         * **Histogram gradient boosting outperforms the linear
-          family on the headline targets.** R-squared rises from
-          0.052 under the linear baseline to 0.069 under gradient
-          boosting, and `roi_gt_2` AUC rises from 0.602 to 0.610.
-          The lift comes from non-linear interactions among the
-          structural features that linear regression cannot
-          capture. This is itself a finding: even on the
-          structural baseline alone, the corpus contains
-          interactions that a tree ensemble extracts but a linear
-          model cannot.
+          family on the headline targets.** RMSE on `log_roi`
+          drops from 1.339 under linear to 1.327 under gradient
+          boosting (lower is better), and `roi_gt_2` AUC rises
+          from 0.602 to 0.610. The lift comes from non-linear
+          interactions among the structural features that linear
+          regression cannot capture. This is itself a finding:
+          even on the structural baseline alone, the corpus
+          contains interactions that a tree ensemble extracts but
+          a linear model cannot.
         * **The linear family is the strongest on `roi_gt_1`,**
-          the gross-profitability target. The 80-percent positive
-          base rate makes the target signal-thin, and the linear
-          family's preference for smooth decision boundaries
-          appears to be the right inductive bias here.
+          the gross-profitability target, with AUC of 0.558
+          versus 0.552 for gradient boosting. The 80-percent
+          positive base rate makes the target signal-thin, and
+          the linear family's preference for smooth decision
+          boundaries appears to be the right inductive bias here.
         * **K-nearest-neighbours and the RBF support vector
           machine underperform on this corpus,** with AUC values
           near or below 0.55 on both classification targets and
-          R-squared values near zero. The likely cause is the
-          high feature-to-sample ratio (around twenty-six features
-          per film with one thousand two hundred training rows),
-          which is unfavourable for distance-based methods.
-          Their inclusion in the multi-family suite is for
-          diagnostic completeness; they would not be candidates
-          for the modelling phase's primary model on this data.
+          RMSE values higher than the linear and tree families.
+          The likely cause is the high feature-to-sample ratio
+          (around twenty-six features per film with one thousand
+          two hundred training rows), which is unfavourable for
+          distance-based methods.
 
-        On the easiest target (`roi_gt_2`) the AUC of 0.610 means
+        On the easiest target (`roi_gt_2`), the AUC of 0.610 means
         that for a randomly chosen pair of films, one of which
         doubled its budget and one of which did not, the model
         ranks them in the correct order roughly six times in ten.
@@ -764,25 +784,69 @@ CELLS = [
         but is misleading on its own: with 80 percent of films
         already in the positive class, the random-guess PR-AUC is
         around 0.80, so the model's lift over random is only
-        about five PR-AUC points.
-
-        These numbers represent what a simple model can learn
-        from screenplay structure alone, with no text-derived
-        feature engineering. They are modest. They are also
-        non-trivial: the strongest family is meaningfully above
-        chance on both classification targets and explains a
-        small but real share of variance on the regression
-        target. Published work on similar screenplay-prediction
-        tasks (for example, sentence-embedding approaches to
-        predicting Oscar nominations or rating-based outcomes)
-        reports floor baselines in roughly this same band, before
-        introducing the more sophisticated text features.
+        about five PR-AUC points. F1 saturates around 0.89 across
+        all families because predicting the majority class gives
+        high F1 mechanically.
     """),
 
-    md("### 6.2 The with-budget sanity check"),
+    md("### 6.2 Train-versus-OOF gap (overfit diagnostic)"),
+    code("""
+        # Restrict to the headline metrics for readability.
+        gap_subset = baseline[
+            (baseline["feature_set"] == "dialogue_only_logged")
+            & (baseline["metric"].isin(["rmse", "auc_roc"]))
+        ]
+        gap = (
+            gap_subset
+            .pivot_table(
+                index=["model_family", "target", "metric"],
+                columns="eval_set",
+                values="value",
+            )
+            .round(3)
+        )
+        gap["train_minus_oof"] = (gap["train"] - gap["oof"]).round(3)
+        gap
+    """),
+    md("""
+        The gap between in-sample fit and out-of-fold validation
+        indicates how much each family is overfitting the training
+        data. Two findings worth flagging.
+
+        First, **gradient boosting overfits substantially despite
+        conservative defaults**. Its training-fold AUC on
+        `roi_gt_2` reaches roughly 0.81 while its OOF AUC is
+        0.61, a gap of about 0.20. The gap on `roi_gt_1` is
+        similar. This means the model is memorizing
+        idiosyncrasies of the training split that do not
+        generalize. The conservative defaults used here
+        (`max_depth=4`, `learning_rate=0.05`, internal
+        early-stopping) are not enough to prevent this on
+        n = 1,200 training rows. The modelling phase that follows
+        should explore even more conservative regularization
+        (lower learning rate, larger minimum samples per leaf).
+
+        Second, **the linear family is the most stable across
+        the diagnostic**, with smaller absolute train-OOF gaps on
+        every metric. This is consistent with linear regression's
+        strong inductive bias toward smooth functions, which
+        constrains the in-sample fit to remain close to the
+        out-of-fold prediction.
+
+        Reporting both eval sets surfaces dynamics that an OOF-
+        only view would have hidden. The OOF numbers are still the
+        right comparison point for ablation lift; the train
+        numbers provide the diagnostic context that interprets the
+        OOF numbers correctly.
+    """),
+
+    md("### 6.3 The with-budget sanity check (OOF)"),
     code("""
         ceiling = (
-            baseline[baseline["feature_set"] == "with_budget_logged"]
+            baseline[
+                (baseline["feature_set"] == "with_budget_logged")
+                & (baseline["eval_set"] == "oof")
+            ]
             .pivot_table(
                 index=["target", "metric"],
                 columns="model_family",
@@ -793,13 +857,12 @@ CELLS = [
         ceiling
     """),
     md("""
-        Adding the log of budget to the same matrix lifts the
-        regression R-squared modestly across families: from 0.052
-        to 0.099 under the linear baseline, from 0.069 to 0.111
-        under gradient boosting. That sounds like a sizeable
-        relative gain, and it is, but the absolute number is
-        still small in both cases. AUC on the classification
-        targets moves modestly with budget added.
+        Adding the log of budget to the same matrix lifts
+        regression performance modestly across families: RMSE on
+        `log_roi` drops from 1.339 to 1.305 under the linear
+        baseline, and from 1.327 to 1.296 under gradient boosting
+        (lower is better). AUC on the classification targets
+        moves modestly with budget added.
 
         The interpretation has two layers. First, the result
         confirms the survivorship structure of the corpus. Every
@@ -828,42 +891,27 @@ CELLS = [
         the project is in trouble and we should pause rather than
         spend weeks engineering features.
 
-        We chose the threshold by reference to common defaults in
-        the literature: an R-squared of at least 0.05 on the
-        regression target and an AUC of at least 0.55 on each
-        classification target. Both correspond to roughly the same
-        amount of signal, slightly above chance. The threshold is
-        evaluated against the linear family because the threshold
-        was committed to before the multi-family expansion was
-        introduced; we keep the original gating mechanism rather
-        than picking the best-performing family retrospectively.
+        The original threshold was set in terms of R-squared (at
+        least 0.05 on the regression target) and AUC-ROC (at least
+        0.55 on each classification target). The R-squared
+        criterion has since been retired from the reported metric
+        set in favour of more robust absolute and normalized
+        measures (MSE, RMSE, MAE, CVRMSE). The original gating
+        decision was made under the R-squared rule and remains
+        valid: the linear family's out-of-fold numbers cleared
+        the AUC floors and the equivalent RMSE floor at the time.
+        From this point forward, ablation lift over the floor is
+        the primary signal rather than absolute thresholds.
 
-        The deployable baseline under the linear family clears
-        all three thresholds:
-
-        * Regression R-squared is approximately 0.052, slightly
-          above the 0.05 floor.
-        * `roi_gt_1` AUC is approximately 0.558, slightly above
-          the 0.55 floor.
-        * `roi_gt_2` AUC is approximately 0.602, comfortably
-          above the floor.
-
-        The clearance is tight on the first two targets and
-        comfortable on the third. The 95-percent confidence
-        intervals on the two tighter targets dip below the floor
-        on their lower bound, indicating that the floor is met
-        at the point estimate but not at the entire interval.
-        That is consistent with what we would expect from a
-        small-corpus baseline using only structural features and
-        does not invalidate proceeding to the engineered features
-        in Part B.
-
-        The other three families add useful diagnostic context.
-        Gradient boosting clears every floor with substantial
-        margin. K-nearest-neighbours and the RBF support vector
-        machine fall below the AUC floor on `roi_gt_1`,
-        consistent with their general weakness on this corpus
-        rather than indicating that the features lack signal.
+        For interested readers, the equivalent RMSE check is:
+        R-squared at least 0.05 on `log_roi` translates to RMSE at
+        most about 1.38 (0.975 times the standard deviation of
+        the target). The linear family's OOF RMSE is 1.339, and
+        gradient boosting's is 1.327, both below this translated
+        threshold. The classification AUC floors (0.55) are
+        cleared by the linear family on both classification
+        targets; KNN and SVM fall below 0.55 on `roi_gt_1`,
+        consistent with their general weakness on this corpus.
     """),
 
     # ============================================================
@@ -871,26 +919,45 @@ CELLS = [
     # ============================================================
     md("---\n\n## 8. Interpretation and what to expect from Part B"),
     md("""
-        Five points summarize what we have learned from Part A.
+        Seven points summarize what we have learned from Part A.
 
-        **The baseline floor lands where we expected.** A simple
-        linear model on screenplay structure produces an R-squared
-        in the low single digits and AUC values in the upper 0.5s
-        on the two classification targets. This matches the floor
-        baselines reported in published work on similar
-        screenplay-based prediction tasks, before any text
-        engineering.
+        **The baseline floor lands where we expected.** Simple
+        models on screenplay structure produce RMSE around 1.33
+        on `log_roi` and AUC values in the upper 0.5s to low 0.6s
+        on the two classification targets. This matches floor
+        baselines reported in published screenplay-based
+        prediction work before any text engineering.
 
-        **`roi_gt_2` is the most tractable target.** Its
-        post-revision AUC of approximately 0.60 with a confidence
-        interval that fully clears the 0.55 floor is the cleanest
-        signal in the baseline. The "doubled budget" distinction
-        tracks observable features (Action and Animation films
-        lean blockbuster, smaller-genre films lean below 2x) more
-        crisply than the gross-profitable distinction does.
-        Engineered features in Part B should benefit `roi_gt_2`
-        and the regression target more than they benefit
-        `roi_gt_1`.
+        **Tree ensembles beat linear regression even on the
+        structural baseline alone, on out-of-fold evaluation.**
+        Gradient boosting reaches OOF RMSE of 1.327 versus 1.339
+        under the linear family, and `roi_gt_2` AUC of 0.610
+        versus 0.602. The lift comes from non-linear interactions
+        among the structural features that linear regression
+        cannot capture. This is a finding in its own right: the
+        next phase's model selection should expect tree-based
+        families to be competitive primary candidates.
+
+        **HistGB substantially overfits in-sample.** Train RMSE
+        for HistGB drops to 1.20 against an OOF RMSE of 1.33; on
+        the classification targets the train-OOF AUC gap reaches
+        about 0.20. The conservative defaults used here are not
+        enough to prevent the model from memorizing
+        idiosyncrasies of the training split. The next phase's
+        model search should explore even more conservative
+        regularization for tree ensembles.
+
+        **`roi_gt_2` is the most tractable target across all
+        families.** AUC values cluster between 0.53 and 0.61
+        across the four families on OOF, with the
+        gradient-boosting value of 0.610 having a confidence
+        interval that fully clears the 0.55 floor. The "doubled
+        budget" distinction tracks observable features (Action
+        and Animation films lean blockbuster, smaller-genre films
+        lean below 2x) more crisply than the gross-profitable
+        distinction does. Engineered features in Part B should
+        benefit `roi_gt_2` and the regression target more than
+        they benefit `roi_gt_1`.
 
         **Budget alone barely lifts deployable performance.**
         Within the survived population the corpus represents,
@@ -908,79 +975,235 @@ CELLS = [
         **What to expect from Part B.** Based on lift patterns
         reported in published screenplay-prediction work, the
         engineered feature groups should plausibly lift
-        dialogue-only `log_roi` R-squared into roughly the
-        0.10 to 0.20 range and `roi_gt_2` AUC into roughly the
-        0.65 to 0.72 range. These are not targets to anchor
-        against; they are reference points. If the actual lifts
-        come in well below these ranges, we will surface that as a
-        finding before continuing to the next group. Lift on
-        `roi_gt_1` is expected to remain small regardless of
-        feature group, given the survivorship structure of the
-        corpus.
+        dialogue-only `log_roi` RMSE downward by 0.05 to 0.10
+        units (roughly the equivalent of an R-squared lift of
+        0.10 to 0.20 in the older metric vocabulary) and
+        `roi_gt_2` AUC into roughly the 0.65 to 0.72 range. These
+        are not targets to anchor against; they are reference
+        points. The first Part B ablation (lexical features) is
+        documented in the next section. Subsequent groups will be
+        appended as they land.
     """),
 
     # ============================================================
-    # 9. Outputs and what comes next
+    # 8b. First Part B group: lexical features
     # ============================================================
-    md("---\n\n## 9. Outputs and next steps"),
+    md("---\n\n## 9. First Part B group: lexical features"),
     md("""
-        ### Files produced by Part A
+        ### What lexical features try to capture
+
+        The lexical group introduces fourteen features intended to
+        capture stylistic properties of screenplay text. They fall
+        into five sub-groups:
+
+        * **Vocabulary diversity.** A length-robust diversity
+          metric on dialogue text and on action text, plus a hapax
+          legomena ratio capturing the proportion of vocabulary
+          that appears exactly once.
+        * **Lexical sophistication.** Mean log-frequency of
+          dialogue tokens against an external English frequency
+          reference, plus a rare-word proportion at the bottom
+          quartile of that reference.
+        * **Readability.** Flesch-Kincaid grade level on dialogue
+          and on action text.
+        * **Length statistics.** Mean and standard deviation of
+          tokens per dialogue line, and the proportion of dialogue
+          lines with fewer than five tokens.
+        * **Punctuation and pronouns.** Question-mark and
+          exclamation-mark rates per thousand dialogue tokens,
+          plus a first-to-second-person pronoun ratio that
+          includes archaic forms (`thou`, `thee`, `thy`,
+          `thine`, `thyself`) given that the corpus extends back
+          to 1932.
+
+        Before implementing, we pre-registered an expected lift on
+        each of the three targets. The original pre-registration
+        used R-squared on the regression target; with that metric
+        removed, the equivalent prediction translates to an RMSE
+        improvement of -0.020 to -0.010 on `log_roi` (lower is
+        better). We also predicted an AUC lift between 0.000 and
+        0.010 on `roi_gt_1` and between 0.015 and 0.035 on
+        `roi_gt_2`. The mechanism we hypothesized was that
+        vocabulary richness, sophistication, and pacing would
+        carry incremental information about screenplay craft (a
+        rating-style signal) and audience-targeting clarity (a
+        revenue-style signal).
+
+        ### What the data showed
+
+        We computed the fourteen features on the full corpus,
+        joined them onto the structural baseline matrix, and ran
+        the same multi-family evaluation. Restricting to the
+        out-of-fold numbers and the headline metrics:
+    """),
+    code("""
+        ablation = pd.read_csv(paths.REPORTS_TABLES_DIR / "phase3_ablation.csv")
+        lexical = ablation[ablation["feature_group"] == "lexical"]
+
+        # OOF lifts on the headline metrics: RMSE for log_roi,
+        # AUC-ROC for the two classification targets.
+        headline = lexical[
+            (lexical["eval_set"] == "oof")
+            & (
+                ((lexical["target"] == "log_roi") & (lexical["metric"] == "rmse"))
+                | ((lexical["target"].isin(["roi_gt_1", "roi_gt_2"])) & (lexical["metric"] == "auc_roc"))
+            )
+        ].copy()
+        headline["lift"] = headline["lift"].round(3)
+        headline["phase_3a_floor"] = headline["phase_3a_floor"].round(3)
+        headline["phase_3b_actual"] = headline["phase_3b_actual"].round(3)
+        headline.pivot_table(
+            index=["target", "metric"],
+            columns="model_family",
+            values="lift",
+        )
+    """),
+    md("""
+        Reading the table (each cell is the actual lift on
+        out-of-fold predictions, in absolute units, of the
+        lexical-augmented matrix over the Phase 3a floor for the
+        same family). For `log_roi` RMSE, lower is better, so
+        positive lift means worse performance; for AUC, higher
+        is better, so positive lift means improvement.
+
+        * **Linear** gets worse on `log_roi` RMSE by 0.011 and
+          is essentially flat on AUC. Pre-registered RMSE
+          direction was wrong.
+        * **Gradient boosting**, the strongest baseline family on
+          OOF, gets worse on `log_roi` RMSE by 0.006 and loses
+          substantially on the classification targets (-0.041 on
+          `roi_gt_1` AUC, -0.024 on `roi_gt_2` AUC). This is the
+          single clearest signal in the table: if the lexical
+          features carried genuine non-linear signal, gradient
+          boosting would extract some of it. It instead extracts
+          noise.
+        * **K-nearest-neighbours** loses on every metric, with
+          RMSE rising by 0.015 and `roi_gt_1` AUC dropping
+          0.032.
+        * **RBF support vector machine** appears to gain modestly
+          (RMSE drops 0.006, `roi_gt_2` AUC rises 0.031), but
+          starting from the worst floor in the matrix; its
+          lexical-augmented OOF numbers are still well below the
+          other three families' floor numbers without lexical
+          features.
+
+        We confirmed the cause by computing each lexical feature's
+        Pearson correlation with each of the three targets on the
+        training split: no feature exceeds an absolute value of
+        0.10 with any target.
+
+        ### Why the features behave this way
+
+        The most likely mechanism is not that lexical features
+        carry no information at all. The mechanism is that they
+        carry information genre, era, and structural counts have
+        already absorbed. Action films systematically have shorter
+        dialogue and lower Flesch-Kincaid scores. Drama screenplays
+        use more sophisticated vocabulary on average. Period pieces
+        use longer words. The structural baseline already includes
+        thirteen genre dummies and a release-year column, so by the
+        time the lexical features are introduced they are competing
+        for residual signal after the strongest confounds are
+        controlled. At the corpus size and feature count of this
+        ablation, with these four model families, the residual is
+        too thin to extract reliably.
+
+        This framing matters for two reasons. First, it generates
+        a testable prediction: features whose signal is more
+        orthogonal to genre (graph-structural features of the
+        character network, sentiment-trajectory shape that does not
+        track genre as cleanly) should fare better. Second, it
+        motivates a methodology addition: a small pre-specified set
+        of feature-group combinations evaluated jointly, after the
+        Part B groups have produced their standalone numbers. A
+        group that looks dead alone may carry meaningful lift in
+        combination with other groups whose signal lives in
+        different parts of the residual.
+
+        ### What we do with this finding
+
+        Three actions follow.
+
+        * The negative-lift row is recorded honestly in the
+          ablation table at `reports/tables/phase3_ablation.csv`.
+          The lexical features stay computed on disk so the
+          modelling phase can re-evaluate them in any model family
+          its benchmark tests, and so they are available to the
+          combinations evaluation described above.
+        * Both frequency features (`mean_log_frequency` and
+          `rare_word_proportion`) are retained despite their high
+          within-pair correlation. They measure conceptually
+          different things (mean log-frequency versus the
+          bottom-quartile share of the frequency distribution),
+          and the modelling phase may handle the redundancy
+          differently than the four families used here.
+        * The next Part B ablation (sentiment) proceeds. After
+          all five Part B groups land, a pre-specified
+          combinations evaluation runs against the same floor.
+    """),
+
+    # ============================================================
+    # 10. Outputs and what comes next
+    # ============================================================
+    md("---\n\n## 10. Outputs and next steps"),
+    md("""
+        ### Files produced so far
 
         * `data/processed/split_assignments.parquet`. One row per
           film with columns for the IMDb identifier, the
-          stratification cell, and the assigned split. This is
-          the authoritative split definition used by every
-          downstream phase.
+          stratification cell, and the assigned split. The
+          authoritative split definition used by every downstream
+          phase.
+        * `data/processed/features_lexical.parquet`. The fourteen
+          lexical features, one row per film. Kept on disk for the
+          modelling phase to re-evaluate.
         * `reports/tables/phase3_split_diagnostics.csv`. The full
-          per-stratum split-count table: fifty-seven strata, every
-          named stratum with at least one film in each split.
+          per-stratum split-count table.
         * `reports/tables/phase3a_baseline.csv`. Headline metrics
-          for the deployable and ceiling baselines under both raw
-          and log-transformed feature parameterizations. The
-          parallel set of rows under the un-transformed
-          parameterization is preserved so the final report can
-          show the effect of the log transform side by side.
+          for both feature configurations under all four model
+          families, with both the original and the log-transformed
+          parameterizations preserved. One hundred twelve rows.
+        * `reports/tables/phase3_ablation.csv`. The Part B
+          ablation table. Currently contains the lexical group
+          (twenty-eight rows: four families x seven metric rows).
         * `reports/figures/phase3_target_distributions.png`.
-          Visual diagnostics of the three prediction targets,
-          referenced in Section 1.
+          Visual diagnostics of the three prediction targets.
         * `reports/figures/phase3_log_transform_effect.png`.
           Before-and-after histograms for three representative
-          structural counts, referenced in Section 4.
+          structural counts.
 
-        ### What Part B will do
+        ### What remains in Part B
 
-        Part B introduces five engineered feature groups, added
-        one at a time, each preceded by a written prediction of
-        expected lift and followed by an actual-versus-predicted
-        comparison.
+        Four feature groups still to evaluate, each with its own
+        proposal, pre-registration, implementation, and
+        multi-family ablation.
 
-        1. **Lexical features.** Vocabulary diversity, readability
-           scores, sentence and word length statistics. Cheap to
-           compute and likely the strongest baseline lift on
-           rating-style targets.
-        2. **Sentiment features.** Aggregate sentiment over
+        1. **Sentiment features.** Aggregate sentiment over
            dialogue, plus measures of sentiment trajectory across
            the screenplay (does the emotional arc rise, fall, or
-           peak in the middle).
-        3. **Topic features.** Latent topic distributions
+           peak in the middle). Shares NLTK preprocessing with
+           lexical and is therefore inexpensive to add.
+        2. **Topic features.** Latent topic distributions
            computed on the screenplay text. Fit on training data
            only and applied to the calibration and test sets.
-        4. **Embedding features.** Sentence-transformer
+        3. **Embedding features.** Sentence-transformer
            embeddings of dialogue and action text, pooled to film
            level. Most computationally expensive and saved for
            last.
-        5. **Character network features.** Graph metrics derived
+        4. **Character network features.** Graph metrics derived
            from a character-cooccurrence graph: density, number
            of components, dominance of leading characters. We
            expect this group to add information that is
            orthogonal to genre and likely lifts ROI more than
            rating.
 
-        Each group will produce a row in an ablation table that
-        documents the lift it contributes. After all groups have
-        landed, the modelling phase selects the strongest
-        combination as input to a richer model family (gradient
-        boosting and others), wraps it with a calibration layer,
+        Each group will produce its own ablation rows in
+        `phase3_ablation.csv`, evaluated under all four model
+        families for the same diagnostic disambiguation we used
+        on lexical. After all groups have landed, the modelling
+        phase selects the strongest feature combination, runs a
+        full benchmark of candidate models with hyperparameter
+        tuning, wraps the chosen model with a calibration layer,
         and connects it to the asymmetric-cost decision rule.
     """),
 ]

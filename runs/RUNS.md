@@ -16,5 +16,6 @@ the same place; keep the newest-first ordering.
 |---|---|---|---|---|---|---|---|
 | 2026-05-03 16:38 | phase_3 | `runs/phase_3/20260503_1637_lexical_first/` | `21a1bb1` | Ridge + LogReg (L2) | structural + lexical | R2 0.037 ; AUC roi_gt_2 0.600 | Phase 3b ablation row 1: lexical (14 features); wordfreq backend |
 | 2026-05-03 17:19 | phase_3 | `runs/phase_3/20260503_1719_lexical_multifamily/` | `21a1bb1` | 4-family (linear, histgb, knn, svm) | structural + lexical | linear R2 0.037 / AUC roi_gt_2 0.600; histgb R2 0.060 | Phase 3b row 1: lexical (14 features); 4 families for diagnostic disambiguation |
+| 2026-05-03 18:13 | phase_3 | `runs/phase_3/20260503_1812_lexical_multifamily/` | `b624726` | 4-family (linear, histgb, knn, svm) | structural + lexical | linear OOF RMSE 1.350 / AUC roi_gt_2 0.600; histgb RMSE 1.333 | Phase 3b row 1: lexical (14 features); 4 families × 2 eval sets |
 <!-- new rows above this line -->
 | (none yet) | | | | | | | First lexical run will be the first entry |

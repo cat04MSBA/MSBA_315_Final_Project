@@ -1,0 +1,18 @@
+{
+  "frequency_source": "wordfreq Zipf (English; mixture includes OpenSubtitles, Wikipedia, etc.)",
+  "frequency_source_deviation_note": "Proposal v2 specified SUBTLEX-US; canonical SUBTLEX-US download URLs returned 404 at implementation time. wordfreq is the implementation backend, with OpenSubtitles in its English source mixture preserving the proposal's subtitle-domain match argument in spirit. Surfaced for planning-conversation review.",
+  "histgb_preprocessing": "passthrough (native NaN handling, no scaling)",
+  "include_lexical": true,
+  "include_log_budget": false,
+  "include_log_runtime": true,
+  "knn_preprocessing": "SimpleImputer(median) + StandardScaler",
+  "lexical_feature_count": 13,
+  "linear_imputer": "SimpleImputer(strategy='median')",
+  "linear_scaler": "StandardScaler",
+  "log_transform_structural": true,
+  "rare_cell_threshold": 5,
+  "split": "70_15_15_seed_42",
+  "stratification": "(primary_genre_bucketed, decade_bucket)",
+  "structural_features_count": 7,
+  "svm_preprocessing": "SimpleImputer(median) + StandardScaler"
+}
