@@ -510,7 +510,7 @@ Format: one entry per decision, newest first
 |---|---|---|---|
 | 1 | Data feasibility verification | Complete | `docs/summaries/phase_1_summary.md` |
 | 2 | Data pipeline | Complete | `docs/summaries/phase_2_summary.md` |
-| 3 | Feature extraction | In progress (3a complete; 3b complete: 2 nulls, 3 partial positives; 3c combinations sub-phase next) | `docs/handoffs/phase_3a_handoff.md`, `docs/handoffs/phase_3b_*_handoff.md` (5 handoffs) |
+| 3 | Feature extraction | In progress (3a + 3b + 3c complete; final summary + FEATURE_NOTES.md pending before Phase 4) | `docs/handoffs/phase_3a_handoff.md`, `docs/handoffs/phase_3b_*_handoff.md` (5), `docs/handoffs/phase_3c_combinations_handoff.md` |
 | 4 | Layer 1: Core prediction | Not started | — |
 | 5 | Layer 2: Calibration | Not started | — |
 | 6 | Layer 3: Decision | Not started | — |
