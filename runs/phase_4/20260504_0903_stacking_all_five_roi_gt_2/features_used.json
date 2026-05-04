@@ -1,0 +1,8 @@
+[
+  "linear",
+  "histgb",
+  "random_forest",
+  "svm_rbf",
+  "lightgbm",
+  "xgboost"
+]

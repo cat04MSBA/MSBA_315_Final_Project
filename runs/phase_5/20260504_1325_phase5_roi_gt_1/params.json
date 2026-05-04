@@ -1,0 +1,14 @@
+{
+  "confidence_levels": [
+    0.5,
+    0.8,
+    0.9,
+    0.95
+  ],
+  "family": "svm_rbf",
+  "matrix": "standalone_positive_union_mpnet",
+  "n_cal_films": 257,
+  "n_features": 92,
+  "target": "roi_gt_1",
+  "task": "classification"
+}

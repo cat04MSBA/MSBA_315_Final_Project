@@ -1,0 +1,51 @@
+{
+  "balancing": "sample_weight",
+  "classification_grid": {
+    "learning_rate": [
+      0.01,
+      0.03,
+      0.05
+    ],
+    "max_depth": [
+      3,
+      4,
+      6
+    ],
+    "min_child_weight": [
+      1,
+      5
+    ],
+    "reg_lambda": [
+      1.0,
+      10.0
+    ]
+  },
+  "family": "xgboost",
+  "matrix": "all_five",
+  "mode": "full",
+  "n_features": 127,
+  "n_outer_folds": 5,
+  "n_outer_repeats": 3,
+  "n_train": 1460,
+  "regression_grid": {
+    "learning_rate": [
+      0.01,
+      0.03,
+      0.05
+    ],
+    "max_depth": [
+      3,
+      4,
+      6
+    ],
+    "min_child_weight": [
+      1,
+      5
+    ],
+    "reg_lambda": [
+      1.0,
+      10.0
+    ]
+  },
+  "score_method": "predict_proba"
+}

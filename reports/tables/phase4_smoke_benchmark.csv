@@ -1,0 +1,13 @@
+matrix,family,tier,target,task,eval_set,metric,value,ci_lo,ci_hi,n_folds,best_params
+all_five,linear,primary,roi_gt_2,classification,train,auc_roc,0.7307523939808481,,,0,{'C': 0.1}
+all_five,linear,primary,roi_gt_2,classification,train,pr_auc,0.8288948064335303,,,0,{'C': 0.1}
+all_five,linear,primary,roi_gt_2,classification,train,log_loss,0.6051385808076738,,,0,{'C': 0.1}
+all_five,linear,primary,roi_gt_2,classification,train,f1,0.7163969035890219,,,0,{'C': 0.1}
+all_five,linear,primary,roi_gt_2,classification,oof_global,auc_roc,0.6043106855145159,0.5723136769556117,0.6399307158576649,15,{'C': 0.1}
+all_five,linear,primary,roi_gt_2,classification,oof_global,pr_auc,0.7272178914791204,0.6934391230984807,0.7621660654749173,15,{'C': 0.1}
+all_five,linear,primary,roi_gt_2,classification,oof_global,log_loss,0.6946102493612671,0.6718412127359986,0.717649227522263,15,{'C': 0.1}
+all_five,linear,primary,roi_gt_2,classification,oof_global,f1,0.6483825597749648,0.6213955555083948,0.6773759710701052,15,{'C': 0.1}
+all_five,linear,primary,roi_gt_2,classification,oof_perfold_mean,auc_roc,0.6005859845404438,0.5723649853957988,0.6288069836850887,15,{'C': 0.1}
+all_five,linear,primary,roi_gt_2,classification,oof_perfold_mean,pr_auc,0.7284888174557324,0.7019258369319682,0.7550517979794965,15,{'C': 0.1}
+all_five,linear,primary,roi_gt_2,classification,oof_perfold_mean,log_loss,0.7102210214742006,0.6857947571674364,0.7346472857809648,15,{'C': 0.1}
+all_five,linear,primary,roi_gt_2,classification,oof_perfold_mean,f1,0.6444261121618186,0.6234431726540193,0.6654090516696178,15,{'C': 0.1}

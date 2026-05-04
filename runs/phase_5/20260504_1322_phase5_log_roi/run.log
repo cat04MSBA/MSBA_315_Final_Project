@@ -1,0 +1,3 @@
+2026-05-04 13:22:47 | INFO    | src.experiments.save_run | Run started: phase=phase_5 name=phase5_log_roi dir=runs/phase_5/20260504_1322_phase5_log_roi
+2026-05-04 13:22:47 | INFO    | src.calibration.conformal | Conformal reg | log_roi | absolute | coverage@0.9=0.902 mean_width@0.9=4.024
+2026-05-04 13:22:47 | INFO    | src.experiments.save_run | Run finished: phase=phase_5 name=phase5_log_roi dir=runs/phase_5/20260504_1322_phase5_log_roi

@@ -1,0 +1,5 @@
+2026-05-04 13:25:34 | INFO    | src.experiments.save_run | Run started: phase=phase_5 name=phase5_roi_gt_1 dir=runs/phase_5/20260504_1325_phase5_roi_gt_1
+2026-05-04 13:25:34 | INFO    | src.calibration.probability | Probability calib | roi_gt_1 | uncalibrated | mean ECE=0.2433 Brier=0.2038 log_loss=0.5958
+2026-05-04 13:25:35 | INFO    | src.calibration.probability | Probability calib | roi_gt_1 | sigmoid | mean ECE=0.1570 Brier=0.1599 log_loss=0.4986
+2026-05-04 13:25:35 | INFO    | src.calibration.probability | Probability calib | roi_gt_1 | isotonic | mean ECE=0.0946 Brier=0.1622 log_loss=0.5078
+2026-05-04 13:25:35 | INFO    | src.experiments.save_run | Run finished: phase=phase_5 name=phase5_roi_gt_1 dir=runs/phase_5/20260504_1325_phase5_roi_gt_1

@@ -1,0 +1,2 @@
+2026-05-04 09:03:44 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=stacking_standalone_positive_union_mpnet_roi_gt_2 dir=runs/phase_4/20260504_0903_stacking_standalone_positive_union_mpnet_roi_gt_2
+2026-05-04 09:03:44 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=stacking_standalone_positive_union_mpnet_roi_gt_2 dir=runs/phase_4/20260504_0903_stacking_standalone_positive_union_mpnet_roi_gt_2

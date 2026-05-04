@@ -1,0 +1,49 @@
+matrix,family,tier,target,task,eval_set,metric,value,ci_lo,ci_hi,n_folds,best_params
+all_five,linear_unweighted,primary,roi_gt_2,classification,train,auc_roc,0.6983827329381365,,,0,{'C': 0.0031622776601683794}
+all_five,linear_unweighted,primary,roi_gt_2,classification,train,pr_auc,0.8027357624458993,,,0,{'C': 0.0031622776601683794}
+all_five,linear_unweighted,primary,roi_gt_2,classification,train,log_loss,0.6036619708998479,,,0,{'C': 0.0031622776601683794}
+all_five,linear_unweighted,primary,roi_gt_2,classification,train,f1,0.7916010498687664,,,0,{'C': 0.0031622776601683794}
+all_five,linear_unweighted,primary,roi_gt_2,classification,oof_global,auc_roc,0.6145189238486092,0.5814866150021945,0.6454045175926413,15,{'C': 0.0031622776601683794}
+all_five,linear_unweighted,primary,roi_gt_2,classification,oof_global,pr_auc,0.7381152209088414,0.7055365165461865,0.7722203101876056,15,{'C': 0.0031622776601683794}
+all_five,linear_unweighted,primary,roi_gt_2,classification,oof_global,log_loss,0.6326018079251213,0.6145057693611935,0.6493386872170059,15,{'C': 0.0031622776601683794}
+all_five,linear_unweighted,primary,roi_gt_2,classification,oof_global,f1,0.7814776274713839,0.7616525423728814,0.8014482849790711,15,{'C': 0.0031622776601683794}
+all_five,linear_unweighted,primary,roi_gt_2,classification,oof_perfold_mean,auc_roc,0.6114554490417868,0.575675680028289,0.6472352180552847,15,{'C': 0.0031622776601683794}
+all_five,linear_unweighted,primary,roi_gt_2,classification,oof_perfold_mean,pr_auc,0.7393926241287782,0.714235088566407,0.7645501596911493,15,{'C': 0.0031622776601683794}
+all_five,linear_unweighted,primary,roi_gt_2,classification,oof_perfold_mean,log_loss,0.6334599537765361,0.6218988689993921,0.6450210385536801,15,{'C': 0.0031622776601683794}
+all_five,linear_unweighted,primary,roi_gt_2,classification,oof_perfold_mean,f1,0.781571837113308,0.7721093561581907,0.7910343180684254,15,{'C': 0.0031622776601683794}
+all_five,histgb_unweighted,primary,roi_gt_2,classification,train,auc_roc,0.9233044535643717,,,0,"{'learning_rate': 0.05, 'max_depth': 4, 'min_samples_leaf': 40}"
+all_five,histgb_unweighted,primary,roi_gt_2,classification,train,pr_auc,0.956055909016624,,,0,"{'learning_rate': 0.05, 'max_depth': 4, 'min_samples_leaf': 40}"
+all_five,histgb_unweighted,primary,roi_gt_2,classification,train,log_loss,0.5049056662430839,,,0,"{'learning_rate': 0.05, 'max_depth': 4, 'min_samples_leaf': 40}"
+all_five,histgb_unweighted,primary,roi_gt_2,classification,train,f1,0.8454746136865342,,,0,"{'learning_rate': 0.05, 'max_depth': 4, 'min_samples_leaf': 40}"
+all_five,histgb_unweighted,primary,roi_gt_2,classification,oof_global,auc_roc,0.6017297461620307,0.5722640708889982,0.633315700007968,15,"{'learning_rate': 0.05, 'max_depth': 4, 'min_samples_leaf': 40}"
+all_five,histgb_unweighted,primary,roi_gt_2,classification,oof_global,pr_auc,0.7199365813182963,0.6854851878945347,0.7563329678349893,15,"{'learning_rate': 0.05, 'max_depth': 4, 'min_samples_leaf': 40}"
+all_five,histgb_unweighted,primary,roi_gt_2,classification,oof_global,log_loss,0.6372845723131552,0.6180424475077247,0.6544468074416345,15,"{'learning_rate': 0.05, 'max_depth': 4, 'min_samples_leaf': 40}"
+all_five,histgb_unweighted,primary,roi_gt_2,classification,oof_global,f1,0.7784120394395433,0.7579245064624276,0.7991854665503297,15,"{'learning_rate': 0.05, 'max_depth': 4, 'min_samples_leaf': 40}"
+all_five,histgb_unweighted,primary,roi_gt_2,classification,oof_perfold_mean,auc_roc,0.5863906618365821,0.563098687781482,0.6096826358916821,15,"{'learning_rate': 0.05, 'max_depth': 4, 'min_samples_leaf': 40}"
+all_five,histgb_unweighted,primary,roi_gt_2,classification,oof_perfold_mean,pr_auc,0.7130496850673785,0.6923216720378288,0.7337776980969283,15,"{'learning_rate': 0.05, 'max_depth': 4, 'min_samples_leaf': 40}"
+all_five,histgb_unweighted,primary,roi_gt_2,classification,oof_perfold_mean,log_loss,0.6425991916409256,0.6342832158750108,0.6509151674068404,15,"{'learning_rate': 0.05, 'max_depth': 4, 'min_samples_leaf': 40}"
+all_five,histgb_unweighted,primary,roi_gt_2,classification,oof_perfold_mean,f1,0.7744383193356955,0.7617934524659803,0.7870831862054107,15,"{'learning_rate': 0.05, 'max_depth': 4, 'min_samples_leaf': 40}"
+all_five,random_forest_unweighted,primary,roi_gt_2,classification,train,auc_roc,0.9698039215686274,,,0,"{'max_depth': 12, 'min_samples_leaf': 20, 'n_estimators': 500}"
+all_five,random_forest_unweighted,primary,roi_gt_2,classification,train,pr_auc,0.9839564754573363,,,0,"{'max_depth': 12, 'min_samples_leaf': 20, 'n_estimators': 500}"
+all_five,random_forest_unweighted,primary,roi_gt_2,classification,train,log_loss,0.5121678077808973,,,0,"{'max_depth': 12, 'min_samples_leaf': 20, 'n_estimators': 500}"
+all_five,random_forest_unweighted,primary,roi_gt_2,classification,train,f1,0.8264815803523758,,,0,"{'max_depth': 12, 'min_samples_leaf': 20, 'n_estimators': 500}"
+all_five,random_forest_unweighted,primary,roi_gt_2,classification,oof_global,auc_roc,0.6034138926888585,0.5729809354660016,0.6380205188383758,15,"{'max_depth': 12, 'min_samples_leaf': 20, 'n_estimators': 500}"
+all_five,random_forest_unweighted,primary,roi_gt_2,classification,oof_global,pr_auc,0.7194781172523916,0.6879683042155729,0.7570933952900117,15,"{'max_depth': 12, 'min_samples_leaf': 20, 'n_estimators': 500}"
+all_five,random_forest_unweighted,primary,roi_gt_2,classification,oof_global,log_loss,0.6368531907018811,0.6193503921031556,0.6521996352336268,15,"{'max_depth': 12, 'min_samples_leaf': 20, 'n_estimators': 500}"
+all_five,random_forest_unweighted,primary,roi_gt_2,classification,oof_global,f1,0.7805626598465473,0.7604708057955014,0.8012048950709734,15,"{'max_depth': 12, 'min_samples_leaf': 20, 'n_estimators': 500}"
+all_five,random_forest_unweighted,primary,roi_gt_2,classification,oof_perfold_mean,auc_roc,0.5999754224270354,0.5634676717532664,0.6364831731008044,15,"{'max_depth': 12, 'min_samples_leaf': 20, 'n_estimators': 500}"
+all_five,random_forest_unweighted,primary,roi_gt_2,classification,oof_perfold_mean,pr_auc,0.7256966337847522,0.6944304284791195,0.756962839090385,15,"{'max_depth': 12, 'min_samples_leaf': 20, 'n_estimators': 500}"
+all_five,random_forest_unweighted,primary,roi_gt_2,classification,oof_perfold_mean,log_loss,0.6375775922612529,0.6290500030926116,0.6461051814298941,15,"{'max_depth': 12, 'min_samples_leaf': 20, 'n_estimators': 500}"
+all_five,random_forest_unweighted,primary,roi_gt_2,classification,oof_perfold_mean,f1,0.7807809886078728,0.7753189931656674,0.7862429840500782,15,"{'max_depth': 12, 'min_samples_leaf': 20, 'n_estimators': 500}"
+all_five,svm_rbf_unweighted,primary,roi_gt_2,classification,train,auc_roc,0.8135309317525461,,,0,"{'C': 10, 'gamma': 0.001}"
+all_five,svm_rbf_unweighted,primary,roi_gt_2,classification,train,pr_auc,0.8659241713526571,,,0,"{'C': 10, 'gamma': 0.001}"
+all_five,svm_rbf_unweighted,primary,roi_gt_2,classification,train,log_loss,,,,0,"{'C': 10, 'gamma': 0.001}"
+all_five,svm_rbf_unweighted,primary,roi_gt_2,classification,train,f1,0.8170534268753373,,,0,"{'C': 10, 'gamma': 0.001}"
+all_five,svm_rbf_unweighted,primary,roi_gt_2,classification,oof_global,auc_roc,0.6067457060343517,0.5728491961510344,0.6409158917045117,15,"{'C': 10, 'gamma': 0.001}"
+all_five,svm_rbf_unweighted,primary,roi_gt_2,classification,oof_global,pr_auc,0.7288088047298655,0.6952139436080937,0.7639561333326177,15,"{'C': 10, 'gamma': 0.001}"
+all_five,svm_rbf_unweighted,primary,roi_gt_2,classification,oof_global,log_loss,,,,15,"{'C': 10, 'gamma': 0.001}"
+all_five,svm_rbf_unweighted,primary,roi_gt_2,classification,oof_global,f1,0.7770632368703109,0.7561094930671766,0.7966193457455425,15,"{'C': 10, 'gamma': 0.001}"
+all_five,svm_rbf_unweighted,primary,roi_gt_2,classification,oof_perfold_mean,auc_roc,0.6013849199503849,0.5672640932822067,0.6355057466185631,15,"{'C': 10, 'gamma': 0.001}"
+all_five,svm_rbf_unweighted,primary,roi_gt_2,classification,oof_perfold_mean,pr_auc,0.7289523761049751,0.6986059496361654,0.7592988025737848,15,"{'C': 10, 'gamma': 0.001}"
+all_five,svm_rbf_unweighted,primary,roi_gt_2,classification,oof_perfold_mean,log_loss,,,,0,"{'C': 10, 'gamma': 0.001}"
+all_five,svm_rbf_unweighted,primary,roi_gt_2,classification,oof_perfold_mean,f1,0.7752164906453101,0.764135391158172,0.7862975901324482,15,"{'C': 10, 'gamma': 0.001}"

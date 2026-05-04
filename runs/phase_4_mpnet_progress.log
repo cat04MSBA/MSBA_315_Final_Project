@@ -1,0 +1,111 @@
+2026-05-04 00:38:57 | INFO    | __main__ | Loading parsed screenplays
+2026-05-04 00:38:59 | INFO    | __main__ | Loaded 1713 parsed screenplays
+2026-05-04 00:39:03 | INFO    | src.features.embedding | Loading encoder sentence-transformers/all-mpnet-base-v2 on device=mps
+2026-05-04 00:39:04 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-05-04 00:39:04 | WARNING | huggingface_hub.utils._http | Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-05-04 00:39:04 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/modules.json "HTTP/1.1 200 OK"
+2026-05-04 00:39:04 | INFO    | httpx | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/modules.json "HTTP/1.1 200 OK"
+2026-05-04 00:39:04 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/config_sentence_transformers.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-04 00:39:04 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/config_sentence_transformers.json "HTTP/1.1 200 OK"
+2026-05-04 00:39:04 | INFO    | httpx | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/config_sentence_transformers.json "HTTP/1.1 200 OK"
+2026-05-04 00:39:04 | INFO    | sentence_transformers.base.model | Loading SentenceTransformer model from sentence-transformers/all-mpnet-base-v2.
+2026-05-04 00:39:05 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/config_sentence_transformers.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-04 00:39:05 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/config_sentence_transformers.json "HTTP/1.1 200 OK"
+2026-05-04 00:39:05 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/README.md "HTTP/1.1 307 Temporary Redirect"
+2026-05-04 00:39:05 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/README.md "HTTP/1.1 200 OK"
+2026-05-04 00:39:05 | INFO    | httpx | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/README.md "HTTP/1.1 200 OK"
+2026-05-04 00:39:05 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-04 00:39:05 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/modules.json "HTTP/1.1 200 OK"
+2026-05-04 00:39:06 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/sentence_bert_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-04 00:39:06 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/sentence_bert_config.json "HTTP/1.1 200 OK"
+2026-05-04 00:39:06 | INFO    | httpx | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/sentence_bert_config.json "HTTP/1.1 200 OK"
+2026-05-04 00:39:06 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/adapter_config.json "HTTP/1.1 404 Not Found"
+2026-05-04 00:39:06 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-04 00:39:06 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/config.json "HTTP/1.1 200 OK"
+2026-05-04 00:39:06 | INFO    | httpx | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/config.json "HTTP/1.1 200 OK"
+2026-05-04 00:39:07 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/model.safetensors "HTTP/1.1 302 Found"
+2026-05-04 00:39:07 | INFO    | httpx | HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-mpnet-base-v2/xet-read-token/e8c3b32edf5434bc2275fc9bab85f82640a19130 "HTTP/1.1 200 OK"
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 5004.81it/s]
+2026-05-04 00:44:10 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/processor_config.json "HTTP/1.1 404 Not Found"
+2026-05-04 00:44:10 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-05-04 00:44:10 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/video_preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-05-04 00:44:11 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-05-04 00:44:11 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-04 00:44:11 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-05-04 00:44:11 | INFO    | httpx | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-05-04 00:44:11 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-04 00:44:11 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/config.json "HTTP/1.1 200 OK"
+2026-05-04 00:44:11 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-04 00:44:11 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/config.json "HTTP/1.1 200 OK"
+2026-05-04 00:44:12 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-04 00:44:12 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-05-04 00:44:12 | INFO    | httpx | HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-mpnet-base-v2/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+2026-05-04 00:44:12 | INFO    | httpx | HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-mpnet-base-v2/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+2026-05-04 00:44:12 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/vocab.txt "HTTP/1.1 307 Temporary Redirect"
+2026-05-04 00:44:12 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/vocab.txt "HTTP/1.1 200 OK"
+2026-05-04 00:44:12 | INFO    | httpx | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/vocab.txt "HTTP/1.1 200 OK"
+2026-05-04 00:44:13 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/tokenizer.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-04 00:44:13 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/tokenizer.json "HTTP/1.1 200 OK"
+2026-05-04 00:44:13 | INFO    | httpx | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/tokenizer.json "HTTP/1.1 200 OK"
+2026-05-04 00:44:13 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/added_tokens.json "HTTP/1.1 404 Not Found"
+2026-05-04 00:44:14 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/special_tokens_map.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-04 00:44:14 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/special_tokens_map.json "HTTP/1.1 200 OK"
+2026-05-04 00:44:14 | INFO    | httpx | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/special_tokens_map.json "HTTP/1.1 200 OK"
+2026-05-04 00:44:14 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/chat_template.jinja "HTTP/1.1 404 Not Found"
+2026-05-04 00:44:14 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-mpnet-base-v2/resolve/main/1_Pooling/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-04 00:44:14 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/1_Pooling%2Fconfig.json "HTTP/1.1 200 OK"
+2026-05-04 00:44:14 | INFO    | httpx | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-mpnet-base-v2/e8c3b32edf5434bc2275fc9bab85f82640a19130/1_Pooling%2Fconfig.json "HTTP/1.1 200 OK"
+2026-05-04 00:44:15 | INFO    | httpx | HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-mpnet-base-v2 "HTTP/1.1 200 OK"
+/Users/ChloeTabourian/Documents/University/AUB Grad/MSBA 315 - Predictive Analytics & Machine Learning/ML_Final_Project/src/features/embedding.py:158: FutureWarning: The `get_sentence_embedding_dimension` method has been renamed to `get_embedding_dimension`.
+  embed_dim = model.get_sentence_embedding_dimension()
+2026-05-04 00:47:55 | INFO    | src.features.embedding | Encoded 50 / 1713 films
+2026-05-04 00:50:38 | INFO    | src.features.embedding | Encoded 100 / 1713 films
+2026-05-04 00:53:04 | INFO    | src.features.embedding | Encoded 150 / 1713 films
+2026-05-04 00:55:25 | INFO    | src.features.embedding | Encoded 200 / 1713 films
+2026-05-04 00:57:50 | INFO    | src.features.embedding | Encoded 250 / 1713 films
+2026-05-04 00:59:57 | INFO    | src.features.embedding | Encoded 300 / 1713 films
+2026-05-04 01:02:09 | INFO    | src.features.embedding | Encoded 350 / 1713 films
+2026-05-04 01:04:17 | INFO    | src.features.embedding | Encoded 400 / 1713 films
+2026-05-04 01:06:03 | INFO    | src.features.embedding | Encoded 450 / 1713 films
+2026-05-04 01:07:42 | INFO    | src.features.embedding | Encoded 500 / 1713 films
+2026-05-04 01:09:08 | INFO    | src.features.embedding | Encoded 550 / 1713 films
+2026-05-04 01:10:32 | INFO    | src.features.embedding | Encoded 600 / 1713 films
+2026-05-04 01:11:56 | INFO    | src.features.embedding | Encoded 650 / 1713 films
+2026-05-04 01:13:16 | INFO    | src.features.embedding | Encoded 700 / 1713 films
+2026-05-04 01:14:31 | INFO    | src.features.embedding | Encoded 750 / 1713 films
+2026-05-04 01:16:01 | INFO    | src.features.embedding | Encoded 800 / 1713 films
+2026-05-04 01:17:21 | INFO    | src.features.embedding | Encoded 850 / 1713 films
+2026-05-04 01:18:46 | INFO    | src.features.embedding | Encoded 900 / 1713 films
+2026-05-04 01:20:04 | INFO    | src.features.embedding | Encoded 950 / 1713 films
+2026-05-04 01:21:24 | INFO    | src.features.embedding | Encoded 1000 / 1713 films
+2026-05-04 01:22:46 | INFO    | src.features.embedding | Encoded 1050 / 1713 films
+2026-05-04 01:24:16 | INFO    | src.features.embedding | Encoded 1100 / 1713 films
+2026-05-04 01:25:49 | INFO    | src.features.embedding | Encoded 1150 / 1713 films
+2026-05-04 01:27:12 | INFO    | src.features.embedding | Encoded 1200 / 1713 films
+2026-05-04 01:28:18 | INFO    | src.features.embedding | Encoded 1250 / 1713 films
+2026-05-04 01:29:26 | INFO    | src.features.embedding | Encoded 1300 / 1713 films
+2026-05-04 01:30:37 | INFO    | src.features.embedding | Encoded 1350 / 1713 films
+2026-05-04 01:31:48 | INFO    | src.features.embedding | Encoded 1400 / 1713 films
+2026-05-04 01:32:54 | INFO    | src.features.embedding | Encoded 1450 / 1713 films
+2026-05-04 01:34:13 | INFO    | src.features.embedding | Encoded 1500 / 1713 films
+2026-05-04 01:35:26 | INFO    | src.features.embedding | Encoded 1550 / 1713 films
+2026-05-04 01:36:37 | INFO    | src.features.embedding | Encoded 1600 / 1713 films
+2026-05-04 01:37:46 | INFO    | src.features.embedding | Encoded 1650 / 1713 films
+2026-05-04 01:38:52 | INFO    | src.features.embedding | Encoded 1700 / 1713 films
+2026-05-04 01:39:10 | INFO    | src.features.embedding | Encoded 1713 / 1713 films
+2026-05-04 01:39:11 | INFO    | src.features.embedding | Saved pooled embeddings to /Users/ChloeTabourian/Documents/University/AUB Grad/MSBA 315 - Predictive Analytics & Machine Learning/ML_Final_Project/data/processed/embeddings_mpnet_pooled.parquet
+2026-05-04 01:39:11 | INFO    | __main__ | Pooled embeddings: shape=(1713, 768) dim=768
+2026-05-04 01:39:11 | INFO    | __main__ | Fitting PCA on 1199 train-split films
+2026-05-04 01:39:11 | INFO    | src.features.embedding | Fitted PCA: K=32, cumulative variance explained = 0.743
+2026-05-04 01:39:11 | INFO    | __main__ | Train-fitted PCA: 32 components, cumulative variance 0.7434
+2026-05-04 01:39:11 | INFO    | __main__ | Saved PCA artifact to /Users/ChloeTabourian/Documents/University/AUB Grad/MSBA 315 - Predictive Analytics & Machine Learning/ML_Final_Project/data/processed/embedding_pca_mpnet.joblib
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/ChloeTabourian/Documents/University/AUB Grad/MSBA 315 - Predictive Analytics & Machine Learning/ML_Final_Project/src/experiments/run_phase4_mpnet_embeddings.py", line 102, in <module>
+    main()
+  File "/Users/ChloeTabourian/Documents/University/AUB Grad/MSBA 315 - Predictive Analytics & Machine Learning/ML_Final_Project/src/experiments/run_phase4_mpnet_embeddings.py", line 95, in main
+    features = compute_embedding_features(pooled, fitted, cfg)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: compute_embedding_features() takes 2 positional arguments but 3 were given

@@ -1,0 +1,13 @@
+matrix,family,tier,target,task,eval_set,metric,value,ci_lo,ci_hi,n_folds,best_params
+all_five,histgb,primary,roi_gt_2,classification,train,auc_roc,0.8951709986320109,,,0,"{'learning_rate': 0.05, 'max_depth': 3, 'min_samples_leaf': 20}"
+all_five,histgb,primary,roi_gt_2,classification,train,pr_auc,0.942510612781905,,,0,"{'learning_rate': 0.05, 'max_depth': 3, 'min_samples_leaf': 20}"
+all_five,histgb,primary,roi_gt_2,classification,train,log_loss,0.562429738455439,,,0,"{'learning_rate': 0.05, 'max_depth': 3, 'min_samples_leaf': 20}"
+all_five,histgb,primary,roi_gt_2,classification,train,f1,0.8353188507358094,,,0,"{'learning_rate': 0.05, 'max_depth': 3, 'min_samples_leaf': 20}"
+all_five,histgb,primary,roi_gt_2,classification,oof_global,auc_roc,0.5861802705578356,0.5538024247627582,0.620347925646624,15,"{'learning_rate': 0.05, 'max_depth': 3, 'min_samples_leaf': 20}"
+all_five,histgb,primary,roi_gt_2,classification,oof_global,pr_auc,0.7101287964647354,0.6743204363634894,0.7494256918302223,15,"{'learning_rate': 0.05, 'max_depth': 3, 'min_samples_leaf': 20}"
+all_five,histgb,primary,roi_gt_2,classification,oof_global,log_loss,0.675090433374767,0.6659387103479396,0.6836940335349102,15,"{'learning_rate': 0.05, 'max_depth': 3, 'min_samples_leaf': 20}"
+all_five,histgb,primary,roi_gt_2,classification,oof_global,f1,0.5980896399706098,0.5680110549632179,0.6275107790468325,15,"{'learning_rate': 0.05, 'max_depth': 3, 'min_samples_leaf': 20}"
+all_five,histgb,primary,roi_gt_2,classification,oof_perfold_mean,auc_roc,0.5727885852288129,0.5497835785919283,0.5957935918656976,15,"{'learning_rate': 0.05, 'max_depth': 3, 'min_samples_leaf': 20}"
+all_five,histgb,primary,roi_gt_2,classification,oof_perfold_mean,pr_auc,0.7062830673976191,0.689585254599053,0.7229808801961853,15,"{'learning_rate': 0.05, 'max_depth': 3, 'min_samples_leaf': 20}"
+all_five,histgb,primary,roi_gt_2,classification,oof_perfold_mean,log_loss,0.6801740375017075,0.6704181059823812,0.6899299690210338,15,"{'learning_rate': 0.05, 'max_depth': 3, 'min_samples_leaf': 20}"
+all_five,histgb,primary,roi_gt_2,classification,oof_perfold_mean,f1,0.5939877716319529,0.5454225823246533,0.6425529609392525,15,"{'learning_rate': 0.05, 'max_depth': 3, 'min_samples_leaf': 20}"

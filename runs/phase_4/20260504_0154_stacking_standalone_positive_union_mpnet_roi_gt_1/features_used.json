@@ -1,0 +1,6 @@
+[
+  "linear",
+  "histgb",
+  "random_forest",
+  "svm_rbf"
+]

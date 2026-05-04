@@ -1,0 +1,24 @@
+{
+  "default_cost_matrix": {
+    "greenlight_flop": 50000000,
+    "pass_hit": 100000000,
+    "refer": 5000
+  },
+  "n_cal_films": 257,
+  "sensitivity_variants": [
+    "asymmetry_1to1_flop100M",
+    "default",
+    "asymmetry_1to4_flop25M",
+    "asymmetry_2to1_flop200M",
+    "refer_0K",
+    "refer_25K",
+    "refer_100K",
+    "refer_1M",
+    "refer_25M",
+    "scale_0.1x",
+    "scale_1x_default",
+    "scale_10x",
+    "per_genre_default"
+  ],
+  "target": "roi_gt_2"
+}

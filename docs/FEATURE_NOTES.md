@@ -78,8 +78,16 @@ Two ablation tables drive the Phase 4 feature decision:
   linear: only combination with both classification AUCs
   positive (+0.021 each).
 * `all_five` (130 features) is the maximum-information matrix.
-  SVM-RBF reaches `roi_gt_2` AUC 0.665 OOF (lift +0.063) and
-  `roi_gt_1` AUC 0.614 OOF (lift +0.056) on it.
+  SVM-RBF reaches `roi_gt_2` AUC ~~0.665~~ **0.5966** OOF (lift
+  +0.0629 over SVM's own structural floor of 0.5337) and
+  `roi_gt_1` AUC 0.614 OOF (lift +0.056) on it. **Correction
+  added 2026-05-04 (mid-Phase-4):** the original 0.665 was a
+  calculation error — SVM's lift was incorrectly added to
+  *linear*'s structural floor (0.6017) rather than to SVM's own
+  floor (0.5337); the actual SVM-RBF OOF AUC is 0.5966 per
+  `phase3c_combinations.csv`. See `phase_3_summary.md` Results
+  section correction note and `PROJECT_CONTEXT.md` Section 8
+  entry dated 2026-05-04 00:30.
 * SVM-RBF was the worst-of-four standalone; on combinations, it
   becomes the best-of-four on classification. The largest single
   classification lift in Phase 3 work is SVM on `topic_plus_cn`

@@ -1,0 +1,25 @@
+{
+  "balancing": "class_weight",
+  "classification_grid": {
+    "C": [
+      0.1,
+      1.0,
+      10.0
+    ]
+  },
+  "family": "linear",
+  "matrix": "all_five",
+  "mode": "smoke",
+  "n_features": 127,
+  "n_outer_folds": 5,
+  "n_outer_repeats": 3,
+  "n_train": 1199,
+  "regression_grid": {
+    "alpha": [
+      0.1,
+      1.0,
+      10.0
+    ]
+  },
+  "score_method": "predict_proba"
+}

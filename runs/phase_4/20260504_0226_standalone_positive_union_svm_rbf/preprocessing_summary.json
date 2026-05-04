@@ -1,0 +1,4 @@
+{
+  "matrix_description": "Structural baseline (revised) + the three Phase 3b groups that landed standalone partial-positive (topic, character_network, embedding). Drops lexical and sentiment (the two standalone nulls). Approximately 92 feature columns.",
+  "needs_scaling": true
+}

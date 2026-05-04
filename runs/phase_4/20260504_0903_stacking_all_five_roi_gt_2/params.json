@@ -1,0 +1,14 @@
+{
+  "base_families": [
+    "linear",
+    "histgb",
+    "random_forest",
+    "svm_rbf",
+    "lightgbm",
+    "xgboost"
+  ],
+  "meta_learner": "Logistic",
+  "n_folds": 5,
+  "n_repeats": 3,
+  "task": "classification"
+}

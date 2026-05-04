@@ -1,0 +1,2 @@
+2026-05-04 14:02:54 | INFO    | src.experiments.save_run | Run started: phase=phase_6 name=phase6_decision dir=runs/phase_6/20260504_1402_phase6_decision
+2026-05-04 14:02:54 | INFO    | src.experiments.save_run | Run finished: phase=phase_6 name=phase6_decision dir=runs/phase_6/20260504_1402_phase6_decision

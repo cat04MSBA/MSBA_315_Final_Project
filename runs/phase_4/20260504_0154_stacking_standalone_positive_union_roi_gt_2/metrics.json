@@ -1,0 +1,27 @@
+{
+  "matrix": "standalone_positive_union",
+  "meta_coefs": {
+    "histgb": 0.5997564773401053,
+    "linear": -1.0168798143292448,
+    "random_forest": 2.849486151671817,
+    "svm_rbf": 2.09866760025826
+  },
+  "meta_intercept": -1.824737498372399,
+  "oof_metrics_global": {
+    "auc_roc": 0.6379632162942697,
+    "f1": 0.7729994556341862,
+    "log_loss": 0.6255837415546321,
+    "pr_auc": 0.7492193607971537
+  },
+  "per_fold_summary": {
+    "auc_roc_mean": 0.6386796454652242,
+    "auc_roc_std": 0.02839029541500743,
+    "f1_mean": 0.7735901904784785,
+    "f1_std": 0.014620768637563265,
+    "log_loss_mean": 0.6258464506974719,
+    "log_loss_std": 0.013265456626664581,
+    "pr_auc_mean": 0.7557635051530248,
+    "pr_auc_std": 0.026931882882748268
+  },
+  "target": "roi_gt_2"
+}

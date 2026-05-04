@@ -1,0 +1,22 @@
+2026-05-03 23:37:45 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=all_five_histgb dir=runs/phase_4/20260503_2337_all_five_histgb
+2026-05-03 23:37:45 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five family=histgb target=roi_gt_2 task=classification
+2026-05-03 23:37:45 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=histgb task=classification X.shape=(1199, 127)
+2026-05-03 23:37:48 | INFO    | src.models.phase4.cv | Inner CV best: family=histgb task=classification score=0.5734 params={'model__learning_rate': 0.05, 'model__max_depth': 3, 'model__min_samples_leaf': 20}
+2026-05-03 23:37:48 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=histgb task=classification
+2026-05-03 23:37:48 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (histgb, classification): auc_roc=0.5311, pr_auc=0.6668, log_loss=0.7021, f1=0.5211
+2026-05-03 23:37:48 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (histgb, classification): auc_roc=0.5802, pr_auc=0.7173, log_loss=0.6737, f1=0.6065
+2026-05-03 23:37:48 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (histgb, classification): auc_roc=0.5902, pr_auc=0.7256, log_loss=0.6700, f1=0.6327
+2026-05-03 23:37:48 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (histgb, classification): auc_roc=0.5800, pr_auc=0.6994, log_loss=0.6834, f1=0.5606
+2026-05-03 23:37:49 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (histgb, classification): auc_roc=0.5853, pr_auc=0.7137, log_loss=0.6866, f1=0.6553
+2026-05-03 23:37:49 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (histgb, classification): auc_roc=0.5633, pr_auc=0.7182, log_loss=0.6783, f1=0.5948
+2026-05-03 23:37:49 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (histgb, classification): auc_roc=0.5906, pr_auc=0.7085, log_loss=0.6766, f1=0.6354
+2026-05-03 23:37:49 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (histgb, classification): auc_roc=0.6045, pr_auc=0.7268, log_loss=0.6684, f1=0.6052
+2026-05-03 23:37:49 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (histgb, classification): auc_roc=0.5252, pr_auc=0.6884, log_loss=0.6881, f1=0.6084
+2026-05-03 23:37:49 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (histgb, classification): auc_roc=0.5633, pr_auc=0.7081, log_loss=0.6845, f1=0.5370
+2026-05-03 23:37:50 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (histgb, classification): auc_roc=0.5629, pr_auc=0.6942, log_loss=0.6850, f1=0.6263
+2026-05-03 23:37:50 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (histgb, classification): auc_roc=0.5688, pr_auc=0.7082, log_loss=0.6834, f1=0.5246
+2026-05-03 23:37:50 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (histgb, classification): auc_roc=0.5621, pr_auc=0.6944, log_loss=0.6859, f1=0.5221
+2026-05-03 23:37:50 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (histgb, classification): auc_roc=0.6055, pr_auc=0.7280, log_loss=0.6622, f1=0.6224
+2026-05-03 23:37:50 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (histgb, classification): auc_roc=0.5790, pr_auc=0.6967, log_loss=0.6743, f1=0.6575
+2026-05-03 23:37:52 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five family=histgb target=roi_gt_2 OOF=auc_roc=0.5862, f1=0.5981, log_loss=0.6751, pr_auc=0.7101 inner_best_params={'model__learning_rate': 0.05, 'model__max_depth': 3, 'model__min_samples_leaf': 20}
+2026-05-03 23:37:52 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=all_five_histgb dir=runs/phase_4/20260503_2337_all_five_histgb

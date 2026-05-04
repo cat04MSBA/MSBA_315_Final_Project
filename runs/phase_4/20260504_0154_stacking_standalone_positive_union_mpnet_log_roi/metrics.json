@@ -1,0 +1,27 @@
+{
+  "matrix": "standalone_positive_union_mpnet",
+  "meta_coefs": {
+    "histgb": 0.09975239520056754,
+    "linear": 0.02190178198351969,
+    "random_forest": 0.7709169643388352,
+    "svm_rbf": 1.5122069192067755
+  },
+  "meta_intercept": -1.0062404286488111,
+  "oof_metrics_global": {
+    "cvrmse": 0.9730381462979895,
+    "mae": 0.9262016073471832,
+    "mse": 1.7189640617436732,
+    "rmse": 1.3110926976166382
+  },
+  "per_fold_summary": {
+    "cvrmse_mean": 0.9688222519363471,
+    "cvrmse_std": 0.07808825959539305,
+    "mae_mean": 0.9265828818605483,
+    "mae_std": 0.05284312270037872,
+    "mse_mean": 1.7200148455549873,
+    "mse_std": 0.326906419718315,
+    "rmse_mean": 1.306131326212739,
+    "rmse_std": 0.12263099806535331
+  },
+  "target": "log_roi"
+}

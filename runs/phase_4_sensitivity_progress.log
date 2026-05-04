@@ -1,0 +1,29 @@
+2026-05-03 23:53:33 | INFO    | __main__ | Sensitivity: family=linear_unweighted matrix=all_five X=(1199, 127)
+2026-05-03 23:53:33 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=sensitivity_all_five_linear_unweighted dir=runs/phase_4/20260503_2353_sensitivity_all_five_linear_unweighted
+2026-05-03 23:53:33 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=linear_unweighted task=classification X.shape=(1199, 127)
+2026-05-03 23:53:36 | INFO    | src.models.phase4.cv | Inner CV best: family=linear_unweighted task=classification score=0.6144 params={'model__C': np.float64(0.0031622776601683794)}
+2026-05-03 23:53:36 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=linear_unweighted task=classification
+2026-05-03 23:53:38 | INFO    | __main__ | Sensitivity Done: family=linear_unweighted target=roi_gt_2 OOF={'auc_roc': 0.6145, 'pr_auc': 0.7381, 'log_loss': 0.6326, 'f1': 0.7815}
+2026-05-03 23:53:38 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=sensitivity_all_five_linear_unweighted dir=runs/phase_4/20260503_2353_sensitivity_all_five_linear_unweighted
+2026-05-03 23:53:38 | INFO    | __main__ | Sensitivity: family=histgb_unweighted matrix=all_five X=(1199, 127)
+2026-05-03 23:53:38 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=sensitivity_all_five_histgb_unweighted dir=runs/phase_4/20260503_2353_sensitivity_all_five_histgb_unweighted
+2026-05-03 23:53:38 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=histgb_unweighted task=classification X.shape=(1199, 127)
+2026-05-03 23:53:43 | INFO    | src.models.phase4.cv | Inner CV best: family=histgb_unweighted task=classification score=0.5899 params={'model__learning_rate': 0.05, 'model__max_depth': 4, 'model__min_samples_leaf': 40}
+2026-05-03 23:53:43 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=histgb_unweighted task=classification
+2026-05-03 23:53:49 | INFO    | __main__ | Sensitivity Done: family=histgb_unweighted target=roi_gt_2 OOF={'auc_roc': 0.6017, 'pr_auc': 0.7199, 'log_loss': 0.6373, 'f1': 0.7784}
+2026-05-03 23:53:49 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=sensitivity_all_five_histgb_unweighted dir=runs/phase_4/20260503_2353_sensitivity_all_five_histgb_unweighted
+2026-05-03 23:53:49 | INFO    | __main__ | Sensitivity: family=random_forest_unweighted matrix=all_five X=(1199, 127)
+2026-05-03 23:53:49 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=sensitivity_all_five_random_forest_unweighted dir=runs/phase_4/20260503_2353_sensitivity_all_five_random_forest_unweighted
+2026-05-03 23:53:49 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=random_forest_unweighted task=classification X.shape=(1199, 127)
+2026-05-03 23:54:05 | INFO    | src.models.phase4.cv | Inner CV best: family=random_forest_unweighted task=classification score=0.6084 params={'model__max_depth': 12, 'model__min_samples_leaf': 20, 'model__n_estimators': 500}
+2026-05-03 23:54:05 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=random_forest_unweighted task=classification
+2026-05-03 23:54:26 | INFO    | __main__ | Sensitivity Done: family=random_forest_unweighted target=roi_gt_2 OOF={'auc_roc': 0.6034, 'pr_auc': 0.7195, 'log_loss': 0.6369, 'f1': 0.7806}
+2026-05-03 23:54:26 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=sensitivity_all_five_random_forest_unweighted dir=runs/phase_4/20260503_2353_sensitivity_all_five_random_forest_unweighted
+2026-05-03 23:54:26 | INFO    | __main__ | Sensitivity: family=svm_rbf_unweighted matrix=all_five X=(1199, 127)
+2026-05-03 23:54:26 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=sensitivity_all_five_svm_rbf_unweighted dir=runs/phase_4/20260503_2354_sensitivity_all_five_svm_rbf_unweighted
+2026-05-03 23:54:26 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=svm_rbf_unweighted task=classification X.shape=(1199, 127)
+2026-05-03 23:54:28 | INFO    | src.models.phase4.cv | Inner CV best: family=svm_rbf_unweighted task=classification score=0.6095 params={'model__C': 10, 'model__gamma': 0.001}
+2026-05-03 23:54:28 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=svm_rbf_unweighted task=classification
+2026-05-03 23:54:31 | INFO    | __main__ | Sensitivity Done: family=svm_rbf_unweighted target=roi_gt_2 OOF={'auc_roc': 0.6067, 'pr_auc': 0.7288, 'f1': 0.7771}
+2026-05-03 23:54:31 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=sensitivity_all_five_svm_rbf_unweighted dir=runs/phase_4/20260503_2354_sensitivity_all_five_svm_rbf_unweighted
+2026-05-03 23:54:31 | INFO    | __main__ | Wrote sensitivity table /Users/ChloeTabourian/Documents/University/AUB Grad/MSBA 315 - Predictive Analytics & Machine Learning/ML_Final_Project/reports/tables/phase4_sensitivity_unweighted.csv (48 rows)

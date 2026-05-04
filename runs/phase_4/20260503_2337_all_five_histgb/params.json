@@ -1,0 +1,35 @@
+{
+  "balancing": "sample_weight",
+  "classification_grid": {
+    "learning_rate": [
+      0.05
+    ],
+    "max_depth": [
+      2,
+      3
+    ],
+    "min_samples_leaf": [
+      20
+    ]
+  },
+  "family": "histgb",
+  "matrix": "all_five",
+  "mode": "smoke",
+  "n_features": 127,
+  "n_outer_folds": 5,
+  "n_outer_repeats": 3,
+  "n_train": 1199,
+  "regression_grid": {
+    "learning_rate": [
+      0.05
+    ],
+    "max_depth": [
+      2,
+      3
+    ],
+    "min_samples_leaf": [
+      20
+    ]
+  },
+  "score_method": "predict_proba"
+}

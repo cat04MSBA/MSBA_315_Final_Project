@@ -1,0 +1,4 @@
+{
+  "matrix_description": "v2 corpus: structural + topic + character_network + MiniLM embeddings (drops lexical & sentiment)",
+  "needs_scaling": false
+}

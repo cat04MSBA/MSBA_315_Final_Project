@@ -1,0 +1,13 @@
+2026-05-04 14:34:14 | INFO    | src.experiments.save_run | Run started: phase=phase_7 name=phase7_attribution dir=runs/phase_7/20260504_1434_phase7_attribution
+2026-05-04 14:34:15 | INFO    | src.explanation.pipeline | TreeSHAP roi_gt_2 | family=xgboost | computing global ranking on 257 cal films
+2026-05-04 14:34:15 | INFO    | src.explanation.pipeline | SHAP-vs-native Spearman ρ for roi_gt_2 = 0.745
+2026-05-04 14:34:15 | INFO    | src.explanation.pipeline | TreeSHAP roi_gt_2 | stability check via interventional mode
+2026-05-04 14:34:17 | INFO    | src.explanation.pipeline | SHAP stability (path_dep vs interv) Spearman ρ = 0.967
+2026-05-04 14:34:17 | INFO    | src.explanation.pipeline | TreeSHAP log_roi | family=random_forest | computing global ranking on 257 cal films
+2026-05-04 14:34:17 | INFO    | src.explanation.pipeline | SHAP-vs-native Spearman ρ for log_roi = 0.886
+2026-05-04 14:34:17 | INFO    | src.explanation.pipeline | TreeSHAP log_roi | stability check via interventional mode
+2026-05-04 14:34:23 | INFO    | src.explanation.pipeline | SHAP stability (path_dep vs interv) Spearman ρ = 0.979
+2026-05-04 14:34:23 | INFO    | src.explanation.pipeline | Selecting 5 example films for scene-level attribution
+2026-05-04 14:34:23 | INFO    | src.explanation.pipeline | Selected example films: ['tt0086927', 'tt0383028', 'tt0167260', 'tt0118715']
+2026-05-04 14:34:24 | INFO    | src.explanation.pipeline | Scene-level attribution: tt0086927 (129 scenes)
+2026-05-04 14:34:24 | INFO    | src.experiments.save_run | Run finished: phase=phase_7 name=phase7_attribution dir=runs/phase_7/20260504_1434_phase7_attribution

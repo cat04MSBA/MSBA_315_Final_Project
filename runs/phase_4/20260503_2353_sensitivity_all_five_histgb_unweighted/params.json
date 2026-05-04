@@ -1,0 +1,6 @@
+{
+  "family": "histgb_unweighted",
+  "matrix": "all_five",
+  "mode": "sensitivity",
+  "policy": "unweighted (class_weight=None)"
+}

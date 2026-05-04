@@ -1,0 +1,3 @@
+2026-05-03 23:39:39 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=all_five_random_forest dir=runs/phase_4/20260503_2339_all_five_random_forest
+2026-05-03 23:39:39 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five family=random_forest target=log_roi task=regression
+2026-05-03 23:39:39 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=random_forest task=regression X.shape=(1199, 127)

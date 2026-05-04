@@ -1,0 +1,47 @@
+{
+  "balancing": "sample_weight",
+  "classification_grid": {
+    "learning_rate": [
+      0.01,
+      0.02,
+      0.05
+    ],
+    "max_depth": [
+      2,
+      3,
+      4
+    ],
+    "min_samples_leaf": [
+      10,
+      20,
+      40,
+      80
+    ]
+  },
+  "family": "histgb",
+  "matrix": "all_five",
+  "mode": "full",
+  "n_features": 127,
+  "n_outer_folds": 5,
+  "n_outer_repeats": 3,
+  "n_train": 1199,
+  "regression_grid": {
+    "learning_rate": [
+      0.01,
+      0.02,
+      0.05
+    ],
+    "max_depth": [
+      2,
+      3,
+      4
+    ],
+    "min_samples_leaf": [
+      10,
+      20,
+      40,
+      80
+    ]
+  },
+  "score_method": "predict_proba"
+}

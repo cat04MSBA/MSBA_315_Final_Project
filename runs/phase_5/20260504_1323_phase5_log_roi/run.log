@@ -1,0 +1,4 @@
+2026-05-04 13:23:25 | INFO    | src.experiments.save_run | Run started: phase=phase_5 name=phase5_log_roi dir=runs/phase_5/20260504_1323_phase5_log_roi
+2026-05-04 13:23:26 | INFO    | src.calibration.conformal | Conformal reg | log_roi | absolute | coverage@0.9=0.902 mean_width@0.9=4.024
+2026-05-04 13:23:26 | INFO    | src.calibration.pipeline | Saved Phase 5 calibrated wrapper for log_roi -> phase5_calibrated_model_log_roi.joblib
+2026-05-04 13:23:26 | INFO    | src.experiments.save_run | Run finished: phase=phase_5 name=phase5_log_roi dir=runs/phase_5/20260504_1323_phase5_log_roi

@@ -1,0 +1,6 @@
+{
+  "primary_target": "roi_gt_2",
+  "scene_level_n_examples": 5,
+  "secondary_regression_target": "log_roi",
+  "stability_method": "tree_path_dependent_vs_interventional"
+}

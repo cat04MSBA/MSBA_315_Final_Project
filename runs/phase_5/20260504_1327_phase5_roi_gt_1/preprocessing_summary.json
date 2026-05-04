@@ -1,0 +1,4 @@
+{
+  "phase4_winner_artifact": "phase4_primary_model_roi_gt_1.joblib",
+  "score_method": "decision_function"
+}

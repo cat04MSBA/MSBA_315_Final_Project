@@ -1,0 +1,29 @@
+{
+  "matrix": "standalone_positive_union_mpnet",
+  "meta_coefs": {
+    "histgb": -0.7353203140797758,
+    "lightgbm": -0.802788122713553,
+    "linear": -1.11605184810912,
+    "random_forest": 0.2795871753081359,
+    "svm_rbf": 2.410201651209,
+    "xgboost": 4.070519593755146
+  },
+  "meta_intercept": -1.617233943157388,
+  "oof_metrics_global": {
+    "auc_roc": 0.655640674874601,
+    "f1": 0.7724986025712689,
+    "log_loss": 0.6170931069277276,
+    "pr_auc": 0.7644676612093654
+  },
+  "per_fold_summary": {
+    "auc_roc_mean": 0.6556784215152337,
+    "auc_roc_std": 0.03320200592712448,
+    "f1_mean": 0.769409165223923,
+    "f1_std": 0.02101699687850911,
+    "log_loss_mean": 0.6175290861878601,
+    "log_loss_std": 0.017499644598414972,
+    "pr_auc_mean": 0.7701236384636114,
+    "pr_auc_std": 0.025876361306686683
+  },
+  "target": "roi_gt_2"
+}

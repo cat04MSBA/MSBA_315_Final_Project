@@ -1,0 +1,21 @@
+2026-05-03 23:54:26 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=sensitivity_all_five_svm_rbf_unweighted dir=runs/phase_4/20260503_2354_sensitivity_all_five_svm_rbf_unweighted
+2026-05-03 23:54:26 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=svm_rbf_unweighted task=classification X.shape=(1199, 127)
+2026-05-03 23:54:28 | INFO    | src.models.phase4.cv | Inner CV best: family=svm_rbf_unweighted task=classification score=0.6095 params={'model__C': 10, 'model__gamma': 0.001}
+2026-05-03 23:54:28 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=svm_rbf_unweighted task=classification
+2026-05-03 23:54:28 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (svm_rbf_unweighted, classification): auc_roc=0.5980, pr_auc=0.7168, f1=0.7769
+2026-05-03 23:54:28 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (svm_rbf_unweighted, classification): auc_roc=0.5840, pr_auc=0.6990, f1=0.7721
+2026-05-03 23:54:28 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (svm_rbf_unweighted, classification): auc_roc=0.6616, pr_auc=0.7926, f1=0.7882
+2026-05-03 23:54:28 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (svm_rbf_unweighted, classification): auc_roc=0.6266, pr_auc=0.7437, f1=0.7871
+2026-05-03 23:54:28 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (svm_rbf_unweighted, classification): auc_roc=0.5771, pr_auc=0.7035, f1=0.7645
+2026-05-03 23:54:29 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (svm_rbf_unweighted, classification): auc_roc=0.5838, pr_auc=0.7172, f1=0.7601
+2026-05-03 23:54:29 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (svm_rbf_unweighted, classification): auc_roc=0.6666, pr_auc=0.7954, f1=0.7917
+2026-05-03 23:54:29 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (svm_rbf_unweighted, classification): auc_roc=0.6003, pr_auc=0.7352, f1=0.7781
+2026-05-03 23:54:29 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (svm_rbf_unweighted, classification): auc_roc=0.5712, pr_auc=0.6967, f1=0.7733
+2026-05-03 23:54:29 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (svm_rbf_unweighted, classification): auc_roc=0.6183, pr_auc=0.7337, f1=0.7663
+2026-05-03 23:54:29 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (svm_rbf_unweighted, classification): auc_roc=0.6060, pr_auc=0.7222, f1=0.7849
+2026-05-03 23:54:29 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (svm_rbf_unweighted, classification): auc_roc=0.5532, pr_auc=0.7033, f1=0.7717
+2026-05-03 23:54:29 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (svm_rbf_unweighted, classification): auc_roc=0.5923, pr_auc=0.7364, f1=0.7763
+2026-05-03 23:54:29 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (svm_rbf_unweighted, classification): auc_roc=0.6277, pr_auc=0.7323, f1=0.7842
+2026-05-03 23:54:29 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (svm_rbf_unweighted, classification): auc_roc=0.5540, pr_auc=0.7062, f1=0.7527
+2026-05-03 23:54:31 | INFO    | __main__ | Sensitivity Done: family=svm_rbf_unweighted target=roi_gt_2 OOF={'auc_roc': 0.6067, 'pr_auc': 0.7288, 'f1': 0.7771}
+2026-05-03 23:54:31 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=sensitivity_all_five_svm_rbf_unweighted dir=runs/phase_4/20260503_2354_sensitivity_all_five_svm_rbf_unweighted

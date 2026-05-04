@@ -1,0 +1,2 @@
+2026-05-04 00:42:41 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=stacking_all_five_roi_gt_2 dir=runs/phase_4/20260504_0042_stacking_all_five_roi_gt_2
+2026-05-04 00:42:41 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=stacking_all_five_roi_gt_2 dir=runs/phase_4/20260504_0042_stacking_all_five_roi_gt_2

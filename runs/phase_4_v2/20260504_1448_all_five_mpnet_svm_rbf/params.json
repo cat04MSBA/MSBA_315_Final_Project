@@ -1,0 +1,47 @@
+{
+  "balancing": "class_weight",
+  "classification_grid": {
+    "C": [
+      0.1,
+      0.3,
+      1,
+      3,
+      10,
+      30
+    ],
+    "gamma": [
+      "scale",
+      0.001,
+      0.003,
+      0.01,
+      0.03,
+      0.1
+    ]
+  },
+  "family": "svm_rbf",
+  "matrix": "all_five_mpnet",
+  "mode": "full",
+  "n_features": 127,
+  "n_outer_folds": 5,
+  "n_outer_repeats": 3,
+  "n_train": 1460,
+  "regression_grid": {
+    "C": [
+      0.1,
+      0.3,
+      1,
+      3,
+      10,
+      30
+    ],
+    "gamma": [
+      "scale",
+      0.001,
+      0.003,
+      0.01,
+      0.03,
+      0.1
+    ]
+  },
+  "score_method": "decision_function"
+}

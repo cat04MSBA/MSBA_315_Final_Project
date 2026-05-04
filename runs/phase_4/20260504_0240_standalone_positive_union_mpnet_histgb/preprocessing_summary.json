@@ -1,0 +1,4 @@
+{
+  "matrix_description": "Same structure as `standalone_positive_union` but with the mpnet-base embedding group. Pairs with `all_five_mpnet` for the Tier-A3 ablation.",
+  "needs_scaling": false
+}

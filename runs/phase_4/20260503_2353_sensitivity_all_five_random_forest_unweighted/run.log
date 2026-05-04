@@ -1,0 +1,21 @@
+2026-05-03 23:53:49 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=sensitivity_all_five_random_forest_unweighted dir=runs/phase_4/20260503_2353_sensitivity_all_five_random_forest_unweighted
+2026-05-03 23:53:49 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=random_forest_unweighted task=classification X.shape=(1199, 127)
+2026-05-03 23:54:05 | INFO    | src.models.phase4.cv | Inner CV best: family=random_forest_unweighted task=classification score=0.6084 params={'model__max_depth': 12, 'model__min_samples_leaf': 20, 'model__n_estimators': 500}
+2026-05-03 23:54:05 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=random_forest_unweighted task=classification
+2026-05-03 23:54:06 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (random_forest_unweighted, classification): auc_roc=0.5967, pr_auc=0.7069, log_loss=0.6365, f1=0.7868
+2026-05-03 23:54:07 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (random_forest_unweighted, classification): auc_roc=0.6367, pr_auc=0.7365, log_loss=0.6316, f1=0.7786
+2026-05-03 23:54:08 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (random_forest_unweighted, classification): auc_roc=0.6085, pr_auc=0.7268, log_loss=0.6357, f1=0.7804
+2026-05-03 23:54:09 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (random_forest_unweighted, classification): auc_roc=0.6227, pr_auc=0.7349, log_loss=0.6316, f1=0.7837
+2026-05-03 23:54:11 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (random_forest_unweighted, classification): auc_roc=0.5774, pr_auc=0.7192, log_loss=0.6429, f1=0.7720
+2026-05-03 23:54:12 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (random_forest_unweighted, classification): auc_roc=0.5736, pr_auc=0.7030, log_loss=0.6454, f1=0.7795
+2026-05-03 23:54:13 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (random_forest_unweighted, classification): auc_roc=0.6354, pr_auc=0.7401, log_loss=0.6297, f1=0.7888
+2026-05-03 23:54:14 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (random_forest_unweighted, classification): auc_roc=0.6041, pr_auc=0.7552, log_loss=0.6324, f1=0.7888
+2026-05-03 23:54:15 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (random_forest_unweighted, classification): auc_roc=0.5291, pr_auc=0.6849, log_loss=0.6516, f1=0.7837
+2026-05-03 23:54:16 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (random_forest_unweighted, classification): auc_roc=0.6125, pr_auc=0.7526, log_loss=0.6345, f1=0.7752
+2026-05-03 23:54:18 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (random_forest_unweighted, classification): auc_roc=0.5593, pr_auc=0.6820, log_loss=0.6482, f1=0.7732
+2026-05-03 23:54:19 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (random_forest_unweighted, classification): auc_roc=0.5813, pr_auc=0.7177, log_loss=0.6433, f1=0.7763
+2026-05-03 23:54:20 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (random_forest_unweighted, classification): auc_roc=0.6260, pr_auc=0.7645, log_loss=0.6288, f1=0.7795
+2026-05-03 23:54:21 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (random_forest_unweighted, classification): auc_roc=0.6717, pr_auc=0.7834, log_loss=0.6229, f1=0.7868
+2026-05-03 23:54:22 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (random_forest_unweighted, classification): auc_roc=0.5648, pr_auc=0.6777, log_loss=0.6485, f1=0.7784
+2026-05-03 23:54:26 | INFO    | __main__ | Sensitivity Done: family=random_forest_unweighted target=roi_gt_2 OOF={'auc_roc': 0.6034, 'pr_auc': 0.7195, 'log_loss': 0.6369, 'f1': 0.7806}
+2026-05-03 23:54:26 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=sensitivity_all_five_random_forest_unweighted dir=runs/phase_4/20260503_2353_sensitivity_all_five_random_forest_unweighted

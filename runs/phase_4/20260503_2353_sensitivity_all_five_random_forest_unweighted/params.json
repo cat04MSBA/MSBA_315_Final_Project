@@ -1,0 +1,6 @@
+{
+  "family": "random_forest_unweighted",
+  "matrix": "all_five",
+  "mode": "sensitivity",
+  "policy": "unweighted (class_weight=None)"
+}

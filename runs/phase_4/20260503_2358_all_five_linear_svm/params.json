@@ -1,0 +1,27 @@
+{
+  "balancing": "class_weight",
+  "classification_grid": {
+    "C": [
+      0.01,
+      0.1,
+      1,
+      10
+    ]
+  },
+  "family": "linear_svm",
+  "matrix": "all_five",
+  "mode": "full",
+  "n_features": 127,
+  "n_outer_folds": 5,
+  "n_outer_repeats": 3,
+  "n_train": 1199,
+  "regression_grid": {
+    "C": [
+      0.01,
+      0.1,
+      1,
+      10
+    ]
+  },
+  "score_method": "decision_function"
+}

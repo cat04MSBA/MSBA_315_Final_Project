@@ -1,0 +1,4 @@
+{
+  "decision_rule": "expected_cost_minimization_tie_break_refer",
+  "phase5_wrapper_artifact": "/Users/ChloeTabourian/Documents/University/AUB Grad/MSBA 315 - Predictive Analytics & Machine Learning/ML_Final_Project/data/processed/phase5_calibrated_model_roi_gt_2.joblib"
+}

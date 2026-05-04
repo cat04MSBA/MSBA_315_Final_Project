@@ -1,0 +1,156 @@
+2026-05-03 23:41:29 | INFO    | __main__ | Phase 4 benchmark starting: mode=primary
+2026-05-03 23:41:29 | INFO    | __main__ | Config: families=('linear', 'histgb', 'random_forest', 'svm_rbf') matrices=('all_five', 'standalone_positive_union') targets=('log_roi', 'roi_gt_1', 'roi_gt_2')
+2026-05-03 23:41:29 | INFO    | src.models.phase4.benchmark | Loaded train split: 1199 films (calibration and test held out)
+2026-05-03 23:41:29 | INFO    | src.models.phase4.benchmark | Cell start: matrix=all_five family=linear X=(1199, 127)
+2026-05-03 23:41:29 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=all_five_linear dir=runs/phase_4/20260503_2341_all_five_linear
+2026-05-03 23:41:29 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five family=linear target=log_roi task=regression
+2026-05-03 23:41:29 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=linear task=regression X.shape=(1199, 127)
+2026-05-03 23:41:31 | INFO    | src.models.phase4.cv | Inner CV best: family=linear task=regression score=-1.3422 params={'model__alpha': np.float64(1000.0)}
+2026-05-03 23:41:31 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=linear task=regression
+2026-05-03 23:41:31 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five family=linear target=log_roi OOF=cvrmse=0.9985, mae=0.9474, mse=1.8103, rmse=1.3455 inner_best_params={'model__alpha': np.float64(1000.0)}
+2026-05-03 23:41:31 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five family=linear target=roi_gt_1 task=classification
+2026-05-03 23:41:31 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=linear task=classification X.shape=(1199, 127)
+2026-05-03 23:41:32 | INFO    | src.models.phase4.cv | Inner CV best: family=linear task=classification score=0.5677 params={'model__C': np.float64(1000.0)}
+2026-05-03 23:41:32 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=linear task=classification
+2026-05-03 23:41:34 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five family=linear target=roi_gt_1 OOF=auc_roc=0.5776, f1=0.7247, log_loss=0.7479, pr_auc=0.8480 inner_best_params={'model__C': np.float64(1000.0)}
+2026-05-03 23:41:34 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five family=linear target=roi_gt_2 task=classification
+2026-05-03 23:41:34 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=linear task=classification X.shape=(1199, 127)
+2026-05-03 23:41:35 | INFO    | src.models.phase4.cv | Inner CV best: family=linear task=classification score=0.6149 params={'model__C': np.float64(0.0031622776601683794)}
+2026-05-03 23:41:35 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=linear task=classification
+2026-05-03 23:41:37 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five family=linear target=roi_gt_2 OOF=auc_roc=0.6145, f1=0.6530, log_loss=0.6715, pr_auc=0.7380 inner_best_params={'model__C': np.float64(0.0031622776601683794)}
+2026-05-03 23:41:37 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=all_five_linear dir=runs/phase_4/20260503_2341_all_five_linear
+2026-05-03 23:41:37 | INFO    | src.models.phase4.benchmark | Cell start: matrix=all_five family=histgb X=(1199, 127)
+2026-05-03 23:41:37 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=all_five_histgb dir=runs/phase_4/20260503_2341_all_five_histgb
+2026-05-03 23:41:37 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five family=histgb target=log_roi task=regression
+2026-05-03 23:41:37 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=histgb task=regression X.shape=(1199, 127)
+2026-05-03 23:41:42 | INFO    | src.models.phase4.cv | Inner CV best: family=histgb task=regression score=-1.3191 params={'model__learning_rate': 0.05, 'model__max_depth': 3, 'model__min_samples_leaf': 10}
+2026-05-03 23:41:42 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=histgb task=regression
+2026-05-03 23:41:46 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five family=histgb target=log_roi OOF=cvrmse=0.9815, mae=0.9367, mse=1.7491, rmse=1.3225 inner_best_params={'model__learning_rate': 0.05, 'model__max_depth': 3, 'model__min_samples_leaf': 10}
+2026-05-03 23:41:46 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five family=histgb target=roi_gt_1 task=classification
+2026-05-03 23:41:46 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=histgb task=classification X.shape=(1199, 127)
+2026-05-03 23:41:49 | INFO    | src.models.phase4.cv | Inner CV best: family=histgb task=classification score=0.5659 params={'model__learning_rate': 0.05, 'model__max_depth': 4, 'model__min_samples_leaf': 20}
+2026-05-03 23:41:49 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=histgb task=classification
+2026-05-03 23:41:53 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five family=histgb target=roi_gt_1 OOF=auc_roc=0.5731, f1=0.7688, log_loss=0.6427, pr_auc=0.8399 inner_best_params={'model__learning_rate': 0.05, 'model__max_depth': 4, 'model__min_samples_leaf': 20}
+2026-05-03 23:41:53 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five family=histgb target=roi_gt_2 task=classification
+2026-05-03 23:41:53 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=histgb task=classification X.shape=(1199, 127)
+2026-05-03 23:41:58 | INFO    | src.models.phase4.cv | Inner CV best: family=histgb task=classification score=0.5883 params={'model__learning_rate': 0.05, 'model__max_depth': 4, 'model__min_samples_leaf': 40}
+2026-05-03 23:41:58 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=histgb task=classification
+2026-05-03 23:42:03 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five family=histgb target=roi_gt_2 OOF=auc_roc=0.5977, f1=0.6511, log_loss=0.6693, pr_auc=0.7189 inner_best_params={'model__learning_rate': 0.05, 'model__max_depth': 4, 'model__min_samples_leaf': 40}
+2026-05-03 23:42:03 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=all_five_histgb dir=runs/phase_4/20260503_2341_all_five_histgb
+2026-05-03 23:42:03 | INFO    | src.models.phase4.benchmark | Cell start: matrix=all_five family=random_forest X=(1199, 127)
+2026-05-03 23:42:03 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=all_five_random_forest dir=runs/phase_4/20260503_2342_all_five_random_forest
+2026-05-03 23:42:03 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five family=random_forest target=log_roi task=regression
+2026-05-03 23:42:03 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=random_forest task=regression X.shape=(1199, 127)
+2026-05-03 23:44:03 | INFO    | src.models.phase4.cv | Inner CV best: family=random_forest task=regression score=-1.3151 params={'model__max_depth': 12, 'model__min_samples_leaf': 20, 'model__n_estimators': 200}
+2026-05-03 23:44:03 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=random_forest task=regression
+2026-05-03 23:45:07 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five family=random_forest target=log_roi OOF=cvrmse=0.9762, mae=0.9335, mse=1.7303, rmse=1.3154 inner_best_params={'model__max_depth': 12, 'model__min_samples_leaf': 20, 'model__n_estimators': 200}
+2026-05-03 23:45:07 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five family=random_forest target=roi_gt_1 task=classification
+2026-05-03 23:45:07 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=random_forest task=classification X.shape=(1199, 127)
+2026-05-03 23:45:22 | INFO    | src.models.phase4.cv | Inner CV best: family=random_forest task=classification score=0.5688 params={'model__max_depth': None, 'model__min_samples_leaf': 5, 'model__n_estimators': 500}
+2026-05-03 23:45:22 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=random_forest task=classification
+2026-05-03 23:45:48 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five family=random_forest target=roi_gt_1 OOF=auc_roc=0.5715, f1=0.8937, log_loss=0.5046, pr_auc=0.8388 inner_best_params={'model__max_depth': None, 'model__min_samples_leaf': 5, 'model__n_estimators': 500}
+2026-05-03 23:45:48 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five family=random_forest target=roi_gt_2 task=classification
+2026-05-03 23:45:48 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=random_forest task=classification X.shape=(1199, 127)
+2026-05-03 23:46:04 | INFO    | src.models.phase4.cv | Inner CV best: family=random_forest task=classification score=0.6171 params={'model__max_depth': None, 'model__min_samples_leaf': 5, 'model__n_estimators': 500}
+2026-05-03 23:46:04 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=random_forest task=classification
+2026-05-03 23:46:31 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five family=random_forest target=roi_gt_2 OOF=auc_roc=0.6149, f1=0.7711, log_loss=0.6399, pr_auc=0.7281 inner_best_params={'model__max_depth': None, 'model__min_samples_leaf': 5, 'model__n_estimators': 500}
+2026-05-03 23:46:31 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=all_five_random_forest dir=runs/phase_4/20260503_2342_all_five_random_forest
+2026-05-03 23:46:31 | INFO    | src.models.phase4.benchmark | Cell start: matrix=all_five family=svm_rbf X=(1199, 127)
+2026-05-03 23:46:31 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=all_five_svm_rbf dir=runs/phase_4/20260503_2346_all_five_svm_rbf
+2026-05-03 23:46:31 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five family=svm_rbf target=log_roi task=regression
+2026-05-03 23:46:31 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=svm_rbf task=regression X.shape=(1199, 127)
+2026-05-03 23:46:33 | INFO    | src.models.phase4.cv | Inner CV best: family=svm_rbf task=regression score=-1.3401 params={'model__C': 1, 'model__gamma': 0.003}
+2026-05-03 23:46:33 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=svm_rbf task=regression
+2026-05-03 23:46:34 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five family=svm_rbf target=log_roi OOF=cvrmse=0.9965, mae=0.9403, mse=1.8028, rmse=1.3427 inner_best_params={'model__C': 1, 'model__gamma': 0.003}
+2026-05-03 23:46:34 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five family=svm_rbf target=roi_gt_1 task=classification
+2026-05-03 23:46:34 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=svm_rbf task=classification X.shape=(1199, 127)
+2026-05-03 23:46:36 | INFO    | src.models.phase4.cv | Inner CV best: family=svm_rbf task=classification score=0.5930 params={'model__C': 30, 'model__gamma': 0.001}
+2026-05-03 23:46:36 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=svm_rbf task=classification
+2026-05-03 23:46:39 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five family=svm_rbf target=roi_gt_1 OOF=auc_roc=0.5866, f1=0.7469, pr_auc=0.8542 inner_best_params={'model__C': 30, 'model__gamma': 0.001}
+2026-05-03 23:46:39 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five family=svm_rbf target=roi_gt_2 task=classification
+2026-05-03 23:46:39 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=svm_rbf task=classification X.shape=(1199, 127)
+2026-05-03 23:46:41 | INFO    | src.models.phase4.cv | Inner CV best: family=svm_rbf task=classification score=0.6207 params={'model__C': 3, 'model__gamma': 0.003}
+2026-05-03 23:46:41 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=svm_rbf task=classification
+2026-05-03 23:46:43 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five family=svm_rbf target=roi_gt_2 OOF=auc_roc=0.6200, f1=0.6749, pr_auc=0.7343 inner_best_params={'model__C': 3, 'model__gamma': 0.003}
+2026-05-03 23:46:43 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=all_five_svm_rbf dir=runs/phase_4/20260503_2346_all_five_svm_rbf
+2026-05-03 23:46:43 | INFO    | src.models.phase4.benchmark | Cell start: matrix=standalone_positive_union family=linear X=(1199, 92)
+2026-05-03 23:46:43 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=standalone_positive_union_linear dir=runs/phase_4/20260503_2346_standalone_positive_union_linear
+2026-05-03 23:46:43 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=linear target=log_roi task=regression
+2026-05-03 23:46:43 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=linear task=regression X.shape=(1199, 92)
+2026-05-03 23:46:44 | INFO    | src.models.phase4.cv | Inner CV best: family=linear task=regression score=-1.3384 params={'model__alpha': np.float64(1000.0)}
+2026-05-03 23:46:44 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=linear task=regression
+2026-05-03 23:46:44 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=linear target=log_roi OOF=cvrmse=0.9960, mae=0.9445, mse=1.8011, rmse=1.3421 inner_best_params={'model__alpha': np.float64(1000.0)}
+2026-05-03 23:46:44 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=linear target=roi_gt_1 task=classification
+2026-05-03 23:46:44 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=linear task=classification X.shape=(1199, 92)
+2026-05-03 23:46:44 | INFO    | src.models.phase4.cv | Inner CV best: family=linear task=classification score=0.5862 params={'model__C': np.float64(316.22776601683796)}
+2026-05-03 23:46:44 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=linear task=classification
+2026-05-03 23:46:47 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=linear target=roi_gt_1 OOF=auc_roc=0.5930, f1=0.7086, log_loss=0.7015, pr_auc=0.8530 inner_best_params={'model__C': np.float64(316.22776601683796)}
+2026-05-03 23:46:47 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=linear target=roi_gt_2 task=classification
+2026-05-03 23:46:47 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=linear task=classification X.shape=(1199, 92)
+2026-05-03 23:46:47 | INFO    | src.models.phase4.cv | Inner CV best: family=linear task=classification score=0.6166 params={'model__C': np.float64(0.0031622776601683794)}
+2026-05-03 23:46:47 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=linear task=classification
+2026-05-03 23:46:49 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=linear target=roi_gt_2 OOF=auc_roc=0.6140, f1=0.6467, log_loss=0.6715, pr_auc=0.7398 inner_best_params={'model__C': np.float64(0.0031622776601683794)}
+2026-05-03 23:46:49 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=standalone_positive_union_linear dir=runs/phase_4/20260503_2346_standalone_positive_union_linear
+2026-05-03 23:46:49 | INFO    | src.models.phase4.benchmark | Cell start: matrix=standalone_positive_union family=histgb X=(1199, 92)
+2026-05-03 23:46:49 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=standalone_positive_union_histgb dir=runs/phase_4/20260503_2346_standalone_positive_union_histgb
+2026-05-03 23:46:49 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=histgb target=log_roi task=regression
+2026-05-03 23:46:49 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=histgb task=regression X.shape=(1199, 92)
+2026-05-03 23:46:53 | INFO    | src.models.phase4.cv | Inner CV best: family=histgb task=regression score=-1.3160 params={'model__learning_rate': 0.05, 'model__max_depth': 2, 'model__min_samples_leaf': 40}
+2026-05-03 23:46:53 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=histgb task=regression
+2026-05-03 23:46:56 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=histgb target=log_roi OOF=cvrmse=0.9788, mae=0.9334, mse=1.7393, rmse=1.3188 inner_best_params={'model__learning_rate': 0.05, 'model__max_depth': 2, 'model__min_samples_leaf': 40}
+2026-05-03 23:46:56 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=histgb target=roi_gt_1 task=classification
+2026-05-03 23:46:56 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=histgb task=classification X.shape=(1199, 92)
+2026-05-03 23:46:58 | INFO    | src.models.phase4.cv | Inner CV best: family=histgb task=classification score=0.5761 params={'model__learning_rate': 0.05, 'model__max_depth': 2, 'model__min_samples_leaf': 20}
+2026-05-03 23:46:58 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=histgb task=classification
+2026-05-03 23:47:02 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=histgb target=roi_gt_1 OOF=auc_roc=0.5895, f1=0.7319, log_loss=0.6602, pr_auc=0.8401 inner_best_params={'model__learning_rate': 0.05, 'model__max_depth': 2, 'model__min_samples_leaf': 20}
+2026-05-03 23:47:02 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=histgb target=roi_gt_2 task=classification
+2026-05-03 23:47:02 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=histgb task=classification X.shape=(1199, 92)
+2026-05-03 23:47:05 | INFO    | src.models.phase4.cv | Inner CV best: family=histgb task=classification score=0.5983 params={'model__learning_rate': 0.05, 'model__max_depth': 4, 'model__min_samples_leaf': 40}
+2026-05-03 23:47:05 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=histgb task=classification
+2026-05-03 23:47:11 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=histgb target=roi_gt_2 OOF=auc_roc=0.6093, f1=0.6556, log_loss=0.6637, pr_auc=0.7345 inner_best_params={'model__learning_rate': 0.05, 'model__max_depth': 4, 'model__min_samples_leaf': 40}
+2026-05-03 23:47:11 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=standalone_positive_union_histgb dir=runs/phase_4/20260503_2346_standalone_positive_union_histgb
+2026-05-03 23:47:11 | INFO    | src.models.phase4.benchmark | Cell start: matrix=standalone_positive_union family=random_forest X=(1199, 92)
+2026-05-03 23:47:11 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=standalone_positive_union_random_forest dir=runs/phase_4/20260503_2347_standalone_positive_union_random_forest
+2026-05-03 23:47:11 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=random_forest target=log_roi task=regression
+2026-05-03 23:47:11 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=random_forest task=regression X.shape=(1199, 92)
+2026-05-03 23:48:36 | INFO    | src.models.phase4.cv | Inner CV best: family=random_forest task=regression score=-1.3156 params={'model__max_depth': 6, 'model__min_samples_leaf': 20, 'model__n_estimators': 500}
+2026-05-03 23:48:36 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=random_forest task=regression
+2026-05-03 23:50:08 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=random_forest target=log_roi OOF=cvrmse=0.9770, mae=0.9337, mse=1.7328, rmse=1.3164 inner_best_params={'model__max_depth': 6, 'model__min_samples_leaf': 20, 'model__n_estimators': 500}
+2026-05-03 23:50:08 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=random_forest target=roi_gt_1 task=classification
+2026-05-03 23:50:08 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=random_forest task=classification X.shape=(1199, 92)
+2026-05-03 23:50:20 | INFO    | src.models.phase4.cv | Inner CV best: family=random_forest task=classification score=0.6043 params={'model__max_depth': None, 'model__min_samples_leaf': 1, 'model__n_estimators': 500}
+2026-05-03 23:50:20 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=random_forest task=classification
+2026-05-03 23:50:43 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=random_forest target=roi_gt_1 OOF=auc_roc=0.6159, f1=0.8937, log_loss=0.4756, pr_auc=0.8661 inner_best_params={'model__max_depth': None, 'model__min_samples_leaf': 1, 'model__n_estimators': 500}
+2026-05-03 23:50:43 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=random_forest target=roi_gt_2 task=classification
+2026-05-03 23:50:43 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=random_forest task=classification X.shape=(1199, 92)
+2026-05-03 23:50:55 | INFO    | src.models.phase4.cv | Inner CV best: family=random_forest task=classification score=0.6327 params={'model__max_depth': 6, 'model__min_samples_leaf': 1, 'model__n_estimators': 500}
+2026-05-03 23:50:55 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=random_forest task=classification
+2026-05-03 23:51:13 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=random_forest target=roi_gt_2 OOF=auc_roc=0.6251, f1=0.7353, log_loss=0.6507, pr_auc=0.7446 inner_best_params={'model__max_depth': 6, 'model__min_samples_leaf': 1, 'model__n_estimators': 500}
+2026-05-03 23:51:13 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=standalone_positive_union_random_forest dir=runs/phase_4/20260503_2347_standalone_positive_union_random_forest
+2026-05-03 23:51:13 | INFO    | src.models.phase4.benchmark | Cell start: matrix=standalone_positive_union family=svm_rbf X=(1199, 92)
+2026-05-03 23:51:13 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=standalone_positive_union_svm_rbf dir=runs/phase_4/20260503_2351_standalone_positive_union_svm_rbf
+2026-05-03 23:51:13 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=svm_rbf target=log_roi task=regression
+2026-05-03 23:51:13 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=svm_rbf task=regression X.shape=(1199, 92)
+2026-05-03 23:51:15 | INFO    | src.models.phase4.cv | Inner CV best: family=svm_rbf task=regression score=-1.3334 params={'model__C': 3, 'model__gamma': 0.003}
+2026-05-03 23:51:15 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=svm_rbf task=regression
+2026-05-03 23:51:16 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=svm_rbf target=log_roi OOF=cvrmse=0.9923, mae=0.9403, mse=1.7876, rmse=1.3370 inner_best_params={'model__C': 3, 'model__gamma': 0.003}
+2026-05-03 23:51:16 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=svm_rbf target=roi_gt_1 task=classification
+2026-05-03 23:51:16 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=svm_rbf task=classification X.shape=(1199, 92)
+2026-05-03 23:51:19 | INFO    | src.models.phase4.cv | Inner CV best: family=svm_rbf task=classification score=0.5947 params={'model__C': 10, 'model__gamma': 0.003}
+2026-05-03 23:51:19 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=svm_rbf task=classification
+2026-05-03 23:51:22 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=svm_rbf target=roi_gt_1 OOF=auc_roc=0.6026, f1=0.7618, pr_auc=0.8634 inner_best_params={'model__C': 10, 'model__gamma': 0.003}
+2026-05-03 23:51:22 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=svm_rbf target=roi_gt_2 task=classification
+2026-05-03 23:51:22 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=svm_rbf task=classification X.shape=(1199, 92)
+2026-05-03 23:51:24 | INFO    | src.models.phase4.cv | Inner CV best: family=svm_rbf task=classification score=0.6347 params={'model__C': 30, 'model__gamma': 0.001}
+2026-05-03 23:51:24 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=svm_rbf task=classification
+2026-05-03 23:51:27 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=svm_rbf target=roi_gt_2 OOF=auc_roc=0.6346, f1=0.6728, pr_auc=0.7506 inner_best_params={'model__C': 30, 'model__gamma': 0.001}
+2026-05-03 23:51:27 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=standalone_positive_union_svm_rbf dir=runs/phase_4/20260503_2351_standalone_positive_union_svm_rbf
+2026-05-03 23:51:27 | INFO    | src.models.phase4.benchmark | Wrote benchmark table (288 rows) and paired table (144 rows)
+2026-05-03 23:51:27 | INFO    | src.models.phase4.benchmark | Saved Phase 4 winner for log_roi: /Users/ChloeTabourian/Documents/University/AUB Grad/MSBA 315 - Predictive Analytics & Machine Learning/ML_Final_Project/data/processed/phase4_primary_model_log_roi.joblib
+2026-05-03 23:51:27 | INFO    | src.models.phase4.benchmark | Saved Phase 4 winner for roi_gt_1: /Users/ChloeTabourian/Documents/University/AUB Grad/MSBA 315 - Predictive Analytics & Machine Learning/ML_Final_Project/data/processed/phase4_primary_model_roi_gt_1.joblib
+2026-05-03 23:51:27 | INFO    | src.models.phase4.benchmark | Saved Phase 4 winner for roi_gt_2: /Users/ChloeTabourian/Documents/University/AUB Grad/MSBA 315 - Predictive Analytics & Machine Learning/ML_Final_Project/data/processed/phase4_primary_model_roi_gt_2.joblib
+2026-05-03 23:51:27 | INFO    | __main__ | Phase 4 benchmark complete.
+2026-05-03 23:51:27 | INFO    | __main__ | Winners per target:
+2026-05-03 23:51:27 | INFO    | __main__ |   log_roi: random_forest on all_five (OOF cvrmse=0.9762, mae=0.9335, mse=1.7303, rmse=1.3154)
+2026-05-03 23:51:27 | INFO    | __main__ |   roi_gt_1: random_forest on standalone_positive_union (OOF auc_roc=0.6159, f1=0.8937, log_loss=0.4756, pr_auc=0.8661)
+2026-05-03 23:51:27 | INFO    | __main__ |   roi_gt_2: svm_rbf on standalone_positive_union (OOF auc_roc=0.6346, f1=0.6728, pr_auc=0.7506)

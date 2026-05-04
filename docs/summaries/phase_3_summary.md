@@ -161,8 +161,17 @@ Four pre-specified combinations evaluated under the same multi-
 family harness. Results re-shaped the Phase 4 expectations:
 
 * **`all_five`** (130 features): SVM-RBF reaches `roi_gt_2` AUC
-  0.665 OOF (lift +0.063). Linear regression hurt by feature-count
-  noise.
+  ~~0.665~~ **0.5966** OOF (lift +0.0629 over SVM's own structural
+  baseline of 0.5337). Linear regression hurt by feature-count
+  noise. **CORRECTION 2026-05-04 (mid-Phase-4):** the 0.665 figure
+  was a calculation error — SVM's lift (+0.0629) was added to
+  *linear's* structural floor (0.6017) rather than to *SVM's* own
+  floor (0.5337). The actual SVM-RBF OOF AUC on roi_gt_2 from the
+  Phase 3c run was 0.5966 (CI [0.5649, 0.6310]) per
+  `reports/tables/phase3c_combinations.csv`. Phase 4's SVM-RBF on
+  the same matrix reaches 0.6200 (full grid + 3x5 repeated CV);
+  the genuine corpus ceiling appears to lie around 0.63 OOF AUC
+  rather than the 0.665 originally reported.
 * **`partial_positives`** (92 features, drops the two nulls): no
   net positive on linear classification.
 * **`topic_plus_cn`** (60 features): the parsimonious winner. Only
@@ -321,10 +330,27 @@ worst-of-four; on combinations, SVM is best-of-four:
 | `topic_plus_cn` | +0.043 | **+0.081** |
 | `semantic_trio` | +0.057 | +0.046 |
 
-SVM on `all_five` reaches `roi_gt_2` AUC = 0.665 OOF, well within
-the project's forward-expected band of 0.65 to 0.72. SVM on
+SVM on `all_five` reaches `roi_gt_2` AUC = ~~0.665~~ **0.5966** OOF
+(corrected — see note below), below the original
+forward-expected band of 0.65 to 0.72. SVM on
 `topic_plus_cn` reaches `roi_gt_1` AUC = 0.639 OOF, the largest
 classification lift recorded in Phase 3.
+
+> **Correction note (added 2026-05-04 mid-Phase-4):** The 0.665
+> figure originally reported in this section was a calculation
+> error. SVM-RBF's lift over its own structural baseline (+0.0629)
+> was incorrectly added to *linear*'s structural floor (0.6017)
+> rather than to *SVM*'s own floor (0.5337), yielding the
+> spurious "0.665." The actual SVM-RBF OOF AUC on `roi_gt_2` from
+> the Phase 3c run is **0.5966** (95% CI [0.5649, 0.6310]) per
+> `reports/tables/phase3c_combinations.csv`. The
+> "forward-expected 0.65 to 0.72 band" cited above and elsewhere
+> in this summary was anchored to the incorrect 0.665 figure;
+> Phase 4 uses 0.6346 (the actual best primary OOF AUC) as the
+> realistic benchmark and treats the original band as
+> non-binding. See `docs/PROJECT_CONTEXT.md` Section 8 entry
+> dated 2026-05-04 00:30 for the full Phase 4 audit trail of
+> this discovery and its implications.
 
 ### Saved figures
 
@@ -420,9 +446,11 @@ The closing decisions for Phase 4 to settle:
 3. **Primary outcome variable.** The decision is formally deferred
    to end of Phase 4, but the Phase 3 evidence already points to
    `roi_gt_2` as the most tractable: SVM on `all_five` reaches
-   0.665 OOF AUC, comfortably in the forward-expected band.
-   `roi_gt_1` is signal-thin (80% positive base rate); `log_roi`
-   regression hits a wall at the corpus's survivorship structure.
+   ~~0.665~~ **0.5966** OOF AUC (corrected — see correction note in
+   the Results section), the strongest single-family classification
+   number in the phase. `roi_gt_1` is signal-thin (80% positive
+   base rate); `log_roi` regression hits a wall at the corpus's
+   survivorship structure.
 4. **K = 20 LDA character-name dominance.** A custom character-name
    stopword list is defensible polish if Phase 4 finds topic
    features useful. Optional v2; not blocking Phase 4.
@@ -568,9 +596,10 @@ Three for the Phase 4 planning conversation:
    framing that the four-layer architecture's novelty discussion
    leaned on.
 3. **Primary outcome variable nudge.** The Phase 3 evidence
-   strongly suggests `roi_gt_2` as the most tractable target
-   (SVM-RBF on `all_five` reaches 0.665 OOF AUC). The formal
-   decision is end-of-Phase-4, but if the planning conversation
+   suggests `roi_gt_2` as the most tractable target (SVM-RBF on
+   `all_five` reaches ~~0.665~~ **0.5966** OOF AUC — corrected
+   per the Results section). The formal decision is
+   end-of-Phase-4, but if the planning conversation
    wants to commit earlier given the magnitude of the signal
    difference, the path is open.
 

@@ -1,0 +1,51 @@
+{
+  "balancing": "class_weight",
+  "classification_grid": {
+    "learning_rate": [
+      0.01,
+      0.03,
+      0.05
+    ],
+    "max_depth": [
+      3,
+      5,
+      7
+    ],
+    "min_child_samples": [
+      10,
+      30
+    ],
+    "num_leaves": [
+      15,
+      31
+    ]
+  },
+  "family": "lightgbm",
+  "matrix": "standalone_positive_union",
+  "mode": "full",
+  "n_features": 92,
+  "n_outer_folds": 5,
+  "n_outer_repeats": 3,
+  "n_train": 1199,
+  "regression_grid": {
+    "learning_rate": [
+      0.01,
+      0.03,
+      0.05
+    ],
+    "max_depth": [
+      3,
+      5,
+      7
+    ],
+    "min_child_samples": [
+      10,
+      30
+    ],
+    "num_leaves": [
+      15,
+      31
+    ]
+  },
+  "score_method": "predict_proba"
+}

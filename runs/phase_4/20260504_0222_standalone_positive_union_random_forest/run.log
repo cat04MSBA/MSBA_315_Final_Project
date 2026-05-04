@@ -1,0 +1,62 @@
+2026-05-04 02:22:23 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=standalone_positive_union_random_forest dir=runs/phase_4/20260504_0222_standalone_positive_union_random_forest
+2026-05-04 02:22:23 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=random_forest target=log_roi task=regression
+2026-05-04 02:22:23 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=random_forest task=regression X.shape=(1199, 92)
+2026-05-04 02:23:44 | INFO    | src.models.phase4.cv | Inner CV best: family=random_forest task=regression score=-1.3156 params={'model__max_depth': 6, 'model__min_samples_leaf': 20, 'model__n_estimators': 500}
+2026-05-04 02:23:44 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=random_forest task=regression
+2026-05-04 02:23:50 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (random_forest, regression): mse=1.3187, rmse=1.1484, mae=0.8569, cvrmse=0.8998
+2026-05-04 02:23:56 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (random_forest, regression): mse=1.7641, rmse=1.3282, mae=0.9625, cvrmse=0.9476
+2026-05-04 02:24:01 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (random_forest, regression): mse=1.6560, rmse=1.2868, mae=0.9266, cvrmse=0.9768
+2026-05-04 02:24:07 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (random_forest, regression): mse=1.7869, rmse=1.3367, mae=0.9602, cvrmse=0.9714
+2026-05-04 02:24:12 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (random_forest, regression): mse=2.1847, rmse=1.4781, mae=0.9807, cvrmse=1.0821
+2026-05-04 02:24:18 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (random_forest, regression): mse=1.3368, rmse=1.1562, mae=0.9162, cvrmse=0.8678
+2026-05-04 02:24:23 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (random_forest, regression): mse=2.3242, rmse=1.5245, mae=0.9241, cvrmse=1.1103
+2026-05-04 02:24:29 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (random_forest, regression): mse=1.5634, rmse=1.2504, mae=0.9150, cvrmse=0.9488
+2026-05-04 02:24:34 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (random_forest, regression): mse=1.5891, rmse=1.2606, mae=0.9204, cvrmse=0.9599
+2026-05-04 02:24:40 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (random_forest, regression): mse=1.9122, rmse=1.3828, mae=1.0004, cvrmse=0.9872
+2026-05-04 02:24:45 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (random_forest, regression): mse=1.8784, rmse=1.3706, mae=1.0008, cvrmse=0.9542
+2026-05-04 02:24:51 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (random_forest, regression): mse=1.7178, rmse=1.3106, mae=1.0015, cvrmse=0.9780
+2026-05-04 02:24:56 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (random_forest, regression): mse=2.2064, rmse=1.4854, mae=0.9386, cvrmse=1.1072
+2026-05-04 02:25:02 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (random_forest, regression): mse=1.4631, rmse=1.2096, mae=0.8297, cvrmse=0.9580
+2026-05-04 02:25:07 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (random_forest, regression): mse=1.3973, rmse=1.1821, mae=0.9060, cvrmse=0.8715
+2026-05-04 02:25:15 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=random_forest target=log_roi OOF=cvrmse=0.9770, mae=0.9337, mse=1.7328, rmse=1.3164 inner_best_params={'model__max_depth': 6, 'model__min_samples_leaf': 20, 'model__n_estimators': 500}
+2026-05-04 02:25:15 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=random_forest target=roi_gt_1 task=classification
+2026-05-04 02:25:15 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=random_forest task=classification X.shape=(1199, 92)
+2026-05-04 02:25:26 | INFO    | src.models.phase4.cv | Inner CV best: family=random_forest task=classification score=0.6043 params={'model__max_depth': None, 'model__min_samples_leaf': 1, 'model__n_estimators': 500}
+2026-05-04 02:25:26 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=random_forest task=classification
+2026-05-04 02:25:27 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (random_forest, classification): auc_roc=0.5708, pr_auc=0.8274, log_loss=0.4847, f1=0.8961
+2026-05-04 02:25:29 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (random_forest, classification): auc_roc=0.6273, pr_auc=0.8681, log_loss=0.4774, f1=0.8915
+2026-05-04 02:25:30 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (random_forest, classification): auc_roc=0.6359, pr_auc=0.8820, log_loss=0.4641, f1=0.8940
+2026-05-04 02:25:31 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (random_forest, classification): auc_roc=0.6100, pr_auc=0.8620, log_loss=0.4790, f1=0.8940
+2026-05-04 02:25:33 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (random_forest, classification): auc_roc=0.5774, pr_auc=0.8629, log_loss=0.4968, f1=0.8910
+2026-05-04 02:25:34 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (random_forest, classification): auc_roc=0.6136, pr_auc=0.8678, log_loss=0.4691, f1=0.8961
+2026-05-04 02:25:35 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (random_forest, classification): auc_roc=0.6035, pr_auc=0.8660, log_loss=0.4798, f1=0.8915
+2026-05-04 02:25:37 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (random_forest, classification): auc_roc=0.5468, pr_auc=0.8270, log_loss=0.4883, f1=0.8940
+2026-05-04 02:25:38 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (random_forest, classification): auc_roc=0.5890, pr_auc=0.8469, log_loss=0.4825, f1=0.8961
+2026-05-04 02:25:39 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (random_forest, classification): auc_roc=0.6679, pr_auc=0.8898, log_loss=0.4605, f1=0.8961
+2026-05-04 02:25:41 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (random_forest, classification): auc_roc=0.6114, pr_auc=0.8733, log_loss=0.4745, f1=0.8935
+2026-05-04 02:25:42 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (random_forest, classification): auc_roc=0.5859, pr_auc=0.8465, log_loss=0.4906, f1=0.8910
+2026-05-04 02:25:43 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (random_forest, classification): auc_roc=0.6034, pr_auc=0.8490, log_loss=0.4817, f1=0.8940
+2026-05-04 02:25:45 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (random_forest, classification): auc_roc=0.6344, pr_auc=0.8807, log_loss=0.4731, f1=0.8961
+2026-05-04 02:25:46 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (random_forest, classification): auc_roc=0.6460, pr_auc=0.8861, log_loss=0.4631, f1=0.8961
+2026-05-04 02:25:50 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=random_forest target=roi_gt_1 OOF=auc_roc=0.6159, f1=0.8937, log_loss=0.4756, pr_auc=0.8661 inner_best_params={'model__max_depth': None, 'model__min_samples_leaf': 1, 'model__n_estimators': 500}
+2026-05-04 02:25:50 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=random_forest target=roi_gt_2 task=classification
+2026-05-04 02:25:50 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=random_forest task=classification X.shape=(1199, 92)
+2026-05-04 02:26:01 | INFO    | src.models.phase4.cv | Inner CV best: family=random_forest task=classification score=0.6327 params={'model__max_depth': 6, 'model__min_samples_leaf': 1, 'model__n_estimators': 500}
+2026-05-04 02:26:01 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=random_forest task=classification
+2026-05-04 02:26:02 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (random_forest, classification): auc_roc=0.6540, pr_auc=0.7647, log_loss=0.6474, f1=0.7447
+2026-05-04 02:26:02 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (random_forest, classification): auc_roc=0.6150, pr_auc=0.7311, log_loss=0.6520, f1=0.7365
+2026-05-04 02:26:03 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (random_forest, classification): auc_roc=0.6543, pr_auc=0.7742, log_loss=0.6436, f1=0.7403
+2026-05-04 02:26:04 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (random_forest, classification): auc_roc=0.6446, pr_auc=0.7501, log_loss=0.6472, f1=0.7368
+2026-05-04 02:26:05 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (random_forest, classification): auc_roc=0.5956, pr_auc=0.7374, log_loss=0.6575, f1=0.7112
+2026-05-04 02:26:06 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (random_forest, classification): auc_roc=0.5847, pr_auc=0.7345, log_loss=0.6595, f1=0.6967
+2026-05-04 02:26:07 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (random_forest, classification): auc_roc=0.6351, pr_auc=0.7391, log_loss=0.6505, f1=0.7455
+2026-05-04 02:26:08 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (random_forest, classification): auc_roc=0.6437, pr_auc=0.7523, log_loss=0.6440, f1=0.7339
+2026-05-04 02:26:09 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (random_forest, classification): auc_roc=0.5645, pr_auc=0.7021, log_loss=0.6601, f1=0.7202
+2026-05-04 02:26:10 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (random_forest, classification): auc_roc=0.6518, pr_auc=0.7657, log_loss=0.6498, f1=0.7523
+2026-05-04 02:26:11 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (random_forest, classification): auc_roc=0.6057, pr_auc=0.7422, log_loss=0.6592, f1=0.7091
+2026-05-04 02:26:12 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (random_forest, classification): auc_roc=0.5844, pr_auc=0.7374, log_loss=0.6592, f1=0.7012
+2026-05-04 02:26:13 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (random_forest, classification): auc_roc=0.6367, pr_auc=0.7739, log_loss=0.6475, f1=0.7222
+2026-05-04 02:26:14 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (random_forest, classification): auc_roc=0.6701, pr_auc=0.7850, log_loss=0.6396, f1=0.7714
+2026-05-04 02:26:15 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (random_forest, classification): auc_roc=0.5935, pr_auc=0.7086, log_loss=0.6555, f1=0.7432
+2026-05-04 02:26:18 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=random_forest target=roi_gt_2 OOF=auc_roc=0.6251, f1=0.7353, log_loss=0.6507, pr_auc=0.7446 inner_best_params={'model__max_depth': 6, 'model__min_samples_leaf': 1, 'model__n_estimators': 500}
+2026-05-04 02:26:19 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=standalone_positive_union_random_forest dir=runs/phase_4/20260504_0222_standalone_positive_union_random_forest

@@ -1,0 +1,18 @@
+{
+  "headline_rho_stability": 0.9673103894702773,
+  "headline_rho_vs_native": 0.7450228992507869,
+  "n_per_film_attributions": 257,
+  "n_scene_level_examples": 4,
+  "top10_global_features_headline": [
+    "release_year_parsed",
+    "genre_Horror",
+    "network_lead_role_count",
+    "genre_Action",
+    "genre_Romance",
+    "topic_15_proportion",
+    "embed_pc_05",
+    "embed_pc_06",
+    "network_max_betweenness_centrality",
+    "network_top1_dialogue_share"
+  ]
+}

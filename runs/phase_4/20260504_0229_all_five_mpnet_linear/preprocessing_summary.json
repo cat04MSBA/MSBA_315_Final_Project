@@ -1,0 +1,4 @@
+{
+  "matrix_description": "Same structure as `all_five` but with the embedding group replaced by mpnet-base (768-dim source, 32 PCA components, cumulative variance 0.7434). Phase 4 Tier-A escalation experiment to test whether a stronger sentence encoder lifts the corpus ceiling.",
+  "needs_scaling": true
+}

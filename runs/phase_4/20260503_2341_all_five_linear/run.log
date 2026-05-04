@@ -1,0 +1,62 @@
+2026-05-03 23:41:29 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=all_five_linear dir=runs/phase_4/20260503_2341_all_five_linear
+2026-05-03 23:41:29 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five family=linear target=log_roi task=regression
+2026-05-03 23:41:29 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=linear task=regression X.shape=(1199, 127)
+2026-05-03 23:41:31 | INFO    | src.models.phase4.cv | Inner CV best: family=linear task=regression score=-1.3422 params={'model__alpha': np.float64(1000.0)}
+2026-05-03 23:41:31 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=linear task=regression
+2026-05-03 23:41:31 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (linear, regression): mse=1.4107, rmse=1.1877, mae=0.8762, cvrmse=0.9307
+2026-05-03 23:41:31 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (linear, regression): mse=1.7861, rmse=1.3365, mae=0.9519, cvrmse=0.9535
+2026-05-03 23:41:31 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (linear, regression): mse=1.7756, rmse=1.3325, mae=0.9442, cvrmse=1.0115
+2026-05-03 23:41:31 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (linear, regression): mse=1.8451, rmse=1.3583, mae=0.9780, cvrmse=0.9871
+2026-05-03 23:41:31 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (linear, regression): mse=2.2380, rmse=1.4960, mae=0.9896, cvrmse=1.0953
+2026-05-03 23:41:31 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (linear, regression): mse=1.3837, rmse=1.1763, mae=0.9107, cvrmse=0.8829
+2026-05-03 23:41:31 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (linear, regression): mse=2.4162, rmse=1.5544, mae=0.9493, cvrmse=1.1320
+2026-05-03 23:41:31 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (linear, regression): mse=1.6261, rmse=1.2752, mae=0.9392, cvrmse=0.9677
+2026-05-03 23:41:31 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (linear, regression): mse=1.6481, rmse=1.2838, mae=0.9293, cvrmse=0.9775
+2026-05-03 23:41:31 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (linear, regression): mse=2.0063, rmse=1.4164, mae=1.0198, cvrmse=1.0112
+2026-05-03 23:41:31 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (linear, regression): mse=1.9870, rmse=1.4096, mae=1.0349, cvrmse=0.9813
+2026-05-03 23:41:31 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (linear, regression): mse=1.6437, rmse=1.2821, mae=0.9617, cvrmse=0.9567
+2026-05-03 23:41:31 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (linear, regression): mse=2.3471, rmse=1.5320, mae=0.9614, cvrmse=1.1419
+2026-05-03 23:41:31 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (linear, regression): mse=1.6107, rmse=1.2691, mae=0.8712, cvrmse=1.0052
+2026-05-03 23:41:31 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (linear, regression): mse=1.5027, rmse=1.2258, mae=0.9255, cvrmse=0.9037
+2026-05-03 23:41:31 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five family=linear target=log_roi OOF=cvrmse=0.9985, mae=0.9474, mse=1.8103, rmse=1.3455 inner_best_params={'model__alpha': np.float64(1000.0)}
+2026-05-03 23:41:31 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five family=linear target=roi_gt_1 task=classification
+2026-05-03 23:41:31 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=linear task=classification X.shape=(1199, 127)
+2026-05-03 23:41:32 | INFO    | src.models.phase4.cv | Inner CV best: family=linear task=classification score=0.5677 params={'model__C': np.float64(1000.0)}
+2026-05-03 23:41:32 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=linear task=classification
+2026-05-03 23:41:32 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (linear, classification): auc_roc=0.5425, pr_auc=0.8388, log_loss=0.8236, f1=0.6667
+2026-05-03 23:41:32 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (linear, classification): auc_roc=0.5687, pr_auc=0.8532, log_loss=0.7618, f1=0.7430
+2026-05-03 23:41:32 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (linear, classification): auc_roc=0.6262, pr_auc=0.8610, log_loss=1.0180, f1=0.7337
+2026-05-03 23:41:32 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (linear, classification): auc_roc=0.5565, pr_auc=0.8248, log_loss=0.8973, f1=0.7027
+2026-05-03 23:41:32 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (linear, classification): auc_roc=0.5448, pr_auc=0.8587, log_loss=0.7937, f1=0.6647
+2026-05-03 23:41:32 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (linear, classification): auc_roc=0.6242, pr_auc=0.8729, log_loss=0.6761, f1=0.7592
+2026-05-03 23:41:32 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (linear, classification): auc_roc=0.5866, pr_auc=0.8655, log_loss=0.9015, f1=0.7176
+2026-05-03 23:41:32 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (linear, classification): auc_roc=0.5258, pr_auc=0.8094, log_loss=0.9467, f1=0.7225
+2026-05-03 23:41:32 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (linear, classification): auc_roc=0.5240, pr_auc=0.8399, log_loss=0.8330, f1=0.6807
+2026-05-03 23:41:32 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (linear, classification): auc_roc=0.6153, pr_auc=0.8524, log_loss=0.7038, f1=0.7692
+2026-05-03 23:41:32 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (linear, classification): auc_roc=0.5416, pr_auc=0.8384, log_loss=0.7405, f1=0.7365
+2026-05-03 23:41:32 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (linear, classification): auc_roc=0.6207, pr_auc=0.8828, log_loss=0.8168, f1=0.7606
+2026-05-03 23:41:32 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (linear, classification): auc_roc=0.5501, pr_auc=0.8397, log_loss=0.8964, f1=0.6928
+2026-05-03 23:41:32 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (linear, classification): auc_roc=0.5001, pr_auc=0.8203, log_loss=0.8873, f1=0.6667
+2026-05-03 23:41:32 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (linear, classification): auc_roc=0.6588, pr_auc=0.8891, log_loss=0.6941, f1=0.7305
+2026-05-03 23:41:34 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five family=linear target=roi_gt_1 OOF=auc_roc=0.5776, f1=0.7247, log_loss=0.7479, pr_auc=0.8480 inner_best_params={'model__C': np.float64(1000.0)}
+2026-05-03 23:41:34 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five family=linear target=roi_gt_2 task=classification
+2026-05-03 23:41:34 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=linear task=classification X.shape=(1199, 127)
+2026-05-03 23:41:35 | INFO    | src.models.phase4.cv | Inner CV best: family=linear task=classification score=0.6149 params={'model__C': np.float64(0.0031622776601683794)}
+2026-05-03 23:41:35 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=linear task=classification
+2026-05-03 23:41:35 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (linear, classification): auc_roc=0.6182, pr_auc=0.7285, log_loss=0.6644, f1=0.6690
+2026-05-03 23:41:35 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (linear, classification): auc_roc=0.5948, pr_auc=0.7226, log_loss=0.6750, f1=0.6502
+2026-05-03 23:41:35 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (linear, classification): auc_roc=0.6459, pr_auc=0.7730, log_loss=0.6620, f1=0.6547
+2026-05-03 23:41:35 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (linear, classification): auc_roc=0.6238, pr_auc=0.7357, log_loss=0.6738, f1=0.6377
+2026-05-03 23:41:35 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (linear, classification): auc_roc=0.5915, pr_auc=0.7290, log_loss=0.6823, f1=0.6548
+2026-05-03 23:41:35 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (linear, classification): auc_roc=0.6250, pr_auc=0.7576, log_loss=0.6739, f1=0.6667
+2026-05-03 23:41:35 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (linear, classification): auc_roc=0.6752, pr_auc=0.7789, log_loss=0.6547, f1=0.6763
+2026-05-03 23:41:35 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (linear, classification): auc_roc=0.6102, pr_auc=0.7460, log_loss=0.6652, f1=0.6241
+2026-05-03 23:41:35 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (linear, classification): auc_roc=0.5584, pr_auc=0.7029, log_loss=0.6862, f1=0.6622
+2026-05-03 23:41:35 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (linear, classification): auc_roc=0.6117, pr_auc=0.7550, log_loss=0.6756, f1=0.6403
+2026-05-03 23:41:35 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (linear, classification): auc_roc=0.5924, pr_auc=0.7209, log_loss=0.6806, f1=0.6338
+2026-05-03 23:41:35 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (linear, classification): auc_roc=0.5865, pr_auc=0.7299, log_loss=0.6792, f1=0.6323
+2026-05-03 23:41:35 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (linear, classification): auc_roc=0.6235, pr_auc=0.7501, log_loss=0.6689, f1=0.6087
+2026-05-03 23:41:35 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (linear, classification): auc_roc=0.6663, pr_auc=0.7699, log_loss=0.6513, f1=0.7148
+2026-05-03 23:41:35 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (linear, classification): auc_roc=0.5451, pr_auc=0.6946, log_loss=0.6950, f1=0.6148
+2026-05-03 23:41:37 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five family=linear target=roi_gt_2 OOF=auc_roc=0.6145, f1=0.6530, log_loss=0.6715, pr_auc=0.7380 inner_best_params={'model__C': np.float64(0.0031622776601683794)}
+2026-05-03 23:41:37 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=all_five_linear dir=runs/phase_4/20260503_2341_all_five_linear

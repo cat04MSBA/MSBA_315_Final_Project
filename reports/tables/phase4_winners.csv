@@ -1,0 +1,4 @@
+target,matrix,family,oof_metric,best_params,artifact
+log_roi,standalone_positive_union_mpnet,random_forest,1.3102340475879282,"{'max_depth': None, 'min_samples_leaf': 20, 'n_estimators': 500}",phase4_primary_model_log_roi.joblib
+roi_gt_1,standalone_positive_union_mpnet,svm_rbf,0.635326160356548,"{'C': 3, 'gamma': 0.01}",phase4_primary_model_roi_gt_1.joblib
+roi_gt_2,standalone_positive_union_mpnet,xgboost,0.6520261437908497,"{'learning_rate': 0.01, 'max_depth': 6, 'min_child_weight': 5, 'reg_lambda': 1.0}",phase4_primary_model_roi_gt_2.joblib

@@ -1,0 +1,62 @@
+2026-05-03 23:46:31 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=all_five_svm_rbf dir=runs/phase_4/20260503_2346_all_five_svm_rbf
+2026-05-03 23:46:31 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five family=svm_rbf target=log_roi task=regression
+2026-05-03 23:46:31 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=svm_rbf task=regression X.shape=(1199, 127)
+2026-05-03 23:46:33 | INFO    | src.models.phase4.cv | Inner CV best: family=svm_rbf task=regression score=-1.3401 params={'model__C': 1, 'model__gamma': 0.003}
+2026-05-03 23:46:33 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=svm_rbf task=regression
+2026-05-03 23:46:33 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (svm_rbf, regression): mse=1.3978, rmse=1.1823, mae=0.8639, cvrmse=0.9264
+2026-05-03 23:46:33 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (svm_rbf, regression): mse=1.7648, rmse=1.3285, mae=0.9410, cvrmse=0.9478
+2026-05-03 23:46:33 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (svm_rbf, regression): mse=1.7773, rmse=1.3332, mae=0.9586, cvrmse=1.0120
+2026-05-03 23:46:33 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (svm_rbf, regression): mse=1.8483, rmse=1.3595, mae=0.9699, cvrmse=0.9879
+2026-05-03 23:46:33 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (svm_rbf, regression): mse=2.2407, rmse=1.4969, mae=0.9843, cvrmse=1.0959
+2026-05-03 23:46:33 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (svm_rbf, regression): mse=1.3581, rmse=1.1654, mae=0.9009, cvrmse=0.8747
+2026-05-03 23:46:33 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (svm_rbf, regression): mse=2.4152, rmse=1.5541, mae=0.9453, cvrmse=1.1318
+2026-05-03 23:46:33 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (svm_rbf, regression): mse=1.6044, rmse=1.2667, mae=0.9262, cvrmse=0.9612
+2026-05-03 23:46:33 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (svm_rbf, regression): mse=1.6682, rmse=1.2916, mae=0.9400, cvrmse=0.9834
+2026-05-03 23:46:33 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (svm_rbf, regression): mse=2.0281, rmse=1.4241, mae=1.0239, cvrmse=1.0167
+2026-05-03 23:46:33 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (svm_rbf, regression): mse=1.9701, rmse=1.4036, mae=1.0068, cvrmse=0.9772
+2026-05-03 23:46:33 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (svm_rbf, regression): mse=1.6269, rmse=1.2755, mae=0.9601, cvrmse=0.9518
+2026-05-03 23:46:34 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (svm_rbf, regression): mse=2.3758, rmse=1.5414, mae=0.9725, cvrmse=1.1489
+2026-05-03 23:46:34 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (svm_rbf, regression): mse=1.6263, rmse=1.2753, mae=0.8702, cvrmse=1.0101
+2026-05-03 23:46:34 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (svm_rbf, regression): mse=1.4738, rmse=1.2140, mae=0.9041, cvrmse=0.8950
+2026-05-03 23:46:34 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five family=svm_rbf target=log_roi OOF=cvrmse=0.9965, mae=0.9403, mse=1.8028, rmse=1.3427 inner_best_params={'model__C': 1, 'model__gamma': 0.003}
+2026-05-03 23:46:34 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five family=svm_rbf target=roi_gt_1 task=classification
+2026-05-03 23:46:34 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=svm_rbf task=classification X.shape=(1199, 127)
+2026-05-03 23:46:36 | INFO    | src.models.phase4.cv | Inner CV best: family=svm_rbf task=classification score=0.5930 params={'model__C': 30, 'model__gamma': 0.001}
+2026-05-03 23:46:36 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=svm_rbf task=classification
+2026-05-03 23:46:36 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (svm_rbf, classification): auc_roc=0.6009, pr_auc=0.8610, f1=0.7450
+2026-05-03 23:46:36 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (svm_rbf, classification): auc_roc=0.5724, pr_auc=0.8602, f1=0.7692
+2026-05-03 23:46:36 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (svm_rbf, classification): auc_roc=0.6406, pr_auc=0.8788, f1=0.7688
+2026-05-03 23:46:36 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (svm_rbf, classification): auc_roc=0.5810, pr_auc=0.8361, f1=0.7273
+2026-05-03 23:46:36 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (svm_rbf, classification): auc_roc=0.5700, pr_auc=0.8600, f1=0.7021
+2026-05-03 23:46:36 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (svm_rbf, classification): auc_roc=0.6273, pr_auc=0.8775, f1=0.7812
+2026-05-03 23:46:36 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (svm_rbf, classification): auc_roc=0.5824, pr_auc=0.8522, f1=0.7564
+2026-05-03 23:46:37 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (svm_rbf, classification): auc_roc=0.5351, pr_auc=0.8289, f1=0.7314
+2026-05-03 23:46:37 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (svm_rbf, classification): auc_roc=0.5529, pr_auc=0.8414, f1=0.7076
+2026-05-03 23:46:37 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (svm_rbf, classification): auc_roc=0.5885, pr_auc=0.8573, f1=0.7414
+2026-05-03 23:46:37 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (svm_rbf, classification): auc_roc=0.5408, pr_auc=0.8327, f1=0.7514
+2026-05-03 23:46:37 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (svm_rbf, classification): auc_roc=0.6142, pr_auc=0.8778, f1=0.7744
+2026-05-03 23:46:37 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (svm_rbf, classification): auc_roc=0.5798, pr_auc=0.8446, f1=0.7390
+2026-05-03 23:46:37 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (svm_rbf, classification): auc_roc=0.5011, pr_auc=0.8226, f1=0.7236
+2026-05-03 23:46:37 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (svm_rbf, classification): auc_roc=0.6345, pr_auc=0.8931, f1=0.7478
+2026-05-03 23:46:39 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five family=svm_rbf target=roi_gt_1 OOF=auc_roc=0.5866, f1=0.7469, pr_auc=0.8542 inner_best_params={'model__C': 30, 'model__gamma': 0.001}
+2026-05-03 23:46:39 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five family=svm_rbf target=roi_gt_2 task=classification
+2026-05-03 23:46:39 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=svm_rbf task=classification X.shape=(1199, 127)
+2026-05-03 23:46:41 | INFO    | src.models.phase4.cv | Inner CV best: family=svm_rbf task=classification score=0.6207 params={'model__C': 3, 'model__gamma': 0.003}
+2026-05-03 23:46:41 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=svm_rbf task=classification
+2026-05-03 23:46:41 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (svm_rbf, classification): auc_roc=0.6127, pr_auc=0.7183, f1=0.6871
+2026-05-03 23:46:41 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (svm_rbf, classification): auc_roc=0.5904, pr_auc=0.7120, f1=0.6644
+2026-05-03 23:46:41 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (svm_rbf, classification): auc_roc=0.6598, pr_auc=0.7896, f1=0.6713
+2026-05-03 23:46:41 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (svm_rbf, classification): auc_roc=0.6476, pr_auc=0.7497, f1=0.6873
+2026-05-03 23:46:41 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (svm_rbf, classification): auc_roc=0.5930, pr_auc=0.7049, f1=0.6735
+2026-05-03 23:46:41 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (svm_rbf, classification): auc_roc=0.6071, pr_auc=0.7414, f1=0.6438
+2026-05-03 23:46:41 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (svm_rbf, classification): auc_roc=0.6545, pr_auc=0.7720, f1=0.6784
+2026-05-03 23:46:41 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (svm_rbf, classification): auc_roc=0.6187, pr_auc=0.7477, f1=0.6549
+2026-05-03 23:46:41 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (svm_rbf, classification): auc_roc=0.5749, pr_auc=0.6877, f1=0.6711
+2026-05-03 23:46:41 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (svm_rbf, classification): auc_roc=0.6295, pr_auc=0.7544, f1=0.6547
+2026-05-03 23:46:41 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (svm_rbf, classification): auc_roc=0.5957, pr_auc=0.7116, f1=0.6573
+2026-05-03 23:46:41 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (svm_rbf, classification): auc_roc=0.5664, pr_auc=0.6964, f1=0.6467
+2026-05-03 23:46:42 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (svm_rbf, classification): auc_roc=0.6212, pr_auc=0.7583, f1=0.6426
+2026-05-03 23:46:42 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (svm_rbf, classification): auc_roc=0.6435, pr_auc=0.7495, f1=0.7162
+2026-05-03 23:46:42 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (svm_rbf, classification): auc_roc=0.5750, pr_auc=0.7114, f1=0.6622
+2026-05-03 23:46:43 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five family=svm_rbf target=roi_gt_2 OOF=auc_roc=0.6200, f1=0.6749, pr_auc=0.7343 inner_best_params={'model__C': 3, 'model__gamma': 0.003}
+2026-05-03 23:46:43 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=all_five_svm_rbf dir=runs/phase_4/20260503_2346_all_five_svm_rbf

@@ -1,0 +1,21 @@
+{
+  "baselines_total_cost": {
+    "always_greenlight": 5000000000.0,
+    "always_pass": 15700000000.0,
+    "genre_prior": 5000000000.0,
+    "random": 6850440000.0,
+    "read_everything": 1285000.0
+  },
+  "default_cost_matrix": {
+    "greenlight_flop": 50000000,
+    "pass_hit": 100000000,
+    "refer": 5000
+  },
+  "per_genre_default_total_cost": 1270000.0,
+  "system_default_action_proportions": {
+    "Greenlight": 0.011673151750972763,
+    "Pass": 0.0,
+    "Refer": 0.9883268482490273
+  },
+  "system_default_total_cost": 1270000.0
+}

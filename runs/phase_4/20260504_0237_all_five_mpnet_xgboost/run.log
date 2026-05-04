@@ -1,0 +1,62 @@
+2026-05-04 02:37:07 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=all_five_mpnet_xgboost dir=runs/phase_4/20260504_0237_all_five_mpnet_xgboost
+2026-05-04 02:37:07 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five_mpnet family=xgboost target=log_roi task=regression
+2026-05-04 02:37:07 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=xgboost task=regression X.shape=(1199, 127)
+2026-05-04 02:37:51 | INFO    | src.models.phase4.cv | Inner CV best: family=xgboost task=regression score=-1.3163 params={'model__learning_rate': 0.01, 'model__max_depth': 3, 'model__min_child_weight': 5, 'model__reg_lambda': 10.0}
+2026-05-04 02:37:51 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=xgboost task=regression
+2026-05-04 02:37:51 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (xgboost, regression): mse=1.3073, rmse=1.1434, mae=0.8535, cvrmse=0.8959
+2026-05-04 02:37:52 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (xgboost, regression): mse=1.7715, rmse=1.3310, mae=0.9567, cvrmse=0.9496
+2026-05-04 02:37:53 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (xgboost, regression): mse=1.6719, rmse=1.2930, mae=0.9279, cvrmse=0.9815
+2026-05-04 02:37:54 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (xgboost, regression): mse=1.7824, rmse=1.3351, mae=0.9592, cvrmse=0.9702
+2026-05-04 02:37:54 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (xgboost, regression): mse=2.1882, rmse=1.4793, mae=0.9775, cvrmse=1.0830
+2026-05-04 02:37:55 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (xgboost, regression): mse=1.3494, rmse=1.1616, mae=0.9156, cvrmse=0.8718
+2026-05-04 02:37:56 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (xgboost, regression): mse=2.3846, rmse=1.5442, mae=0.9568, cvrmse=1.1246
+2026-05-04 02:37:56 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (xgboost, regression): mse=1.5884, rmse=1.2603, mae=0.9159, cvrmse=0.9564
+2026-05-04 02:37:57 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (xgboost, regression): mse=1.5978, rmse=1.2640, mae=0.9229, cvrmse=0.9625
+2026-05-04 02:37:58 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (xgboost, regression): mse=1.8848, rmse=1.3729, mae=1.0080, cvrmse=0.9801
+2026-05-04 02:37:59 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (xgboost, regression): mse=1.8720, rmse=1.3682, mae=1.0033, cvrmse=0.9525
+2026-05-04 02:37:59 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (xgboost, regression): mse=1.6830, rmse=1.2973, mae=0.9809, cvrmse=0.9680
+2026-05-04 02:38:00 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (xgboost, regression): mse=2.3380, rmse=1.5290, mae=0.9757, cvrmse=1.1397
+2026-05-04 02:38:01 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (xgboost, regression): mse=1.5052, rmse=1.2269, mae=0.8478, cvrmse=0.9718
+2026-05-04 02:38:02 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (xgboost, regression): mse=1.4204, rmse=1.1918, mae=0.9049, cvrmse=0.8786
+2026-05-04 02:38:03 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five_mpnet family=xgboost target=log_roi OOF=cvrmse=0.9792, mae=0.9353, mse=1.7409, rmse=1.3194 inner_best_params={'model__learning_rate': 0.01, 'model__max_depth': 3, 'model__min_child_weight': 5, 'model__reg_lambda': 10.0}
+2026-05-04 02:38:03 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five_mpnet family=xgboost target=roi_gt_1 task=classification
+2026-05-04 02:38:03 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=xgboost task=classification X.shape=(1199, 127)
+2026-05-04 02:38:36 | INFO    | src.models.phase4.cv | Inner CV best: family=xgboost task=classification score=0.5823 params={'model__learning_rate': 0.01, 'model__max_depth': 6, 'model__min_child_weight': 1, 'model__reg_lambda': 10.0}
+2026-05-04 02:38:36 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=xgboost task=classification
+2026-05-04 02:38:39 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (xgboost, classification): auc_roc=0.6004, pr_auc=0.8550, log_loss=0.5502, f1=0.8579
+2026-05-04 02:38:42 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (xgboost, classification): auc_roc=0.5536, pr_auc=0.8486, log_loss=0.5756, f1=0.8300
+2026-05-04 02:38:45 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (xgboost, classification): auc_roc=0.6031, pr_auc=0.8347, log_loss=0.5509, f1=0.8715
+2026-05-04 02:38:48 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (xgboost, classification): auc_roc=0.5697, pr_auc=0.8377, log_loss=0.5596, f1=0.8458
+2026-05-04 02:38:51 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (xgboost, classification): auc_roc=0.5847, pr_auc=0.8421, log_loss=0.5767, f1=0.8247
+2026-05-04 02:38:53 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (xgboost, classification): auc_roc=0.6373, pr_auc=0.8633, log_loss=0.5404, f1=0.8629
+2026-05-04 02:38:56 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (xgboost, classification): auc_roc=0.5607, pr_auc=0.8184, log_loss=0.5651, f1=0.8663
+2026-05-04 02:38:59 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (xgboost, classification): auc_roc=0.4937, pr_auc=0.8156, log_loss=0.5850, f1=0.8265
+2026-05-04 02:39:02 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (xgboost, classification): auc_roc=0.5825, pr_auc=0.8632, log_loss=0.5643, f1=0.8304
+2026-05-04 02:39:05 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (xgboost, classification): auc_roc=0.5631, pr_auc=0.8400, log_loss=0.5634, f1=0.8506
+2026-05-04 02:39:08 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (xgboost, classification): auc_roc=0.5034, pr_auc=0.8129, log_loss=0.5651, f1=0.8668
+2026-05-04 02:39:11 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (xgboost, classification): auc_roc=0.5829, pr_auc=0.8503, log_loss=0.5569, f1=0.8473
+2026-05-04 02:39:14 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (xgboost, classification): auc_roc=0.6158, pr_auc=0.8741, log_loss=0.5475, f1=0.8486
+2026-05-04 02:39:17 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (xgboost, classification): auc_roc=0.5700, pr_auc=0.8441, log_loss=0.5918, f1=0.7842
+2026-05-04 02:39:20 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (xgboost, classification): auc_roc=0.5850, pr_auc=0.8569, log_loss=0.5568, f1=0.8550
+2026-05-04 02:39:24 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five_mpnet family=xgboost target=roi_gt_1 OOF=auc_roc=0.5858, f1=0.8576, log_loss=0.5546, pr_auc=0.8457 inner_best_params={'model__learning_rate': 0.01, 'model__max_depth': 6, 'model__min_child_weight': 1, 'model__reg_lambda': 10.0}
+2026-05-04 02:39:24 | INFO    | src.models.phase4.benchmark | Eval: matrix=all_five_mpnet family=xgboost target=roi_gt_2 task=classification
+2026-05-04 02:39:24 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=xgboost task=classification X.shape=(1199, 127)
+2026-05-04 02:39:57 | INFO    | src.models.phase4.cv | Inner CV best: family=xgboost task=classification score=0.6406 params={'model__learning_rate': 0.03, 'model__max_depth': 3, 'model__min_child_weight': 5, 'model__reg_lambda': 10.0}
+2026-05-04 02:39:57 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=xgboost task=classification
+2026-05-04 02:39:58 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (xgboost, classification): auc_roc=0.6490, pr_auc=0.7430, log_loss=0.6529, f1=0.7075
+2026-05-04 02:39:59 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (xgboost, classification): auc_roc=0.6109, pr_auc=0.7317, log_loss=0.6576, f1=0.6954
+2026-05-04 02:39:59 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (xgboost, classification): auc_roc=0.6722, pr_auc=0.7921, log_loss=0.6314, f1=0.7434
+2026-05-04 02:40:00 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (xgboost, classification): auc_roc=0.6614, pr_auc=0.7516, log_loss=0.6437, f1=0.6962
+2026-05-04 02:40:01 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (xgboost, classification): auc_roc=0.6095, pr_auc=0.7369, log_loss=0.6769, f1=0.6734
+2026-05-04 02:40:01 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (xgboost, classification): auc_roc=0.6200, pr_auc=0.7449, log_loss=0.6611, f1=0.7078
+2026-05-04 02:40:02 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (xgboost, classification): auc_roc=0.6458, pr_auc=0.7437, log_loss=0.6469, f1=0.6933
+2026-05-04 02:40:03 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (xgboost, classification): auc_roc=0.6197, pr_auc=0.7405, log_loss=0.6582, f1=0.6968
+2026-05-04 02:40:03 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (xgboost, classification): auc_roc=0.5616, pr_auc=0.7230, log_loss=0.6842, f1=0.6732
+2026-05-04 02:40:04 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (xgboost, classification): auc_roc=0.6458, pr_auc=0.7528, log_loss=0.6534, f1=0.6873
+2026-05-04 02:40:05 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (xgboost, classification): auc_roc=0.6272, pr_auc=0.7285, log_loss=0.6547, f1=0.7261
+2026-05-04 02:40:05 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (xgboost, classification): auc_roc=0.6198, pr_auc=0.7394, log_loss=0.6628, f1=0.7016
+2026-05-04 02:40:06 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (xgboost, classification): auc_roc=0.6309, pr_auc=0.7627, log_loss=0.6463, f1=0.6885
+2026-05-04 02:40:06 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (xgboost, classification): auc_roc=0.6672, pr_auc=0.8038, log_loss=0.6166, f1=0.7208
+2026-05-04 02:40:07 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (xgboost, classification): auc_roc=0.5728, pr_auc=0.7029, log_loss=0.6810, f1=0.6445
+2026-05-04 02:40:10 | INFO    | src.models.phase4.benchmark | Done: matrix=all_five_mpnet family=xgboost target=roi_gt_2 OOF=auc_roc=0.6388, f1=0.7061, log_loss=0.6458, pr_auc=0.7539 inner_best_params={'model__learning_rate': 0.03, 'model__max_depth': 3, 'model__min_child_weight': 5, 'model__reg_lambda': 10.0}
+2026-05-04 02:40:10 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=all_five_mpnet_xgboost dir=runs/phase_4/20260504_0237_all_five_mpnet_xgboost

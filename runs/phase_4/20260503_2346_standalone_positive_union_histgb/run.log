@@ -1,0 +1,62 @@
+2026-05-03 23:46:49 | INFO    | src.experiments.save_run | Run started: phase=phase_4 name=standalone_positive_union_histgb dir=runs/phase_4/20260503_2346_standalone_positive_union_histgb
+2026-05-03 23:46:49 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=histgb target=log_roi task=regression
+2026-05-03 23:46:49 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=histgb task=regression X.shape=(1199, 92)
+2026-05-03 23:46:53 | INFO    | src.models.phase4.cv | Inner CV best: family=histgb task=regression score=-1.3160 params={'model__learning_rate': 0.05, 'model__max_depth': 2, 'model__min_samples_leaf': 40}
+2026-05-03 23:46:53 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=histgb task=regression
+2026-05-03 23:46:53 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (histgb, regression): mse=1.3047, rmse=1.1422, mae=0.8459, cvrmse=0.8951
+2026-05-03 23:46:53 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (histgb, regression): mse=1.7513, rmse=1.3234, mae=0.9680, cvrmse=0.9442
+2026-05-03 23:46:53 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (histgb, regression): mse=1.6713, rmse=1.2928, mae=0.9325, cvrmse=0.9813
+2026-05-03 23:46:53 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (histgb, regression): mse=1.8406, rmse=1.3567, mae=0.9669, cvrmse=0.9859
+2026-05-03 23:46:53 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (histgb, regression): mse=2.1457, rmse=1.4648, mae=0.9696, cvrmse=1.0724
+2026-05-03 23:46:54 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (histgb, regression): mse=1.3595, rmse=1.1660, mae=0.9293, cvrmse=0.8751
+2026-05-03 23:46:54 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (histgb, regression): mse=2.3603, rmse=1.5363, mae=0.9418, cvrmse=1.1188
+2026-05-03 23:46:54 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (histgb, regression): mse=1.5949, rmse=1.2629, mae=0.9166, cvrmse=0.9583
+2026-05-03 23:46:54 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (histgb, regression): mse=1.5815, rmse=1.2576, mae=0.9239, cvrmse=0.9575
+2026-05-03 23:46:54 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (histgb, regression): mse=1.8900, rmse=1.3748, mae=0.9946, cvrmse=0.9815
+2026-05-03 23:46:55 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (histgb, regression): mse=1.8946, rmse=1.3764, mae=1.0162, cvrmse=0.9582
+2026-05-03 23:46:55 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (histgb, regression): mse=1.7357, rmse=1.3175, mae=0.9944, cvrmse=0.9831
+2026-05-03 23:46:55 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (histgb, regression): mse=2.2459, rmse=1.4986, mae=0.9308, cvrmse=1.1170
+2026-05-03 23:46:55 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (histgb, regression): mse=1.5100, rmse=1.2288, mae=0.8531, cvrmse=0.9733
+2026-05-03 23:46:55 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (histgb, regression): mse=1.4228, rmse=1.1928, mae=0.9071, cvrmse=0.8794
+2026-05-03 23:46:56 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=histgb target=log_roi OOF=cvrmse=0.9788, mae=0.9334, mse=1.7393, rmse=1.3188 inner_best_params={'model__learning_rate': 0.05, 'model__max_depth': 2, 'model__min_samples_leaf': 40}
+2026-05-03 23:46:56 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=histgb target=roi_gt_1 task=classification
+2026-05-03 23:46:56 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=histgb task=classification X.shape=(1199, 92)
+2026-05-03 23:46:58 | INFO    | src.models.phase4.cv | Inner CV best: family=histgb task=classification score=0.5761 params={'model__learning_rate': 0.05, 'model__max_depth': 2, 'model__min_samples_leaf': 20}
+2026-05-03 23:46:58 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=histgb task=classification
+2026-05-03 23:46:58 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (histgb, classification): auc_roc=0.5578, pr_auc=0.8187, log_loss=0.6806, f1=0.6687
+2026-05-03 23:46:58 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (histgb, classification): auc_roc=0.5931, pr_auc=0.8650, log_loss=0.6318, f1=0.7722
+2026-05-03 23:46:58 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (histgb, classification): auc_roc=0.6040, pr_auc=0.8577, log_loss=0.6706, f1=0.7300
+2026-05-03 23:46:58 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (histgb, classification): auc_roc=0.5971, pr_auc=0.8439, log_loss=0.6732, f1=0.7507
+2026-05-03 23:46:58 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (histgb, classification): auc_roc=0.5284, pr_auc=0.8304, log_loss=0.6847, f1=0.6625
+2026-05-03 23:46:59 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (histgb, classification): auc_roc=0.6049, pr_auc=0.8450, log_loss=0.6563, f1=0.7564
+2026-05-03 23:46:59 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (histgb, classification): auc_roc=0.5413, pr_auc=0.8254, log_loss=0.6459, f1=0.7283
+2026-05-03 23:46:59 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (histgb, classification): auc_roc=0.5487, pr_auc=0.8123, log_loss=0.6788, f1=0.6769
+2026-05-03 23:46:59 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (histgb, classification): auc_roc=0.5723, pr_auc=0.8386, log_loss=0.6758, f1=0.7193
+2026-05-03 23:46:59 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (histgb, classification): auc_roc=0.6414, pr_auc=0.8619, log_loss=0.6333, f1=0.7799
+2026-05-03 23:46:59 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (histgb, classification): auc_roc=0.5583, pr_auc=0.8249, log_loss=0.6545, f1=0.7514
+2026-05-03 23:46:59 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (histgb, classification): auc_roc=0.6266, pr_auc=0.8740, log_loss=0.6652, f1=0.7427
+2026-05-03 23:46:59 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (histgb, classification): auc_roc=0.5826, pr_auc=0.8274, log_loss=0.6702, f1=0.7030
+2026-05-03 23:47:00 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (histgb, classification): auc_roc=0.5504, pr_auc=0.8361, log_loss=0.6633, f1=0.7062
+2026-05-03 23:47:00 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (histgb, classification): auc_roc=0.5627, pr_auc=0.8254, log_loss=0.6787, f1=0.6988
+2026-05-03 23:47:02 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=histgb target=roi_gt_1 OOF=auc_roc=0.5895, f1=0.7319, log_loss=0.6602, pr_auc=0.8401 inner_best_params={'model__learning_rate': 0.05, 'model__max_depth': 2, 'model__min_samples_leaf': 20}
+2026-05-03 23:47:02 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=histgb target=roi_gt_2 task=classification
+2026-05-03 23:47:02 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=histgb task=classification X.shape=(1199, 92)
+2026-05-03 23:47:05 | INFO    | src.models.phase4.cv | Inner CV best: family=histgb task=classification score=0.5983 params={'model__learning_rate': 0.05, 'model__max_depth': 4, 'model__min_samples_leaf': 40}
+2026-05-03 23:47:05 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=histgb task=classification
+2026-05-03 23:47:05 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (histgb, classification): auc_roc=0.6271, pr_auc=0.7215, log_loss=0.6737, f1=0.6194
+2026-05-03 23:47:06 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (histgb, classification): auc_roc=0.5620, pr_auc=0.7069, log_loss=0.6746, f1=0.6416
+2026-05-03 23:47:06 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (histgb, classification): auc_roc=0.5915, pr_auc=0.7333, log_loss=0.6671, f1=0.6438
+2026-05-03 23:47:06 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (histgb, classification): auc_roc=0.6000, pr_auc=0.7159, log_loss=0.6772, f1=0.5865
+2026-05-03 23:47:07 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (histgb, classification): auc_roc=0.6110, pr_auc=0.7544, log_loss=0.6706, f1=0.6779
+2026-05-03 23:47:07 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (histgb, classification): auc_roc=0.5734, pr_auc=0.7430, log_loss=0.6710, f1=0.6532
+2026-05-03 23:47:07 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (histgb, classification): auc_roc=0.6380, pr_auc=0.7435, log_loss=0.6659, f1=0.6762
+2026-05-03 23:47:07 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (histgb, classification): auc_roc=0.6082, pr_auc=0.7402, log_loss=0.6545, f1=0.6839
+2026-05-03 23:47:07 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (histgb, classification): auc_roc=0.5748, pr_auc=0.7387, log_loss=0.6732, f1=0.6483
+2026-05-03 23:47:08 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (histgb, classification): auc_roc=0.5932, pr_auc=0.7402, log_loss=0.6703, f1=0.6268
+2026-05-03 23:47:08 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (histgb, classification): auc_roc=0.6036, pr_auc=0.7340, log_loss=0.6714, f1=0.6456
+2026-05-03 23:47:08 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (histgb, classification): auc_roc=0.6109, pr_auc=0.7400, log_loss=0.6748, f1=0.6426
+2026-05-03 23:47:08 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (histgb, classification): auc_roc=0.5770, pr_auc=0.6952, log_loss=0.6758, f1=0.6483
+2026-05-03 23:47:08 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (histgb, classification): auc_roc=0.6224, pr_auc=0.7552, log_loss=0.6510, f1=0.6974
+2026-05-03 23:47:08 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (histgb, classification): auc_roc=0.5856, pr_auc=0.7065, log_loss=0.6734, f1=0.6507
+2026-05-03 23:47:11 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=histgb target=roi_gt_2 OOF=auc_roc=0.6093, f1=0.6556, log_loss=0.6637, pr_auc=0.7345 inner_best_params={'model__learning_rate': 0.05, 'model__max_depth': 4, 'model__min_samples_leaf': 40}
+2026-05-03 23:47:11 | INFO    | src.experiments.save_run | Run finished: phase=phase_4 name=standalone_positive_union_histgb dir=runs/phase_4/20260503_2346_standalone_positive_union_histgb

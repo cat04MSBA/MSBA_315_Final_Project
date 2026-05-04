@@ -1,0 +1,3 @@
+2026-05-04 13:19:41 | INFO    | src.experiments.save_run | Run started: phase=phase_5 name=phase5_roi_gt_2 dir=runs/phase_5/20260504_1319_phase5_roi_gt_2
+2026-05-04 13:19:41 | INFO    | src.calibration.probability | Probability calib | roi_gt_2 | uncalibrated | mean ECE=0.1865 Brier=0.2497 log_loss=0.6945
+2026-05-04 13:19:41 | INFO    | src.experiments.save_run | Run finished: phase=phase_5 name=phase5_roi_gt_2 dir=runs/phase_5/20260504_1319_phase5_roi_gt_2

@@ -1,0 +1,62 @@
+2026-05-04 14:36:49 | INFO    | src.experiments.save_run | Run started: phase=phase_4_v2 name=standalone_positive_union_lightgbm dir=runs/phase_4_v2/20260504_1436_standalone_positive_union_lightgbm
+2026-05-04 14:36:49 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=lightgbm target=log_roi task=regression
+2026-05-04 14:36:49 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=lightgbm task=regression X.shape=(1460, 92)
+2026-05-04 14:36:59 | INFO    | src.models.phase4.cv | Inner CV best: family=lightgbm task=regression score=-1.3168 params={'model__learning_rate': 0.01, 'model__max_depth': 5, 'model__min_child_samples': 30, 'model__num_leaves': 15}
+2026-05-04 14:36:59 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=lightgbm task=regression
+2026-05-04 14:37:00 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (lightgbm, regression): mse=1.9377, rmse=1.3920, mae=1.0031, cvrmse=1.0385
+2026-05-04 14:37:00 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (lightgbm, regression): mse=1.5990, rmse=1.2645, mae=0.9239, cvrmse=0.9657
+2026-05-04 14:37:00 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (lightgbm, regression): mse=1.5746, rmse=1.2548, mae=0.9402, cvrmse=0.9164
+2026-05-04 14:37:00 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (lightgbm, regression): mse=1.6791, rmse=1.2958, mae=0.9571, cvrmse=0.9920
+2026-05-04 14:37:01 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (lightgbm, regression): mse=1.8953, rmse=1.3767, mae=1.0098, cvrmse=1.0137
+2026-05-04 14:37:01 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (lightgbm, regression): mse=1.8189, rmse=1.3487, mae=0.9698, cvrmse=0.9817
+2026-05-04 14:37:01 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (lightgbm, regression): mse=1.4939, rmse=1.2223, mae=0.9074, cvrmse=0.9797
+2026-05-04 14:37:02 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (lightgbm, regression): mse=2.0728, rmse=1.4397, mae=1.0038, cvrmse=1.0817
+2026-05-04 14:37:02 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (lightgbm, regression): mse=1.5817, rmse=1.2577, mae=0.9526, cvrmse=0.9401
+2026-05-04 14:37:02 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (lightgbm, regression): mse=1.8777, rmse=1.3703, mae=1.0386, cvrmse=0.9833
+2026-05-04 14:37:03 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (lightgbm, regression): mse=1.4974, rmse=1.2237, mae=0.9101, cvrmse=0.9120
+2026-05-04 14:37:03 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (lightgbm, regression): mse=1.8922, rmse=1.3756, mae=0.9857, cvrmse=0.9984
+2026-05-04 14:37:03 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (lightgbm, regression): mse=1.8735, rmse=1.3688, mae=0.9863, cvrmse=1.0062
+2026-05-04 14:37:03 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (lightgbm, regression): mse=1.8333, rmse=1.3540, mae=1.0117, cvrmse=1.0032
+2026-05-04 14:37:04 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (lightgbm, regression): mse=1.6731, rmse=1.2935, mae=0.9771, cvrmse=1.0313
+2026-05-04 14:37:04 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=lightgbm target=log_roi OOF=cvrmse=0.9843, mae=0.9641, mse=1.7313, rmse=1.3158 inner_best_params={'model__learning_rate': 0.01, 'model__max_depth': 5, 'model__min_child_samples': 30, 'model__num_leaves': 15}
+2026-05-04 14:37:04 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=lightgbm target=roi_gt_1 task=classification
+2026-05-04 14:37:04 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=lightgbm task=classification X.shape=(1460, 92)
+2026-05-04 14:37:16 | INFO    | src.models.phase4.cv | Inner CV best: family=lightgbm task=classification score=0.5925 params={'model__learning_rate': 0.01, 'model__max_depth': 7, 'model__min_child_samples': 10, 'model__num_leaves': 15}
+2026-05-04 14:37:16 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=lightgbm task=classification
+2026-05-04 14:37:16 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (lightgbm, classification): auc_roc=0.5894, pr_auc=0.8272, log_loss=0.5871, f1=0.8156
+2026-05-04 14:37:17 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (lightgbm, classification): auc_roc=0.6165, pr_auc=0.8361, log_loss=0.5542, f1=0.8379
+2026-05-04 14:37:17 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (lightgbm, classification): auc_roc=0.5506, pr_auc=0.8322, log_loss=0.6026, f1=0.7596
+2026-05-04 14:37:18 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (lightgbm, classification): auc_roc=0.5948, pr_auc=0.8485, log_loss=0.5732, f1=0.8087
+2026-05-04 14:37:19 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (lightgbm, classification): auc_roc=0.6113, pr_auc=0.8392, log_loss=0.6037, f1=0.7836
+2026-05-04 14:37:19 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (lightgbm, classification): auc_roc=0.5473, pr_auc=0.8197, log_loss=0.6124, f1=0.7851
+2026-05-04 14:37:20 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (lightgbm, classification): auc_roc=0.5883, pr_auc=0.8383, log_loss=0.5814, f1=0.8078
+2026-05-04 14:37:20 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (lightgbm, classification): auc_roc=0.6228, pr_auc=0.8447, log_loss=0.5685, f1=0.8288
+2026-05-04 14:37:21 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (lightgbm, classification): auc_roc=0.6453, pr_auc=0.8647, log_loss=0.5480, f1=0.8376
+2026-05-04 14:37:21 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (lightgbm, classification): auc_roc=0.5615, pr_auc=0.8166, log_loss=0.5904, f1=0.7991
+2026-05-04 14:37:22 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (lightgbm, classification): auc_roc=0.5562, pr_auc=0.8253, log_loss=0.5919, f1=0.7888
+2026-05-04 14:37:22 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (lightgbm, classification): auc_roc=0.6371, pr_auc=0.8567, log_loss=0.5621, f1=0.8190
+2026-05-04 14:37:23 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (lightgbm, classification): auc_roc=0.6532, pr_auc=0.8668, log_loss=0.5458, f1=0.8383
+2026-05-04 14:37:23 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (lightgbm, classification): auc_roc=0.6183, pr_auc=0.8342, log_loss=0.5592, f1=0.8493
+2026-05-04 14:37:24 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (lightgbm, classification): auc_roc=0.5924, pr_auc=0.8476, log_loss=0.5825, f1=0.7947
+2026-05-04 14:37:27 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=lightgbm target=roi_gt_1 OOF=auc_roc=0.6101, f1=0.8192, log_loss=0.5681, pr_auc=0.8414 inner_best_params={'model__learning_rate': 0.01, 'model__max_depth': 7, 'model__min_child_samples': 10, 'model__num_leaves': 15}
+2026-05-04 14:37:27 | INFO    | src.models.phase4.benchmark | Eval: matrix=standalone_positive_union family=lightgbm target=roi_gt_2 task=classification
+2026-05-04 14:37:27 | INFO    | src.models.phase4.cv | Inner GridSearchCV: family=lightgbm task=classification X.shape=(1460, 92)
+2026-05-04 14:37:37 | INFO    | src.models.phase4.cv | Inner CV best: family=lightgbm task=classification score=0.5963 params={'model__learning_rate': 0.01, 'model__max_depth': 7, 'model__min_child_samples': 10, 'model__num_leaves': 15}
+2026-05-04 14:37:37 | INFO    | src.models.phase4.cv | Repeated outer CV (3x5): family=lightgbm task=classification
+2026-05-04 14:37:38 | DEBUG   | src.models.phase4.cv | Fold 1/15 done (lightgbm, classification): auc_roc=0.5905, pr_auc=0.7115, log_loss=0.6711, f1=0.6177
+2026-05-04 14:37:38 | DEBUG   | src.models.phase4.cv | Fold 2/15 done (lightgbm, classification): auc_roc=0.6211, pr_auc=0.7237, log_loss=0.6576, f1=0.6705
+2026-05-04 14:37:39 | DEBUG   | src.models.phase4.cv | Fold 3/15 done (lightgbm, classification): auc_roc=0.5153, pr_auc=0.6578, log_loss=0.7071, f1=0.5909
+2026-05-04 14:37:39 | DEBUG   | src.models.phase4.cv | Fold 4/15 done (lightgbm, classification): auc_roc=0.6164, pr_auc=0.6982, log_loss=0.6654, f1=0.6509
+2026-05-04 14:37:40 | DEBUG   | src.models.phase4.cv | Fold 5/15 done (lightgbm, classification): auc_roc=0.6382, pr_auc=0.7469, log_loss=0.6535, f1=0.6551
+2026-05-04 14:37:40 | DEBUG   | src.models.phase4.cv | Fold 6/15 done (lightgbm, classification): auc_roc=0.5879, pr_auc=0.7121, log_loss=0.6841, f1=0.6195
+2026-05-04 14:37:40 | DEBUG   | src.models.phase4.cv | Fold 7/15 done (lightgbm, classification): auc_roc=0.6371, pr_auc=0.7711, log_loss=0.6406, f1=0.6832
+2026-05-04 14:37:41 | DEBUG   | src.models.phase4.cv | Fold 8/15 done (lightgbm, classification): auc_roc=0.6026, pr_auc=0.6920, log_loss=0.6640, f1=0.6572
+2026-05-04 14:37:41 | DEBUG   | src.models.phase4.cv | Fold 9/15 done (lightgbm, classification): auc_roc=0.5720, pr_auc=0.6809, log_loss=0.6869, f1=0.6297
+2026-05-04 14:37:42 | DEBUG   | src.models.phase4.cv | Fold 10/15 done (lightgbm, classification): auc_roc=0.5731, pr_auc=0.6998, log_loss=0.6773, f1=0.6246
+2026-05-04 14:37:42 | DEBUG   | src.models.phase4.cv | Fold 11/15 done (lightgbm, classification): auc_roc=0.6278, pr_auc=0.7290, log_loss=0.6578, f1=0.6838
+2026-05-04 14:37:43 | DEBUG   | src.models.phase4.cv | Fold 12/15 done (lightgbm, classification): auc_roc=0.5569, pr_auc=0.6788, log_loss=0.6919, f1=0.6023
+2026-05-04 14:37:43 | DEBUG   | src.models.phase4.cv | Fold 13/15 done (lightgbm, classification): auc_roc=0.6132, pr_auc=0.7294, log_loss=0.6541, f1=0.6704
+2026-05-04 14:37:44 | DEBUG   | src.models.phase4.cv | Fold 14/15 done (lightgbm, classification): auc_roc=0.5980, pr_auc=0.7167, log_loss=0.6672, f1=0.6393
+2026-05-04 14:37:44 | DEBUG   | src.models.phase4.cv | Fold 15/15 done (lightgbm, classification): auc_roc=0.5584, pr_auc=0.7018, log_loss=0.6851, f1=0.6466
+2026-05-04 14:37:47 | INFO    | src.models.phase4.benchmark | Done: matrix=standalone_positive_union family=lightgbm target=roi_gt_2 OOF=auc_roc=0.6030, f1=0.6474, log_loss=0.6635, pr_auc=0.7144 inner_best_params={'model__learning_rate': 0.01, 'model__max_depth': 7, 'model__min_child_samples': 10, 'model__num_leaves': 15}
+2026-05-04 14:37:47 | INFO    | src.experiments.save_run | Run finished: phase=phase_4_v2 name=standalone_positive_union_lightgbm dir=runs/phase_4_v2/20260504_1436_standalone_positive_union_lightgbm
