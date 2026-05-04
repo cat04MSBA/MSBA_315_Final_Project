@@ -148,10 +148,12 @@ def plot_budget_revenue(df: pd.DataFrame, out_path) -> None:
                    title=f"{col.capitalize()} (raw)")
         ax_raw.grid(axis="y", linestyle=":", alpha=0.6)
 
-        log_vals = np.log10(vals.clip(lower=1))
+        # Use log1p to match the saved log_budget / log_revenue columns
+        # produced by build_corpus.py (compute_monetary_log).
+        log_vals = np.log1p(vals.clip(lower=0))
         ax_log.hist(log_vals, bins=50, color=color, edgecolor="black", alpha=0.85)
-        ax_log.set(xlabel=f"log10({col.capitalize()})", ylabel="Films",
-                   title=f"{col.capitalize()} (log10)")
+        ax_log.set(xlabel=f"log1p({col.capitalize()})", ylabel="Films",
+                   title=f"{col.capitalize()} (log1p)")
         ax_log.grid(axis="y", linestyle=":", alpha=0.6)
     fig.suptitle(f"Phase 2 corpus: budget and revenue (N={len(df):,})")
     _save(fig, out_path)
@@ -159,7 +161,10 @@ def plot_budget_revenue(df: pd.DataFrame, out_path) -> None:
 
 def plot_rating_roi_length(df: pd.DataFrame, out_path) -> None:
     roi = df["revenue"] / df["budget"]
-    roi_log = np.log10(roi.replace([np.inf, -np.inf], np.nan).dropna().clip(lower=1e-3))
+    # Use log1p to match the project's monetary log convention. Break-even
+    # (ROI = 1) sits at log1p(1) = ln(2) ≈ 0.693, marked on the plot.
+    roi_log = np.log1p(roi.replace([np.inf, -np.inf], np.nan).dropna().clip(lower=0))
+    break_even = float(np.log1p(1))
 
     fig, axes = plt.subplots(1, 3, figsize=(15, 4.5))
 
@@ -170,9 +175,9 @@ def plot_rating_roi_length(df: pd.DataFrame, out_path) -> None:
 
     axes[1].hist(roi_log, bins=60, color="darkgreen",
                  edgecolor="black", alpha=0.8)
-    axes[1].axvline(0, color="black", linestyle="--", alpha=0.7,
-                    label="break-even")
-    axes[1].set(xlabel="log10(ROI)", ylabel="Films", title="ROI")
+    axes[1].axvline(break_even, color="black", linestyle="--", alpha=0.7,
+                    label=f"break-even (log1p(1)≈{break_even:.2f})")
+    axes[1].set(xlabel="log1p(ROI)", ylabel="Films", title="ROI")
     axes[1].legend()
     axes[1].grid(axis="y", linestyle=":", alpha=0.6)
 

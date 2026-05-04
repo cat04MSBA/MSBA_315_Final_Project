@@ -70,8 +70,8 @@ The pre-1995 cutoff's reversal merits separate justification beyond just "the co
 - Budget median $25M, revenue median $64M
 - Rating mean 6.94, median 7.0 (using `IMDB_Rating` preferred, `vote_average` fallback)
 - ROI median 2.9x, 80.5% gross-profitable
-- Median 130 scenes / 56 unique characters / 880 dialogue lines per film
-- 680 of 1,713 films had at least one parser warning (40%); none were XML errors. Warnings come mostly from minor structure breaks (dangling `<character>` tags, etc.) and don't affect the structural metrics.
+- Median 130 scenes / 51 unique characters (post-Tier-1 parser fixes; pre-Tier-1 median was 56) / 880 dialogue lines per film
+- 698 of 1,713 films (~41%) had at least one parser warning; none were XML errors. Warnings come mostly from minor structure breaks (dangling `<character>` tags, etc.) and don't affect the structural metrics.
 
 ### Saved figures
 
@@ -79,7 +79,7 @@ The pre-1995 cutoff's reversal merits separate justification beyond just "the co
 - `phase2_genre_distribution.png` — using `genres_bucketed`. Drama, Comedy, Thriller, Action lead. Genres with <30 films collapsed into `Other`. Distribution is stable enough for per-genre CV in Phase 4.
 - `phase2_budget_revenue_distribution.png` — heavy right-skew confirmed; `log1p` transforms produce clean roughly-normal shapes. Phase 3 / 4 use the log columns.
 - `phase2_rating_roi_length.png` — narrow rating Gaussian centered ~7.0; ROI heavily right-tailed (hits at 10x+); screenplay length bell-shaped centered around 200k chars.
-- `phase2_screenplay_structure.png` — distributions of `n_scenes` (right-skew, median 130), `n_unique_characters` (right-skew, median 56), `n_dialogue_lines` (right-skew, median 880), `dialogue_to_total_text_ratio` (centered around 0.4). The structural metrics will be useful as Phase 3 baseline features.
+- `phase2_screenplay_structure.png` — distributions of `n_scenes` (right-skew, median 130), `n_unique_characters` (right-skew, median 51), `n_dialogue_lines` (right-skew, median 880), `dialogue_to_total_text_ratio` (centered around 0.4). The structural metrics will be useful as Phase 3 baseline features.
 
 ### Saved tables
 
@@ -195,9 +195,9 @@ source-XML mistagging that was previously silently incorporated.
 Films with at least one warning rose from 680 to 698 (+18). The
 median `n_unique_characters` dropped from 56 to 51, reflecting the
 combined effect of variant normalization and rejection of
-mistagged content; the mean dropped from approximately 60 to 65.1.
-For the most-affected films, `n_unique_characters` reductions were
-substantial (e.g., *Iron Man* 97 → 83, a 14% reduction).
+mistagged content. For the most-affected films,
+`n_unique_characters` reductions were substantial (e.g., *Iron Man*
+97 → 83, a 14% reduction).
 
 **Patch applied to Case 3.** The wrong-root-tag case now persists
 its warning to the `parse_warnings` field on the `ParsedScreenplay`

@@ -434,10 +434,11 @@ CELLS = [
     md("### 6.2 Logarithmic transforms for budget and revenue"),
     md("""
         **Justification.** Phase 1 EDA established that both budget
-        and revenue exhibit substantial right-skew: in each case the
-        mean exceeds the median by a factor of approximately 2.5,
-        and the maximum value exceeds the 75th percentile by an
-        order of magnitude. A small number of high-budget releases
+        and revenue exhibit substantial right-skew: budget's mean
+        ($42M) is roughly 1.7x its median ($25M), and revenue's mean
+        ($154M) is roughly 2.4x its median ($64M). The maximum value
+        in each case exceeds the 75th percentile by an order of
+        magnitude. A small number of high-budget releases
         therefore dominate the distribution. Untransformed values
         used as features or targets would cause those outlying
         observations to dominate any squared-error loss, biasing
@@ -1042,7 +1043,8 @@ CELLS = [
         Section 6.2. Median budget is $25M and median revenue is
         $64M; the means are substantially higher ($42M and $154M
         respectively), reflecting the heavy upper tail. The
-        log10-transformed panels display approximately symmetric
+        log1p-transformed panels (matching the saved log_budget
+        and log_revenue columns) display approximately symmetric
         unimodal distributions, suitable inputs for downstream
         regression modelling.
     """),
@@ -1066,15 +1068,17 @@ CELLS = [
         asymmetric-cost decision-making in Phase 6) rather than
         in headline regression accuracy.
 
-        The return-on-investment distribution is heavily
-        right-tailed, with the break-even line (log10 ROI = 0)
-        positioned to the left of the bulk of the distribution.
-        Approximately 80.5 percent of films in the corpus are
-        gross-profitable; this rate substantially exceeds the
-        industry's net-profitability rate of approximately 50
-        percent, reflecting survivorship bias in the corpus
-        (films that were both produced and recognized enough to
-        appear in a major metadata aggregator). Phase 6's cost
+        On the raw scale, ROI is heavily right-tailed (a small
+        number of breakout hits with very large multiples). On the
+        log1p scale shown here the distribution is approximately
+        bell-shaped with mild right skew, and the break-even line
+        sits at log1p(1) ≈ 0.69. Approximately 80.5 percent of
+        films in the corpus are gross-profitable; this rate
+        substantially exceeds the industry's net-profitability
+        rate of approximately 50 percent, reflecting survivorship
+        bias in the corpus (films that were both produced and
+        recognized enough to appear in a major metadata
+        aggregator). Phase 6's cost
         matrix is therefore calibrated against external industry
         base rates rather than corpus rates, with sensitivity
         analysis across alternative cost matrices in Phase 8.
@@ -1107,16 +1111,17 @@ CELLS = [
           rather than genuinely short screenplays; these films
           carry `data_quality_flag = True` (Section 8.5).
         * `n_unique_characters`: right-skewed, median 51, mean 65.
-          Approximately 51 films exceed 200 unique characters,
-          corresponding to ensemble works or films with extensive
-          background-character cataloguing in their screenplays.
+          A small upper tail (films with very large character
+          counts) corresponds to ensemble works or films with
+          extensive background-character cataloguing in their
+          screenplays.
         * `n_dialogue_lines`: right-skewed, median 880, mean 895.
           The distribution mirrors total parsed-text length.
         * `dialogue_to_total_text_ratio`: approximately
-          bell-shaped, mean 0.40, median 0.39. About 125 films
-          (7%) exceed 0.6, indicating dialogue-dominated
-          screenplays; about 211 films (12%) fall below 0.25,
-          indicating action-dominated screenplays. The dispersion
+          bell-shaped, mean 0.40, median 0.39. The upper tail
+          (ratio > 0.6) indicates dialogue-dominated screenplays;
+          the lower tail (ratio < 0.25) indicates action-dominated
+          screenplays. The dispersion
           reflects genuine stylistic variation between
           screenplays and is expected to carry meaningful
           predictive signal in Phase 3.

@@ -250,7 +250,7 @@ below are the actual measured values; see
 - Per-screenplay structured form saved separately to
   `data/processed/screenplays_parsed.pkl` (228 MB,
   `dict[imdb_id, ParsedScreenplay]`); Phase 3 reads both.
-- Median 130 scenes / 56 unique characters / 880 dialogue lines per
+- Median 130 scenes / 51 unique characters (post-Tier-1 parser fixes) / 880 dialogue lines per
   film.
 - See `docs/DATA_NOTES.md` for the full column glossary, edge-case
   documentation, and biases-to-remember.
