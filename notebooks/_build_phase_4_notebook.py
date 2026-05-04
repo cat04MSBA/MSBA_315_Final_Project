@@ -105,6 +105,44 @@ CELLS = [
     """),
 
     # ============================================================
+    # 0. Environment setup
+    # ============================================================
+    md("""
+        ## 0. Environment setup
+
+        The first cell finds the project root, adds it to
+        `sys.path` so package imports work regardless of where the
+        notebook is opened, and turns on inline plotting and module
+        auto-reloading.
+    """),
+    code("""
+        import sys
+        from pathlib import Path
+
+
+        def _find_project_root(start: Path) -> Path:
+            \"\"\"Walk up the directory tree until docs/PROJECT_CONTEXT is found.\"\"\"
+            markers = ("docs/PROJECT_CONTEXT.md", "docs/PROJECT_CONTEXT.txt")
+            for candidate in (start.resolve(), *start.resolve().parents):
+                if any((candidate / m).is_file() for m in markers):
+                    return candidate
+            raise RuntimeError(f"Could not find project root from {start!s}.")
+
+
+        PROJECT_ROOT = _find_project_root(Path.cwd())
+        if str(PROJECT_ROOT) not in sys.path:
+            sys.path.insert(0, str(PROJECT_ROOT))
+        print("Project root:", PROJECT_ROOT)
+
+        get_ipython().run_line_magic("load_ext", "autoreload")
+        get_ipython().run_line_magic("autoreload", "2")
+        get_ipython().run_line_magic("matplotlib", "inline")
+
+        import warnings
+        warnings.filterwarnings("ignore", category=FutureWarning)
+    """),
+
+    # ============================================================
     # Inputs
     # ============================================================
     md("""
@@ -302,12 +340,15 @@ CELLS = [
     """),
     code("""
         import joblib
+        winners = pd.read_csv(paths.REPORTS_TABLES_DIR / 'phase4_winners.csv').set_index('target')
         for target in ['log_roi', 'roi_gt_1', 'roi_gt_2']:
             path = paths.DATA_PROCESSED_DIR / f'phase4_primary_model_{target}.joblib'
             bundle = joblib.load(path)
+            metric_name = 'RMSE' if target == 'log_roi' else 'AUC-ROC'
+            oof_value = winners.loc[target, 'oof_metric']
             print(f"{target}: family={bundle['family']:14s} matrix={bundle['matrix']}")
             print(f"  best_params: {bundle['best_params']}")
-            print(f"  OOF metrics: {bundle['oof_metrics_global']}")
+            print(f"  OOF {metric_name}: {oof_value:.4f}")
             print()
     """),
 
