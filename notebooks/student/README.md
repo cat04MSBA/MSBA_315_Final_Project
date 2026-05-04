@@ -1,136 +1,124 @@
-# Student Notebooks — Simplified, One Knob Per Layer
+# Student Pipeline — One Notebook, One CONFIG Cell
 
-These five notebooks are the team-friendly version of Phases 4-8.
-Each notebook is one layer, one CONFIG cell at the top, and short
-code that anyone can read and modify in ten minutes. Swap the
-config values, re-run the notebook, compare your results to your
-teammates'.
+There is exactly one notebook to open: **`student_pipeline.ipynb`**.
 
-The full pipeline (Phases 4-8 with pre-registration, repeated CV,
-Bayesian comparison, conformal, sensitivity sweeps) lives in
-`notebooks/phase_4.ipynb` through `notebooks/phase_8.ipynb`.
-This `student/` folder is the "play with it" version.
+It runs the entire four-layer triage system in a single file:
 
-## How the team coordinates — the `run_name` knob
+1. Load data
+2. Train + tune a model (Layer 1)
+3. Calibrate its probability outputs (Layer 2)
+4. Apply the cost-asymmetric decision rule (Layer 3)
+5. Produce SHAP explanations (Layer 4)
+6. (Optional) evaluate on the held-out test set
 
-Each notebook's CONFIG cell starts with a `run_name` field. **You
-set it to a unique label for yourself**, e.g. `"alice_xgboost"`,
-`"bob_random_forest"`, `"chloe_logistic"`. Convention is
-`<your-name>_<what-you-tested>`.
+Edit the CONFIG cell once. Run all cells top-to-bottom.
 
-The notebook saves your artifacts to
-`data/processed/student/<your-run-name>/` so that you and your
-teammates do not overwrite each other's models. Multiple teammates
-can run notebook 01 in parallel with different model choices and
-end up with their own independent results.
+## What to run first
+
+1. **Install dependencies.** From the project root:
+   ```
+   pip install -r requirements.txt
+   ```
+   The notebook needs `pandas`, `numpy`, `scikit-learn`,
+   `matplotlib`, `joblib`, `xgboost`, and `shap`.
+
+2. **Confirm the data is there.** The notebook reads
+   `data/processed/features.parquet` and
+   `data/processed/films_joined.parquet`. They are already built
+   in this checkout. If missing, run
+   `python -m src.experiments.run_phase4_benchmark` from the
+   project root.
+
+3. **Open the notebook** in Jupyter or VS Code and run every cell
+   in order. Path detection is automatic — works whether you
+   launch Jupyter from the project root or from
+   `notebooks/student/`.
+
+## How the team coordinates
+
+Every teammate edits the **same notebook file** but sets a unique
+`run_name` in CONFIG so artifacts don't clobber each other:
+
+```python
+CONFIG = {
+    "run_name": "alice_xgboost",   # YOUR unique label
+    "model_family": "xgboost",     # YOUR model choice
+    ...
+}
+```
+
+Each run lands in its own folder:
 
 ```
 data/processed/student/
-├── alice_xgboost/                    ← Alice's run
-│   ├── student_model.joblib
-│   ├── student_calibrated.joblib
-│   └── student_decisions.csv
-├── bob_random_forest/                ← Bob's run
-│   ├── student_model.joblib
+├── alice_xgboost/
+│   ├── student_decisions.csv
+│   ├── student_full_pipeline.joblib
+│   └── student_test_predictions.csv     (only if EVALUATE_ON_TEST=True)
+├── bob_random_forest/
 │   └── ...
-└── chloe_logistic/                   ← Chloe's run
+└── chloe_logistic/
     └── ...
 ```
 
-When you move from notebook 01 to 02 to 03 to 04, **keep the same
-`run_name` in the CONFIG cell** so each notebook reads the right
-upstream artifact.
+## The CONFIG cell — every knob
 
-## What to run first (one-time setup)
-
-1. **Install dependencies.** Run `pip install -r requirements.txt`
-   from the project root. The student notebooks need: `pandas`,
-   `numpy`, `scikit-learn`, `matplotlib`, `joblib`, `xgboost`,
-   `shap`. They do *not* need `mapie` or `baycomp`.
-
-2. **Confirm the data is built.** All five notebooks read
-   `data/processed/features.parquet` and `films_joined.parquet`.
-   In this checkout they are already built (Phases 1-3 produced
-   them). If they are missing, regenerate via
-   `python -m src.experiments.run_phase4_benchmark`.
-
-3. **Start Jupyter from the project root** (`jupyter lab` or
-   open the notebooks in VS Code). The notebooks auto-detect the
-   project root, so they work regardless of which directory you
-   open Jupyter from, but starting at the project root is the
-   simplest path.
-
-## Run order
-
-Run the notebooks in this order. Each one writes a small artifact
-that the next one reads. **Keep the same `run_name` in every
-notebook's CONFIG.**
-
-```
-01_modeling.ipynb       → data/processed/student/<run_name>/student_model.joblib
-02_calibration.ipynb    → data/processed/student/<run_name>/student_calibrated.joblib
-03_decision.ipynb       → data/processed/student/<run_name>/student_decisions.csv
-04_explanation.ipynb    → reads the model from 01; no save
-05_end_to_end.ipynb     → reads everything; runs on the test set once
-```
-
-If you re-run `01_modeling.ipynb` with a different model under the
-same `run_name`, the later notebooks pick up your new choice
-automatically (they all read from `<run_name>/`).
-
-## What each notebook does
-
-| Notebook | What it does | Knob |
+| Knob | What it does | Default |
 |---|---|---|
-| `01_modeling.ipynb` | Train one model on dialogue features. 5-fold CV AUC + held-out evaluation. | model family (logistic / random forest / xgboost / svm), feature subset, target |
-| `02_calibration.ipynb` | Wrap the model so its probability outputs are honest. ECE before vs after; reliability diagram. | calibration method (sigmoid / isotonic) |
-| `03_decision.ipynb` | Apply a cost matrix. Recommend Greenlight / Pass / Refer. Compare to baselines. | flop cost, miss cost, refer cost |
-| `04_explanation.ipynb` | TreeSHAP global ranking + one example film. | which film to inspect |
-| `05_end_to_end.ipynb` | Run the assembled pipeline on the held-out test set. **Touch the test set once.** | none (this is the honest final number) |
+| `run_name` | Unique folder name for your artifacts | `"team_baseline_rf"` |
+| `target` | Which outcome to predict | `"roi_gt_2"` |
+| `model_family` | Which classifier to train | `"random_forest"` |
+| `feature_set` | Which feature group to use | `"all"` |
+| `use_grid_search` | Tune hyperparameters | `True` |
+| `use_repeated_cv` | 5-fold × 3-repeat CV | `True` |
+| `use_class_balance` | Class weighting / scale_pos_weight | `True` |
+| `calibration_method` | Probability calibration | `"isotonic"` |
+| `flop_cost` / `miss_cost` / `refer_cost` | Cost matrix | $50M / $100M / $5K |
+| `shap_*` | SHAP plotting parameters | sensible defaults |
+| **`EVALUATE_ON_TEST`** | **Touches the test set — leave False while iterating** | **`False`** |
 
-## How to test different models as a team
+## The test-set rule
 
-Each teammate picks a unique `run_name` and a model family, runs
-notebooks 01-04, and shares the headline numbers. Suggested
-team workflow for one meeting:
+`EVALUATE_ON_TEST` is False by default. **Keep it False** while
+experimenting — the notebook will produce all train/cal numbers
+without touching the test set.
 
-| Person | run_name | model_family | Notebook 01 CV AUC | Notebook 02 ECE after | Notebook 03 system cost |
-|---|---|---|---|---|---|
-| Alice | `alice_xgboost` | xgboost | 0.60 | 0.00 | $1.3M |
-| Bob | `bob_random_forest` | random_forest | 0.62 | 0.05 | $1.3M |
-| Chloe | `chloe_logistic` | logistic | 0.59 | 0.04 | $1.3M |
-| Dan | `dan_svm` | svm_rbf | 0.65 | 0.06 | $1.3M |
+When the team agrees on the final configuration, ONE teammate
+flips it to True, runs the notebook once, and that's the headline
+number for the report. Don't keep flipping it; that's not how
+held-out test sets work.
 
-After comparing, the team picks one finalist. That teammate's
-`run_name` goes into `05_end_to_end.ipynb` and gets evaluated on
-the test set. **Only one run_name gets tested on the test set.**
+## Team comparison table
 
-## Important — the test set rule
+After everyone runs the notebook, fill in:
 
-`05_end_to_end.ipynb` is the **only** notebook allowed to read the
-held-out test split. Do not load it anywhere else; do not tune
-hyperparameters using test-set numbers; do not pick the "best
-model" by test AUC. The test set gets touched exactly once at the
-end of the project, and that number is what goes in the report.
+| Person | run_name | model | Tuned CV AUC | Cal AUC | ECE after | System cost (cal) |
+|---|---|---|---|---|---|---|
+| Alice | alice_xgboost | xgboost | 0.60 | 0.57 | 0.05 | $1.3M |
+| Bob | bob_random_forest | random_forest | 0.61 | 0.61 | 0.004 | $1.3M |
+| Chloe | chloe_logistic | logistic | 0.58 | 0.57 | 0.04 | $1.3M |
+| Dan | dan_svm | svm_rbf | 0.57 | 0.53 | 0.06 | $1.3M |
 
-The other four notebooks operate on the train + cal splits only.
-Within those splits, evaluation uses cross-validation or the cal
-holdout — both safe.
+Pick a finalist; that teammate flips `EVALUATE_ON_TEST=True` and
+re-runs to produce the headline test-set number for the report.
 
 ## Troubleshooting
 
-| Symptom | Likely fix |
+| Symptom | Fix |
 |---|---|
-| `FileNotFoundError: features.parquet` | The notebook walks up the filesystem to find the project root via `docs/PROJECT_CONTEXT.md`. Make sure you cloned the full repo and the file exists. |
-| `FileNotFoundError: student_model.joblib` | Run notebook 01 first under the same `run_name` you have in the CONFIG of the current notebook. |
-| `ModuleNotFoundError: xgboost` | `pip install xgboost` (or use a different `model_family`). |
-| `ModuleNotFoundError: shap` | `pip install shap` (only notebook 04 needs it). |
-| Got the same numbers as a teammate | You forgot to change `run_name`. Each teammate must use a unique label. |
+| `FileNotFoundError: features.parquet` | Make sure you cloned the full repo. The notebook walks up the filesystem to find `docs/PROJECT_CONTEXT.md`; that file must exist. |
+| `ModuleNotFoundError: xgboost` | `pip install xgboost` (or pick a different `model_family`). |
+| `ModuleNotFoundError: shap` | `pip install shap` (the SHAP section will fail without it). |
+| Got the same numbers as a teammate | You forgot to change `run_name`. |
+| Want to compare with vs without an improvement | Flip one of the three toggles to False, re-run. |
 
-## Regenerating the notebooks
+## Regenerating the notebook
 
-If you edit the build script, regenerate all five notebooks with:
+If you edit the build script:
 
 ```
 python -m notebooks.student._build_student_notebooks
 ```
+
+That writes `student_pipeline.ipynb` from the build script's cell
+list.
