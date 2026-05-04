@@ -45,6 +45,29 @@ def write_notebook(name: str, cells: list[dict]) -> None:
     print(f"Wrote {out.relative_to(Path.cwd())}")
 
 
+# Boilerplate placed in every student notebook: project-root detection +
+# the per-teammate STUDENT directory that isolates each run's artifacts.
+PATH_BOILERPLATE = """
+    # --- Paths (works from any working directory) ---
+    from pathlib import Path
+
+    def _find_project_root() -> Path:
+        p = Path.cwd().resolve()
+        for cand in [p, *p.parents]:
+            if (cand / "docs" / "PROJECT_CONTEXT.md").is_file():
+                return cand
+        raise RuntimeError(f"Could not locate project root from {Path.cwd()!s}")
+
+    PROJECT_ROOT = _find_project_root()
+    DATA = PROJECT_ROOT / "data" / "processed"
+    STUDENT = DATA / "student" / CONFIG["run_name"]
+    STUDENT.mkdir(parents=True, exist_ok=True)
+    print(f"Project root:  {PROJECT_ROOT}")
+    print(f"Run name:      {CONFIG['run_name']!r}")
+    print(f"Artifacts go:  {STUDENT.relative_to(PROJECT_ROOT)}")
+"""
+
+
 # ============================================================
 # Notebook 01 — Modeling (the main playground)
 # ============================================================
@@ -76,6 +99,11 @@ CELLS_01 = [
     """),
     code("""
         CONFIG = {
+            # YOUR run_name. Use a unique label so your artifacts don't
+            # clobber teammates'. Convention: "<your-name>_<model>".
+            # Each run lands in data/processed/student/<run_name>/.
+            "run_name": "alice_xgboost",
+
             # Target. The headline target is roi_gt_2 (was the film
             # net profitable?). roi_gt_1 is the easier 1x ROI binary;
             # log_roi is regression. The other two notebooks assume
@@ -86,9 +114,9 @@ CELLS_01 = [
             # Model family. Try each one and compare CV AUC.
             "model_family": "xgboost",            # "logistic" | "random_forest" | "xgboost" | "svm_rbf"
 
-            # Feature subset. "all" uses the 92-feature curated
-            # matrix from Phase 3. The others let you isolate one
-            # feature group to see how much each one matters.
+            # Feature subset. "all" uses the 127-feature matrix from
+            # Phase 3. The others let you isolate one feature group
+            # to see how much each one matters.
             "feature_set": "all",                 # "all" | "structural" | "topic" | "embedding" | "network"
 
             # CV / random seed. Don't change unless you know why.
@@ -99,8 +127,8 @@ CELLS_01 = [
 
     # ----------- Imports + paths -----------
     md("## Imports and paths"),
+    code(PATH_BOILERPLATE),
     code("""
-        from pathlib import Path
         import warnings
         warnings.filterwarnings("ignore")
 
@@ -121,13 +149,6 @@ CELLS_01 = [
             HAS_XGB = True
         except ImportError:
             HAS_XGB = False
-
-        DATA = Path("data/processed")
-        STUDENT = DATA / "student"
-        STUDENT.mkdir(parents=True, exist_ok=True)
-
-        print("Data dir:", DATA.resolve())
-        print("Output dir:", STUDENT.resolve())
     """),
 
     # ----------- Load + filter -----------
@@ -339,14 +360,19 @@ CELLS_02 = [
     """),
     code("""
         CONFIG = {
+            # MUST match the run_name you used in 01_modeling.ipynb
+            # so this notebook reads YOUR model. Each teammate has
+            # their own run_name.
+            "run_name": "alice_xgboost",
+
             "method": "isotonic",     # "sigmoid" | "isotonic"
             "n_bins_for_ece": 10,     # 10 is the standard
         }
     """),
 
     md("## Imports + load notebook 01's artifact"),
+    code(PATH_BOILERPLATE),
     code("""
-        from pathlib import Path
         import warnings
         warnings.filterwarnings("ignore")
 
@@ -357,9 +383,6 @@ CELLS_02 = [
         from sklearn.calibration import CalibratedClassifierCV, calibration_curve
         from sklearn.frozen import FrozenEstimator
         from sklearn.metrics import brier_score_loss, log_loss
-
-        DATA = Path("data/processed")
-        STUDENT = DATA / "student"
 
         bundle = joblib.load(STUDENT / "student_model.joblib")
         print("Loaded model from notebook 01:")
@@ -521,15 +544,18 @@ CELLS_03 = [
     """),
     code("""
         CONFIG = {
-            "flop_cost":   50_000_000,    # $50M  — cost of greenlighting a film that flops
-            "miss_cost": 100_000_000,    # $100M — cost of passing on a film that becomes a hit
-            "refer_cost":      5_000,    # $5K   — cost of one human reader pass
+            # MUST match the run_name you used in 01 and 02.
+            "run_name": "alice_xgboost",
+
+            "flop_cost":   50_000_000,   # $50M  - cost of greenlighting a film that flops
+            "miss_cost": 100_000_000,    # $100M - cost of passing on a film that becomes a hit
+            "refer_cost":      5_000,    # $5K   - cost of one human reader pass
         }
     """),
 
     md("## Imports + load"),
+    code(PATH_BOILERPLATE),
     code("""
-        from pathlib import Path
         import warnings
         warnings.filterwarnings("ignore")
 
@@ -537,9 +563,6 @@ CELLS_03 = [
         import matplotlib.pyplot as plt
         import numpy as np
         import pandas as pd
-
-        DATA = Path("data/processed")
-        STUDENT = DATA / "student"
 
         bundle = joblib.load(STUDENT / "student_calibrated.joblib")
         feat = pd.read_parquet(DATA / "features.parquet").reset_index()
@@ -722,6 +745,9 @@ CELLS_04 = [
     """),
     code("""
         CONFIG = {
+            # MUST match the run_name you used in 01.
+            "run_name": "alice_xgboost",
+
             "top_k_global":   20,        # how many features to plot in the global bar chart
             "top_k_per_film": 5,         # how many positive + negative contributors per film
             "example_imdb_id": "auto",   # "auto" picks highest-probability film, or paste any imdb_id
@@ -729,8 +755,8 @@ CELLS_04 = [
     """),
 
     md("## Imports + load"),
+    code(PATH_BOILERPLATE),
     code("""
-        from pathlib import Path
         import warnings
         warnings.filterwarnings("ignore")
 
@@ -745,9 +771,6 @@ CELLS_04 = [
         except ImportError:
             HAS_SHAP = False
             print("WARNING: shap not installed. pip install shap")
-
-        DATA = Path("data/processed")
-        STUDENT = DATA / "student"
 
         bundle = joblib.load(STUDENT / "student_model.joblib")
         feat = pd.read_parquet(DATA / "features.parquet").reset_index()
@@ -931,15 +954,20 @@ CELLS_05 = [
         change ``01_modeling`` and re-run the cascade.
     """),
     code("""
-        # NOTHING TO EDIT.
+        # The only thing to edit: which run_name's calibrated model
+        # do we evaluate on the test set? After the team picks one,
+        # paste that run_name here and run.
+        CONFIG = {
+            "run_name": "alice_xgboost",
+        }
         FLOP_COST  =  50_000_000
         MISS_COST  = 100_000_000
         REFER_COST =      5_000
     """),
 
     md("## Imports + load all four-layer artifacts"),
+    code(PATH_BOILERPLATE),
     code("""
-        from pathlib import Path
         import warnings
         warnings.filterwarnings("ignore")
 
@@ -950,9 +978,6 @@ CELLS_05 = [
         from sklearn.metrics import (
             average_precision_score, brier_score_loss, f1_score, log_loss, roc_auc_score,
         )
-
-        DATA = Path("data/processed")
-        STUDENT = DATA / "student"
 
         bundle = joblib.load(STUDENT / "student_calibrated.joblib")
         family = bundle["config"]["model_family"]
