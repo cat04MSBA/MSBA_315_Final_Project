@@ -93,7 +93,29 @@ CELLS = [
             # Target. Headline = roi_gt_2 (was the film net-profitable?).
             "target":       "roi_gt_2",            # "roi_gt_2" | "roi_gt_1"
             "model_family": "random_forest",       # "logistic" | "random_forest" | "xgboost" | "svm_rbf"
-            "feature_set":  "all",                 # "all" | "structural" | "topic" | "embedding" | "network"
+
+            # ---- Feature selection. Three modes: ----
+            #
+            # MODE A - named group (string):
+            #   "feature_set": "all"          all 127 features
+            #   "feature_set": "structural"   structural baseline only
+            #   "feature_set": "topic"        22 LDA topic proportions
+            #   "feature_set": "embedding"    32 mpnet PCA components
+            #   "feature_set": "network"      character-network features
+            #
+            # MODE B - mix groups + specific features (list; each
+            # string is either a group name or an exact column name):
+            #   "feature_set": ["structural", "topic"]
+            #   "feature_set": ["structural", "release_year_parsed"]
+            #
+            # MODE C - cherry-pick exact features:
+            #   "feature_set": ["log_n_scenes", "topic_08_proportion",
+            #                    "release_year_parsed", "embed_pc_11"]
+            #
+            # Run the "Discover available features" cell after data load
+            # to see all 127 column names you can pick from.
+            "feature_set":     "all",
+            "feature_exclude": [],                 # optional: column names to DROP
 
             # ---- Improvement toggles ----
             # All three on by default. Flip to False to ablate.
@@ -103,11 +125,26 @@ CELLS = [
 
             # ---- Calibration ----
             "calibration_method": "isotonic",      # "sigmoid" | "isotonic"
+            "prob_clip_max": 0.95,                 # cap calibrated probabilities (None = off)
+                                                    # Improvement #5: prevents overconfident
+                                                    # 1.0 commits like the *Something Wicked*
+                                                    # test-set Greenlight flop.
 
             # ---- Cost matrix (Greenlight / Pass / Refer) ----
             "flop_cost":   50_000_000,             # $50M  - greenlight a flop
             "miss_cost":  100_000_000,             # $100M - pass on a hit
             "refer_cost":      5_000,              # $5K   - human reader pass
+
+            # ---- Deployment guards (improvement #4) ----
+            # Even if the cost rule says "Greenlight", the system
+            # downgrades to Refer when these guards trigger. Stops
+            # commits in regions where the model is unreliable.
+            "guard_min_year": 1990,                # no Greenlight for films older than this (None = off)
+            "guard_min_genre_train_n": 30,         # no Greenlight if the film's genre cell has <N training films
+            "guard_min_budget_train_n": 30,        # no Greenlight if its budget tier has <N training films
+
+            # ---- Triage / ranking metrics (improvement #9) ----
+            "top_k_for_ranking": [10, 20, 50],     # Precision@K / Recall@K at these K values
 
             # ---- SHAP ----
             "shap_top_k_global":   20,             # top features in the global plot
@@ -212,15 +249,93 @@ CELLS = [
         df = feat[feat["split"].isin(["train", "cal"])].reset_index(drop=True)
         non_feat = {"imdb_id", "split", "log_roi", "roi_gt_1", "roi_gt_2"}
         all_cols = [c for c in df.columns if c not in non_feat]
+
+        # Named groups. Add or rearrange these if your team wants
+        # different bundles.
         groups = {
             "all":        all_cols,
             "structural": [c for c in all_cols if c.startswith(("log_", "n_", "dialogue_to_", "release_year", "log_runtime", "genre_"))],
             "topic":      [c for c in all_cols if c.startswith("topic_")],
             "embedding":  [c for c in all_cols if c.startswith("embed_pc_")],
             "network":    [c for c in all_cols if c.startswith("network_")],
+            "lexical":    [c for c in all_cols if "mtld" in c or "flesch" in c or "type_token" in c or c.startswith("lex_")],
+            "sentiment":  [c for c in all_cols if c.startswith(("sentiment_", "vader_", "nrc_", "archetype_"))],
         }
-        feat_cols = groups[CONFIG["feature_set"]]
         target_col = CONFIG["target"]
+    """),
+
+    md("""
+        ### Discover available features
+
+        Run this cell to see what's in the matrix. Copy/paste any
+        column name into ``CONFIG["feature_set"]`` to cherry-pick.
+    """),
+    code("""
+        print("Named groups (use any of these as a string, or in a list):")
+        for g, cols in groups.items():
+            sample = ", ".join(cols[:3])
+            print(f"  {g:11s}: {len(cols):>3d} features  (e.g. {sample}...)")
+
+        print(f"\\nTotal feature columns available: {len(all_cols)}")
+        print("\\nFull list of feature column names (copy any to feature_set):")
+        for i in range(0, len(all_cols), 4):
+            print("  " + "  ".join(f"{c:30s}" for c in all_cols[i:i+4]))
+    """),
+
+    md("""
+        ### Resolve `feature_set` to a concrete column list
+
+        Handles all three modes (named group, mixed groups+features,
+        explicit feature list) plus the optional `feature_exclude`.
+    """),
+    code("""
+        def resolve_features(spec, exclude, groups, all_cols):
+            \"\"\"Turn the CONFIG['feature_set'] knob into a list of column names.\"\"\"
+            cols = []
+            if isinstance(spec, str):
+                if spec not in groups:
+                    raise ValueError(f"Unknown feature group {spec!r}; known: {list(groups)}")
+                cols = list(groups[spec])
+            elif isinstance(spec, (list, tuple)):
+                for item in spec:
+                    if item in groups:
+                        cols.extend(groups[item])
+                    elif item in all_cols:
+                        cols.append(item)
+                    else:
+                        raise ValueError(
+                            f"{item!r} is not a known group {list(groups)} "
+                            f"nor a known feature column."
+                        )
+            else:
+                raise TypeError(f"feature_set must be str or list, got {type(spec).__name__}")
+
+            # Dedupe while preserving order.
+            seen = set()
+            cols = [c for c in cols if not (c in seen or seen.add(c))]
+
+            # Drop excludes.
+            if exclude:
+                exclude_set = set(exclude)
+                cols = [c for c in cols if c not in exclude_set]
+            return cols
+
+        feat_cols = resolve_features(
+            CONFIG["feature_set"], CONFIG.get("feature_exclude", []), groups, all_cols,
+        )
+        print(f"feature_set spec : {CONFIG['feature_set']!r}")
+        if CONFIG.get("feature_exclude"):
+            print(f"feature_exclude  : {CONFIG['feature_exclude']!r}")
+        print(f"Resolved to {len(feat_cols)} columns:")
+        if len(feat_cols) <= 30:
+            for c in feat_cols:
+                print(f"  {c}")
+        else:
+            for c in feat_cols[:10]:
+                print(f"  {c}")
+            print(f"  ... and {len(feat_cols) - 10} more")
+
+        # Build X / y.
         X = df[feat_cols].fillna(0).values
         y = df[target_col].astype(int).values
 
@@ -230,9 +345,107 @@ CELLS = [
         X_cal,   y_cal   = X[cal_mask],   y[cal_mask]
         ids_cal = df.loc[cal_mask, "imdb_id"].astype(str).tolist()
 
-        print(f"Feature set {CONFIG['feature_set']!r}: {len(feat_cols)} columns")
-        print(f"Train: {len(X_train)} films, positive rate {y_train.mean():.3f}")
+        print(f"\\nTrain: {len(X_train)} films, positive rate {y_train.mean():.3f}")
         print(f"Cal:   {len(X_cal)} films, positive rate {y_cal.mean():.3f}")
+    """),
+
+    # ============================================================
+    # 1.5. Baseline ladder (improvement #1)
+    # ============================================================
+    md("""
+        # 1.5. Baseline ladder (improvement #1)
+
+        Before training the screenplay model, establish how much AUC
+        you can get from **context-only baselines** (genre, decade,
+        budget tier). If the screenplay model can't clearly beat
+        ``genre + decade + budget tier``, the script features are
+        not adding generalizable value.
+
+        Each baseline is a per-cell training-set hit rate looked up
+        for each cal film. Cells with fewer than 10 training films
+        fall back to the corpus base rate (smoothing).
+    """),
+    code("""
+        # release_year_parsed is already in features.parquet (it's a
+        # model feature). genre and budget are NOT in features.parquet
+        # (genre is one-hot-encoded into genre_* dummies; budget is
+        # leak-prone for prediction). We pull both from master.
+        meta_cols = ["imdb_id", "primary_genre_bucketed", "budget"]
+        df_with_meta = df.merge(master[meta_cols], on="imdb_id", how="left")
+
+        def assign_decade_bucket(year):
+            try: y = int(year)
+            except (TypeError, ValueError): return "unknown"
+            if y < 1980: return "pre_1980"
+            if y < 1990: return "1980s"
+            if y < 2000: return "1990s"
+            if y < 2010: return "2000s"
+            if y < 2020: return "2010s"
+            return "2020s"
+
+        def assign_budget_tier(budget):
+            if pd.isna(budget) or budget <= 0: return "unknown"
+            b = float(budget)
+            if b < 10_000_000:  return "under_10M"
+            if b < 50_000_000:  return "10M_50M"
+            if b < 150_000_000: return "50M_150M"
+            return "over_150M"
+
+        df_with_meta["decade_bucket"] = df_with_meta["release_year_parsed"].apply(assign_decade_bucket)
+        df_with_meta["budget_tier"]   = df_with_meta["budget"].apply(assign_budget_tier)
+
+        df_train_meta = df_with_meta[train_mask].reset_index(drop=True)
+        df_cal_meta   = df_with_meta[cal_mask].reset_index(drop=True)
+        print(f"Train: {len(df_train_meta)} films | Cal: {len(df_cal_meta)} films")
+        print(f"Train genres: {df_train_meta['primary_genre_bucketed'].nunique()} | "
+              f"decades: {df_train_meta['decade_bucket'].nunique()} | "
+              f"budget tiers: {df_train_meta['budget_tier'].nunique()}")
+    """),
+    code("""
+        def compute_prior(df_train, df_eval, by_cols, target_col, min_cell_n=10):
+            \"\"\"Predict per-eval-film P(target=1) using per-cell training hit rates.
+
+            Cells with fewer than ``min_cell_n`` training films fall
+            back to the overall training mean.
+            \"\"\"
+            overall = float(df_train[target_col].mean())
+            if isinstance(by_cols, str):
+                by_cols = [by_cols]
+            grouped = df_train.groupby(by_cols)[target_col].agg(["mean", "count"])
+            rate_dict = {}
+            for idx, row in grouped.iterrows():
+                key = idx if isinstance(idx, tuple) else (idx,)
+                if row["count"] >= min_cell_n:
+                    rate_dict[key] = row["mean"]
+            keys = list(zip(*[df_eval[c].astype(str).values for c in by_cols]))
+            return np.array([rate_dict.get(k, overall) for k in keys])
+
+        # Build the baseline ladder.
+        BASELINES = [
+            ("Majority class (corpus mean)",     []),
+            ("Genre prior",                       ["primary_genre_bucketed"]),
+            ("Genre + decade",                    ["primary_genre_bucketed", "decade_bucket"]),
+            ("Genre + decade + budget tier",      ["primary_genre_bucketed", "decade_bucket", "budget_tier"]),
+        ]
+
+        baseline_rows = []
+        for name, by in BASELINES:
+            if not by:
+                # Majority-class baseline: predict overall train mean for every film.
+                proba_b = np.full(len(df_cal_meta), df_train_meta[target_col].mean())
+            else:
+                proba_b = compute_prior(df_train_meta, df_cal_meta, by, target_col)
+            try:
+                auc_b = roc_auc_score(y_cal, proba_b) if len(np.unique(y_cal)) > 1 and len(np.unique(proba_b)) > 1 else float("nan")
+            except ValueError:
+                auc_b = float("nan")
+            baseline_rows.append({"baseline": name, "n_features": len(by), "cal_AUC": auc_b})
+
+        baseline_ladder = pd.DataFrame(baseline_rows)
+        print(baseline_ladder.round(3).to_string(index=False))
+        print("\\nThis is the BAR your screenplay model has to clear. If your")
+        print("CV AUC isn't materially above the 'Genre + decade + budget tier'")
+        print("row, the script features are not adding generalizable value.")
     """),
 
     # ============================================================
@@ -393,7 +606,20 @@ CELLS = [
             method=CONFIG["calibration_method"], cv=5,
         )
         calibrator.fit(X_cal, y_cal)
-        cal_proba = calibrator.predict_proba(X_cal)[:, 1]
+        cal_proba_raw = calibrator.predict_proba(X_cal)[:, 1]
+
+        # ---- Improvement #5: probability clipping ----
+        # Cap calibrated probabilities so the system never sees a
+        # 1.0. Stops the *Something Wicked* failure pattern
+        # (probability=1.0 -> Greenlight -> $50M loss on a flop).
+        if CONFIG.get("prob_clip_max") is not None:
+            cap = float(CONFIG["prob_clip_max"])
+            cal_proba = np.minimum(cal_proba_raw, cap)
+            n_clipped = int((cal_proba_raw > cap).sum())
+            print(f"Probability clipping at {cap}: {n_clipped} of {len(cal_proba_raw)} predictions clipped down")
+        else:
+            cal_proba = cal_proba_raw
+
         ece_cal   = ece(y_cal, cal_proba)
         brier_cal = brier_score_loss(y_cal, cal_proba)
         print(f"AFTER  calibration: ECE = {ece_cal:.4f}, Brier = {brier_cal:.4f}")
@@ -434,10 +660,56 @@ CELLS = [
             mn = min(costs.values())
             return ("Refer" if costs["Refer"] == mn else min(costs, key=costs.get)), costs
 
-        actions, all_costs = zip(*[decide(p, CONFIG["flop_cost"],
-                                          CONFIG["miss_cost"], CONFIG["refer_cost"])
-                                    for p in cal_proba])
-        actions = np.array(actions)
+        # ---- Improvement #4: deployment guards ----
+        # Even if the cost rule says Greenlight, downgrade to Refer
+        # when the film is in a region the model is not reliable on.
+        train_genres_n = df_train_meta["primary_genre_bucketed"].value_counts().to_dict()
+        train_budget_n = df_train_meta["budget_tier"].value_counts().to_dict()
+
+        def apply_guards(action, year, genre, budget_tier):
+            \"\"\"Return possibly-downgraded action plus reason if guarded.\"\"\"
+            if action != "Greenlight":
+                return action, None
+            min_year = CONFIG.get("guard_min_year")
+            if min_year is not None and not pd.isna(year) and int(year) < int(min_year):
+                return "Refer", f"guard:pre_{min_year}"
+            min_g_n = CONFIG.get("guard_min_genre_train_n", 0)
+            if train_genres_n.get(str(genre), 0) < int(min_g_n):
+                return "Refer", f"guard:thin_genre({genre})"
+            min_b_n = CONFIG.get("guard_min_budget_train_n", 0)
+            if train_budget_n.get(str(budget_tier), 0) < int(min_b_n):
+                return "Refer", f"guard:thin_budget({budget_tier})"
+            return action, None
+
+        # Compute raw cost-rule actions, then apply guards.
+        raw_actions, all_costs = zip(*[decide(p, CONFIG["flop_cost"],
+                                              CONFIG["miss_cost"], CONFIG["refer_cost"])
+                                        for p in cal_proba])
+        guard_reasons = []
+        actions_list = []
+        for raw_a, year, genre, btier in zip(
+            raw_actions,
+            df_cal_meta["release_year_parsed"].values,
+            df_cal_meta["primary_genre_bucketed"].astype(str).values,
+            df_cal_meta["budget_tier"].astype(str).values,
+        ):
+            a, reason = apply_guards(raw_a, year, genre, btier)
+            actions_list.append(a)
+            guard_reasons.append(reason)
+        actions = np.array(actions_list)
+
+        # Diagnostic.
+        n_raw_gl = sum(1 for a in raw_actions if a == "Greenlight")
+        n_final_gl = int((actions == "Greenlight").sum())
+        n_guarded = sum(1 for r in guard_reasons if r is not None)
+        print(f"Decision rule produced {n_raw_gl} raw Greenlights")
+        print(f"Deployment guards downgraded {n_guarded} -> {n_final_gl} final Greenlights")
+        if n_guarded:
+            from collections import Counter
+            reasons = Counter(r for r in guard_reasons if r is not None)
+            for r, n in reasons.most_common():
+                print(f"  guard fired: {r}  ({n} films)")
+        print()
         for a in ["Greenlight", "Pass", "Refer"]:
             print(f"  {a:11s}: {(actions == a).mean()*100:5.1f}%  ({(actions == a).sum():>3d} films)")
     """),
@@ -486,16 +758,114 @@ CELLS = [
             "movie_name":             [master_lookup.get(i, i) for i in ids_cal],
             "calibrated_probability": cal_proba,
             "true_label":             y_cal,
+            "raw_action":             list(raw_actions),
             "recommended_action":     actions,
+            "guard_reason":           guard_reasons,
+            "release_year":           df_cal_meta["release_year_parsed"].values,
+            "genre":                  df_cal_meta["primary_genre_bucketed"].astype(str).values,
+            "budget_tier":            df_cal_meta["budget_tier"].astype(str).values,
         })
         decisions_df.to_csv(STUDENT / "student_decisions.csv", index=False)
         print(f"Saved {STUDENT / 'student_decisions.csv'}: {len(decisions_df)} rows\\n")
         gl = decisions_df[decisions_df["recommended_action"] == "Greenlight"].head(8)
         if len(gl):
             print("Greenlight films (preview, first 8):")
-            print(gl[["movie_name", "calibrated_probability", "true_label"]].to_string(index=False))
+            print(gl[["movie_name", "calibrated_probability", "true_label",
+                      "release_year", "genre"]].to_string(index=False))
         else:
             print("System recommends 0 Greenlights on the cal set under this cost matrix.")
+        guarded = decisions_df[decisions_df["guard_reason"].notna()]
+        if len(guarded):
+            print(f"\\n{len(guarded)} films had Greenlight downgraded to Refer by deployment guards:")
+            print(guarded[["movie_name", "calibrated_probability", "true_label", "guard_reason"]]
+                  .head(8).to_string(index=False))
+    """),
+
+    # ============================================================
+    # 4.5. Triage / ranking metrics (improvement #9)
+    # ============================================================
+    md("""
+        # 4.5. Triage / ranking metrics (improvement #9)
+
+        The cost-asymmetric decision rule answers "should we
+        commit?". But studios in practice want to know **which
+        scripts deserve human review first**. That's a ranking
+        problem, not a binary one.
+
+        We report:
+
+        - **Precision@K**: of the top-K films by calibrated
+          probability, what fraction are actual hits?
+        - **Recall@K**: of all hits in the cal set, what fraction
+          are in the top-K?
+        - **Lift@K**: hit rate in the top-K divided by the corpus
+          base rate. > 1 means the system concentrates hits at
+          the top.
+
+        At a 0.51 test AUC the model is weak as a binary classifier
+        but might still be useful as a triage prioritizer if the
+        top decile has a noticeably higher hit rate than the rest.
+    """),
+    code("""
+        def precision_at_k(y_true, y_score, k):
+            order = np.argsort(-np.asarray(y_score, dtype=float))
+            top = order[:k]
+            return float(np.asarray(y_true)[top].mean()) if k else float("nan")
+
+        def recall_at_k(y_true, y_score, k):
+            order = np.argsort(-np.asarray(y_score, dtype=float))
+            top = order[:k]
+            n_pos = int(np.asarray(y_true).sum())
+            return float(np.asarray(y_true)[top].sum() / max(n_pos, 1))
+
+        def lift_at_k(y_true, y_score, k):
+            base = float(np.asarray(y_true).mean())
+            return precision_at_k(y_true, y_score, k) / max(base, 1e-9)
+
+        rows = []
+        for k in CONFIG["top_k_for_ranking"]:
+            rows.append({
+                "K":              k,
+                "precision_at_K": precision_at_k(y_cal, cal_proba, k),
+                "recall_at_K":    recall_at_k(y_cal, cal_proba, k),
+                "lift_at_K":      lift_at_k(y_cal, cal_proba, k),
+            })
+        rank_df = pd.DataFrame(rows)
+        print(f"Cal corpus base rate (P(hit)): {y_cal.mean():.3f}")
+        print(rank_df.round(3).to_string(index=False))
+    """),
+    md("### Lift chart by decile"),
+    code("""
+        def lift_by_decile(y_true, y_score, n_deciles=10):
+            order = np.argsort(-np.asarray(y_score, dtype=float))
+            base = float(np.asarray(y_true).mean())
+            n = len(y_score)
+            chunk = max(n // n_deciles, 1)
+            rows = []
+            for d in range(n_deciles):
+                idx = order[d * chunk : (d + 1) * chunk if d < n_deciles - 1 else n]
+                if len(idx) == 0:
+                    continue
+                hr = float(np.asarray(y_true)[idx].mean())
+                rows.append({
+                    "decile":     d + 1,
+                    "n":          len(idx),
+                    "mean_pred":  float(np.asarray(y_score)[idx].mean()),
+                    "hit_rate":   hr,
+                    "lift":       hr / max(base, 1e-9),
+                })
+            return pd.DataFrame(rows)
+
+        decile_df = lift_by_decile(y_cal, cal_proba, n_deciles=10)
+        print(decile_df.round(3).to_string(index=False))
+
+        fig, ax = plt.subplots(figsize=(8, 4))
+        ax.bar(decile_df["decile"], decile_df["lift"], color="#2c7fb8")
+        ax.axhline(1.0, color="grey", linestyle="--", label="corpus base rate")
+        ax.set_xlabel("Decile (1 = top scoring)")
+        ax.set_ylabel("Lift over corpus base rate")
+        ax.set_title("Triage lift by decile - is the top decile enriched in hits?")
+        ax.legend(); ax.grid(axis="y", alpha=0.3); plt.show()
     """),
 
     # ============================================================
@@ -638,8 +1008,19 @@ CELLS = [
             ids_test = df_test["imdb_id"].astype(str).tolist()
             print(f"Test set: {len(df_test)} films, positive rate {y_test.mean():.3f}")
 
-            # Calibrated probabilities on test.
-            test_proba = calibrator.predict_proba(X_test)[:, 1]
+            # Calibrated probabilities on test, with the same clipping
+            # as cal so the deployed system is consistent.
+            test_proba_raw = calibrator.predict_proba(X_test)[:, 1]
+            if CONFIG.get("prob_clip_max") is not None:
+                test_proba = np.minimum(test_proba_raw, float(CONFIG["prob_clip_max"]))
+            else:
+                test_proba = test_proba_raw
+
+            # Test metadata (genre, budget tier) for guards. release_year
+            # is already in features.parquet on df_test.
+            df_test_meta = df_test.merge(master[meta_cols], on="imdb_id", how="left")
+            df_test_meta["decade_bucket"] = df_test_meta["release_year_parsed"].apply(assign_decade_bucket)
+            df_test_meta["budget_tier"]   = df_test_meta["budget"].apply(assign_budget_tier)
 
             # Layer 1 metrics with bootstrap CIs.
             rng2 = np.random.default_rng(CONFIG["random_seed"])
@@ -669,10 +1050,26 @@ CELLS = [
             print(f"  ECE on test:   {ece(y_test, test_proba):.4f}")
             print(f"  Brier on test: {brier_score_loss(y_test, test_proba):.4f}")
 
-            # Layer 3 decisions + baselines on test.
-            test_actions = [decide(p, CONFIG["flop_cost"], CONFIG["miss_cost"],
-                                    CONFIG["refer_cost"])[0] for p in test_proba]
-            print("\\n--- Layer 3: decisions on test ---")
+            # Layer 3: decision rule + deployment guards on test.
+            raw_test_actions = [decide(p, CONFIG["flop_cost"], CONFIG["miss_cost"],
+                                        CONFIG["refer_cost"])[0] for p in test_proba]
+            test_actions = []
+            test_guard_reasons = []
+            for raw_a, year, genre, btier in zip(
+                raw_test_actions,
+                df_test_meta["release_year_parsed"].values,
+                df_test_meta["primary_genre_bucketed"].astype(str).values,
+                df_test_meta["budget_tier"].astype(str).values,
+            ):
+                a, reason = apply_guards(raw_a, year, genre, btier)
+                test_actions.append(a)
+                test_guard_reasons.append(reason)
+
+            n_raw_gl_t = sum(1 for a in raw_test_actions if a == "Greenlight")
+            n_final_gl_t = sum(1 for a in test_actions    if a == "Greenlight")
+            n_guarded_t = sum(1 for r in test_guard_reasons if r is not None)
+            print(f"\\n--- Layer 3: decisions on test ---")
+            print(f"Raw cost-rule Greenlights: {n_raw_gl_t} | guards downgraded {n_guarded_t} | final Greenlights: {n_final_gl_t}")
             for a in ["Greenlight", "Pass", "Refer"]:
                 print(f"  {a:11s}: {(np.array(test_actions) == a).mean()*100:5.1f}%")
 
@@ -689,13 +1086,25 @@ CELLS = [
                 test_rows.append({"strategy": nm, "total_cost_M": t / 1e6})
             print("\\n", pd.DataFrame(test_rows).sort_values("total_cost_M").to_string(index=False))
 
-            # Save test predictions.
+            # Layer 4: ranking metrics on test.
+            print("\\n--- Triage / ranking on test ---")
+            for k in CONFIG["top_k_for_ranking"]:
+                print(f"  K={k:>3d}  P@K={precision_at_k(y_test, test_proba, k):.3f}  "
+                      f"R@K={recall_at_k(y_test, test_proba, k):.3f}  "
+                      f"lift={lift_at_k(y_test, test_proba, k):.2f}")
+
+            # Save test predictions with guard info.
             test_report = pd.DataFrame({
                 "imdb_id":                ids_test,
                 "movie_name":             [master_lookup.get(i, i) for i in ids_test],
                 "calibrated_probability": test_proba,
                 "true_label":             y_test,
+                "raw_action":             raw_test_actions,
                 "recommended_action":     test_actions,
+                "guard_reason":           test_guard_reasons,
+                "release_year":           df_test_meta["release_year_parsed"].values,
+                "genre":                  df_test_meta["primary_genre_bucketed"].astype(str).values,
+                "budget_tier":            df_test_meta["budget_tier"].astype(str).values,
             })
             test_report.to_csv(STUDENT / "student_test_predictions.csv", index=False)
             print(f"\\nSaved {STUDENT / 'student_test_predictions.csv'}")
