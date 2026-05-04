@@ -1,0 +1,22 @@
+{
+  "calibrated_ece_roi_gt_1": 0.05391444255639584,
+  "calibrated_ece_roi_gt_2": 0.08486815185398444,
+  "fired_triggers": [
+    "1_predictive_performance_gap",
+    "3_decision_cost_regression"
+  ],
+  "headline_test_auc_ci": [
+    0.43690483155569493,
+    0.5840880758668215
+  ],
+  "headline_test_auc_roi_gt_2": 0.5073520010228871,
+  "log_roi_test_rmse": 1.217249128916491,
+  "n_triggers_fired": 2,
+  "shap_test_vs_cal_top15_jaccard": 0.875,
+  "shap_vs_native_test_rho": 0.7498245679379972,
+  "smoke_test_passed": true,
+  "system_action_p_greenlight": 0.007782101167315175,
+  "system_action_p_pass": 0.0,
+  "system_action_p_refer": 0.9922178988326849,
+  "system_test_total_cost": 51275000.0
+}

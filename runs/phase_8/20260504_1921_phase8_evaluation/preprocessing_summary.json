@@ -1,0 +1,7 @@
+{
+  "phase4_winners": "all on standalone_positive_union_mpnet",
+  "phase5_calibrators": "isotonic + LAC for roi_gt_*; absolute for log_roi",
+  "phase6_decision_rule": "expected-cost minimization, tie-break to Refer",
+  "phase7_explainer": "TreeSHAP path-dependent on XGBoost roi_gt_2",
+  "test_set_touched": true
+}

@@ -87,5 +87,6 @@ the same place; keep the newest-first ordering.
 | 2026-05-04 14:59 | phase_4_v2 | `runs/phase_4_v2/20260504_1459_standalone_positive_union_mpnet_svm_rbf/` | `b809f9e` | svm_rbf | standalone_positive_union_mpnet | log_roi RMSE=1.351; roi_gt_1 AUC=0.615; roi_gt_2 AUC=0.601 | Phase 4 primary-tier benchmark cell |
 | 2026-05-04 15:00 | phase_4_v2 | `runs/phase_4_v2/20260504_1459_standalone_positive_union_mpnet_lightgbm/` | `b809f9e` | lightgbm | standalone_positive_union_mpnet | log_roi RMSE=1.311; roi_gt_1 AUC=0.617; roi_gt_2 AUC=0.613 | Phase 4 primary-tier benchmark cell |
 | 2026-05-04 15:02 | phase_4_v2 | `runs/phase_4_v2/20260504_1500_standalone_positive_union_mpnet_xgboost/` | `b809f9e` | xgboost | standalone_positive_union_mpnet | log_roi RMSE=1.321; roi_gt_1 AUC=0.613; roi_gt_2 AUC=0.614 | Phase 4 primary-tier benchmark cell |
+| 2026-05-04 19:21 | phase_8 | `runs/phase_8/20260504_1921_phase8_evaluation/` | `15c814f` | phase8_end_to_end | standalone_positive_union_mpnet | test AUC roi_gt_2=0.507 [0.437, 0.584]; system cost $51.3M; jaccard top15=0.88 | Phase 8 end-to-end + final test-set evaluation |
 <!-- new rows above this line -->
 | (none yet) | | | | | | | First lexical run will be the first entry |

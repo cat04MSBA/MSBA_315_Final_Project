@@ -1,0 +1,17 @@
+{
+  "confidence_levels": [
+    0.5,
+    0.8,
+    0.9,
+    0.95
+  ],
+  "default_cost_matrix": {
+    "greenlight_flop": 50000000,
+    "pass_hit": 100000000,
+    "refer": 5000
+  },
+  "headline_target": "roi_gt_2",
+  "matrix_name": "standalone_positive_union_mpnet",
+  "n_features": 92,
+  "n_test_films": 257
+}

@@ -1,0 +1,6 @@
+trigger_id,metric,value,threshold,fired,status_note
+1_predictive_performance_gap,test_auc_roi_gt_2,0.5073520010228871,0.552,True,Test AUC below the 0.55 floor (Phase 4 OOF 0.6520 - 10pp). Probable cause: covariate shift across cal/test.
+2_coverage_out_of_band,empirical_coverage_at_0.9 per target,"roi_gt_2=0.864, log_roi=0.891",0.85-0.95,False,All coverages within the ±5pp band of nominal 0.90.
+3_decision_cost_regression,system_total_cost,51275000.0,2600000,True,Total system cost $51.27M exceeds 2x the cal value ($2.6M). Probable cause: a small handful of test Greenlights landed on flops.
+4_shap_test_vs_cal_overlap,jaccard_top15,0.875,0.6,False,Jaccard 0.88 clears the 0.6 floor.
+5_smoke_test_mismatch,consistency_check,True,PASS,False,Smoke test passes: per-film triage is deterministic.

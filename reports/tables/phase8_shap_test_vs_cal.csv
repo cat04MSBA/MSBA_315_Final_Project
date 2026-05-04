@@ -1,0 +1,17 @@
+feature,in_cal_top15,in_test_top15,jaccard_top15
+embed_pc_05,True,True,0.875
+embed_pc_06,True,True,0.875
+embed_pc_11,True,True,0.875
+embed_pc_12,True,True,0.875
+genre_Action,True,True,0.875
+genre_Horror,True,True,0.875
+genre_Romance,True,True,0.875
+genre_Science Fiction,True,False,0.875
+network_lead_role_count,True,True,0.875
+network_max_betweenness_centrality,True,True,0.875
+network_n_significant_characters,True,True,0.875
+network_top1_dialogue_share,True,True,0.875
+release_year_parsed,True,True,0.875
+topic_01_proportion,False,True,0.875
+topic_10_proportion,True,True,0.875
+topic_15_proportion,True,True,0.875
